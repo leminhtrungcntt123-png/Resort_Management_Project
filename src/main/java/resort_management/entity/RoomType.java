@@ -9,13 +9,10 @@ import java.util.List;
 @Entity
 @Table(name = "room_types")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomType {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class RoomType extends BaseEntity { // FIX: kế thừa BaseEntity
 
     @NotBlank(message = "Tên hạng phòng không được để trống")
     @Column(name = "type_name", nullable = false, length = 100)
@@ -34,7 +31,6 @@ public class RoomType {
     @Column(nullable = false)
     private Integer capacity;
 
-    // Ẩn danh sách phòng khi trả về JSON để tránh vòng lặp vô tận
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Room> rooms;

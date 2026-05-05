@@ -16,15 +16,10 @@ import resort_management.service.BookingManagementService;
 @RequestMapping("/api/bookings")
 public class BookingController {
 
-    @Autowired
-    private BookingRepository bookingRepository;
-    @Autowired
-    private RoomRepository roomRepository;
-    @Autowired
-    private PaymentRepository paymentRepository;
-
-    @Autowired
-    private BookingManagementService bookingService;
+    @Autowired private BookingRepository bookingRepository;
+    @Autowired private RoomRepository roomRepository;
+    @Autowired private PaymentRepository paymentRepository;
+    @Autowired private BookingManagementService bookingService;
 
     @GetMapping
     public List<Booking> getAll() {
@@ -46,11 +41,9 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody Booking booking) {
         try {
-            // Nhường toàn bộ việc khó cho Service lo
             Booking saved = bookingService.createBooking(booking);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
-            // Nếu có lỗi (trùng phòng, sai ngày...) thì trả về lỗi 400 và lời nhắn
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
@@ -58,11 +51,15 @@ public class BookingController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String newStatus = body.get("status");
-        List<String> validStatuses = List.of("Chờ", "Đã xác nhận", "Đã hủy");
+
+        // FIX: đồng bộ đủ 5 trạng thái — khớp với SQL CHECK constraint và Service
+        List<String> validStatuses = List.of("Chờ", "Đã xác nhận", "Đang ở", "Đã hủy", "Đã trả phòng");
         if (!validStatuses.contains(newStatus)) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Trạng thái không hợp lệ: " + newStatus));
+                    .body(Map.of("error", "Trạng thái không hợp lệ: " + newStatus
+                            + ". Các giá trị hợp lệ: " + validStatuses));
         }
+
         return bookingRepository.findById(id).map(b -> {
             b.setStatus(newStatus);
             return ResponseEntity.ok(bookingRepository.save(b));
@@ -72,16 +69,24 @@ public class BookingController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
-            // Gọi sang Service để nó dọn dẹp phòng ốc đàng hoàng rồi mới xóa
             bookingService.deleteBooking(id);
             return ResponseEntity.ok(Map.of("message", "Đã xóa booking ID: " + id));
         } catch (RuntimeException e) {
-            // Nếu không tìm thấy thì báo lỗi
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
 
-    // API chuyên dùng để Trả phòng
+    // Check-in thủ công cho future booking (đặt trước, hôm nay mới đến)
+    @PutMapping("/{id}/checkin")
+    public ResponseEntity<?> checkin(@PathVariable Long id) {
+        try {
+            bookingService.checkinBooking(id);
+            return ResponseEntity.ok(Map.of("message", "Check-in thành công! Phòng đã chuyển sang Đang ở."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/{id}/checkout")
     public ResponseEntity<?> checkout(@PathVariable Long id) {
         try {

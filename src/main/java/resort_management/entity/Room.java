@@ -9,13 +9,10 @@ import java.util.List;
 @Entity
 @Table(name = "rooms")
 @Data
+@EqualsAndHashCode(callSuper = true)   // FIX: kế thừa BaseEntity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Room {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Room extends BaseEntity { // FIX: thêm kế thừa
 
     @NotBlank(message = "Số phòng không được để trống")
     @Column(name = "room_number", nullable = false, unique = true, length = 20)
@@ -24,8 +21,9 @@ public class Room {
     @Column(name = "floor_number")
     private Integer floorNumber;
 
+    // Trống | Đang ở | Bảo trì
     @Column(length = 50, nullable = false)
-    private String status = "Trống"; // Trống | Đang ở | Bảo trì
+    private String status = "Trống";
 
     @ManyToOne
     @JoinColumn(name = "room_type_id", nullable = false)

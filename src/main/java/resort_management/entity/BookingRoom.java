@@ -1,19 +1,17 @@
 package resort_management.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "booking_rooms")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookingRoom {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class BookingRoom extends BaseEntity { // FIX: kế thừa BaseEntity
 
     @ManyToOne
     @JoinColumn(name = "booking_id", nullable = false)
@@ -24,7 +22,8 @@ public class BookingRoom {
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
-    // Lưu snapshot giá phòng tại thời điểm đặt (tránh bị thay đổi sau khi đã đặt)
+    // Snapshot giá phòng tại thời điểm đặt — tránh bị thay đổi sau khi book xong
+    @Positive(message = "Giá phòng phải lớn hơn 0")
     @Column(name = "price", nullable = false)
     private Double price;
 }
