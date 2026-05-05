@@ -1,38 +1,29 @@
 package resort_management.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "customers")
+@DiscriminatorValue("CUSTOMER")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Customer {
+public class Customer extends Person { // Đã kế thừa Person (Person lại kế thừa BaseEntity)
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    // Các trường id, fullName, phone, email, createdAt đã được lớp cha lo hết!
 
-    @NotBlank(message = "Họ tên không được để trống")
-    @Column(name = "full_name", nullable = false, length = 100)
-    private String fullName;
+    private Integer loyaltyPoints = 0; // Thêm điểm thưởng để thể hiện sự khác biệt với Employee
 
-    @Column(length = 20)
-    private String phone;
-
-    @Email(message = "Email không hợp lệ")
-    @Column(length = 100)
-    private String email;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
+    // Giữ nguyên quan hệ Booking cực kỳ quan trọng của bạn
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Booking> bookings;
+
+    @Override
+    public String getRoleDescription() {
+        return "Khách hàng thân thiết - Điểm tích lũy: " + loyaltyPoints;
+    }
 }
