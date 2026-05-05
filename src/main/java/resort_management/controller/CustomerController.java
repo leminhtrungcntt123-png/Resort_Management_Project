@@ -1,13 +1,17 @@
 package resort_management.controller;
 
+import resort_management.dto.request.CustomerRequest;
+import resort_management.dto.response.CustomerResponse;
 import resort_management.entity.Customer;
 import resort_management.repository.CustomerRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin("*")
@@ -18,39 +22,52 @@ public class CustomerController {
     private CustomerRepository customerRepository;
 
     @GetMapping
-    public List<Customer> getAll() {
-        return customerRepository.findAll();
+    public List<CustomerResponse> getAll() {
+        return customerRepository.findAll()
+                .stream()
+                .map(CustomerResponse::from)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getById(@PathVariable Long id) {
+    public ResponseEntity<CustomerResponse> getById(@PathVariable Long id) {
         return customerRepository.findById(id)
+                .map(CustomerResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/search")
-    public List<Customer> search(@RequestParam String name) {
-        return customerRepository.findByFullNameContainingIgnoreCase(name);
+    public List<CustomerResponse> search(@RequestParam String name) {
+        return customerRepository.findByFullNameContainingIgnoreCase(name)
+                .stream()
+                .map(CustomerResponse::from)
+                .collect(Collectors.toList());
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody Customer customer) {
-        if (customer.getEmail() != null && !customer.getEmail().isEmpty()
-                && customerRepository.existsByEmail(customer.getEmail())) {
+    public ResponseEntity<?> create(@Valid @RequestBody CustomerRequest request) {
+        if (request.getEmail() != null && !request.getEmail().isBlank()
+                && customerRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Email '" + customer.getEmail() + "' đã tồn tại"));
+                    .body(Map.of("error", "Email '" + request.getEmail() + "' đã tồn tại"));
         }
-        return ResponseEntity.ok(customerRepository.save(customer));
+
+        Customer customer = new Customer();
+        customer.setFullName(request.getFullName());
+        customer.setPhone(request.getPhone());
+        customer.setEmail(request.getEmail());
+
+        return ResponseEntity.ok(CustomerResponse.from(customerRepository.save(customer)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Customer details) {
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
         return customerRepository.findById(id).map(c -> {
-            c.setFullName(details.getFullName());
-            c.setPhone(details.getPhone());
-            c.setEmail(details.getEmail());
-            return ResponseEntity.ok(customerRepository.save(c));
+            c.setFullName(request.getFullName());
+            c.setPhone(request.getPhone());
+            c.setEmail(request.getEmail());
+            return ResponseEntity.ok(CustomerResponse.from(customerRepository.save(c)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
