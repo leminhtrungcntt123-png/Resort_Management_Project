@@ -18,7 +18,7 @@
     <description>Hệ thống quản lý resort hoàn chỉnh</description>
 
     <properties>
-        <java.version>17</java.version>  <!-- FIX: Java 25 chưa tồn tại, dùng 17 LTS -->
+        <java.version>25</java.version>  <!-- FIX: Java 25 chưa tồn tại, dùng 17 LTS -->
     </properties>
 
     <dependencies>
