@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>  <!-- FIX: 4.0.6 chưa release, dùng 3.3.5 ổn định -->
+        <version>3.3.5</version>  
         <relativePath/>
     </parent>
 
@@ -18,7 +18,7 @@
     <description>Hệ thống quản lý resort hoàn chỉnh</description>
 
     <properties>
-        <java.version>25</java.version>  <!-- FIX: Java 25 chưa tồn tại, dùng 17 LTS -->
+        <java.version>21</java.version>  
     </properties>
 
     <dependencies>
