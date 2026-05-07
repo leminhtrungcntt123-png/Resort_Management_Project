@@ -1,3 +1,7 @@
+-- 1. Thiết lập bảng mã cho phiên làm việc
+SET NAMES 'utf8mb4';
+
+-- 2. Xóa dữ liệu cũ
 CREATE TABLE room_types (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     type_name       VARCHAR(100) NOT NULL,
