@@ -217,6 +217,32 @@ body::after {
     gap: 30px;
 }
 
+.lang-switcher {
+    display: flex;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.lang-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-main);
+    background: transparent;
+    transition: var(--transition);
+}
+
+.lang-btn.active {
+    background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan));
+    color: #000;
+}
+
 .status-pill {
     background: rgba(251, 113, 133, 0.15);
     color: var(--accent-rose);
