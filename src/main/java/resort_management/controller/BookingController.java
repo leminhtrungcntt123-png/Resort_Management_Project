@@ -102,7 +102,7 @@ public class BookingController {
                 booking.setBookingServices(bookingServices);
             }
 
-            Booking saved = bookingService.createBooking(booking);
+            Booking saved = bookingService.createBooking(booking, request.getPaymentMethod());
             return ResponseEntity.ok(BookingResponse.from(saved));
 
         } catch (Exception e) {
