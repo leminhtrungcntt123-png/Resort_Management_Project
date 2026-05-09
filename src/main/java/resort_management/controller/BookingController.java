@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class BookingController {
     @Autowired private BookingManagementService bookingService;
 
     @GetMapping
+    @Transactional(readOnly = true)
     public List<BookingResponse> getAll() {
         return bookingRepository.findAll()
                 .stream()
@@ -36,6 +38,7 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<BookingResponse> getById(@PathVariable Long id) {
         return bookingRepository.findById(id)
                 .map(BookingResponse::from)
@@ -44,6 +47,7 @@ public class BookingController {
     }
 
     @GetMapping("/status/{status}")
+    @Transactional(readOnly = true)
     public List<BookingResponse> getByStatus(@PathVariable String status) {
         return bookingRepository.findByStatus(status)
                 .stream()
@@ -52,6 +56,7 @@ public class BookingController {
     }
 
     @GetMapping("/customer/{customerId}")
+    @Transactional(readOnly = true)
     public List<BookingResponse> getByCustomer(@PathVariable Long customerId) {
         return bookingRepository.findByCustomerId(customerId)
                 .stream()

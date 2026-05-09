@@ -9,8 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @RestController
@@ -35,6 +38,39 @@ public class PaymentController {
                 .map(PaymentResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/revenue")
+    public ResponseEntity<?> getRevenue(@RequestParam(defaultValue = "month") String period) {
+        String normalizedPeriod = period == null ? "month" : period.trim().toLowerCase();
+        if (!List.of("day", "month", "year").contains(normalizedPeriod)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "period chỉ nhận day, month hoặc year"));
+        }
+
+        DateTimeFormatter formatter = switch (normalizedPeriod) {
+            case "day" -> DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            case "year" -> DateTimeFormatter.ofPattern("yyyy");
+            default -> DateTimeFormatter.ofPattern("yyyy-MM");
+        };
+
+        Map<String, Double> revenueByPeriod = new TreeMap<>();
+        paymentRepository.findAll().stream()
+                .filter(p -> "Đã thanh toán".equalsIgnoreCase(p.getPaymentStatus()))
+                .filter(p -> p.getPaymentDate() != null)
+                .forEach(p -> {
+                    String key = formatter.format(p.getPaymentDate());
+                    revenueByPeriod.merge(key, p.getAmount(), (a, b) -> a + b);
+                });
+
+        List<Map<String, Object>> response = revenueByPeriod.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("period", e.getKey());
+                    item.put("revenue", e.getValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     // Thanh toán nhanh: chỉ đổi status → "Đã thanh toán"

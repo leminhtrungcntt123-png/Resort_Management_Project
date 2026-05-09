@@ -4,6 +4,7 @@ import lombok.*;
 import resort_management.entity.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,26 +49,30 @@ public class BookingResponse {
         if (booking.getBookingRooms() != null) {
             dto.setRooms(booking.getBookingRooms().stream().map(br ->
                     new BookingRoomInfo(
-                            br.getRoom().getId(),
-                            br.getRoom().getRoomNumber(),
-                            br.getRoom().getFloorNumber(),
-                            br.getRoom().getRoomType() != null ? br.getRoom().getRoomType().getTypeName() : null,
+                            br.getRoom() != null ? br.getRoom().getId() : null,
+                            br.getRoom() != null ? br.getRoom().getRoomNumber() : null,
+                            br.getRoom() != null ? br.getRoom().getFloorNumber() : null,
+                            (br.getRoom() != null && br.getRoom().getRoomType() != null) ? br.getRoom().getRoomType().getTypeName() : null,
                             br.getPrice()
                     )
             ).collect(Collectors.toList()));
+        } else {
+            dto.setRooms(Collections.emptyList());
         }
 
         // Map services
         if (booking.getBookingServices() != null) {
             dto.setServices(booking.getBookingServices().stream().map(bs ->
                     new BookingServiceInfo(
-                            bs.getService().getId(),
-                            bs.getService().getServiceName(),
-                            bs.getService().getPrice(),
+                            bs.getService() != null ? bs.getService().getId() : null,
+                            bs.getService() != null ? bs.getService().getServiceName() : null,
+                            bs.getService() != null ? bs.getService().getPrice() : 0.0,
                             bs.getQuantity(),
-                            bs.getService().getPrice() * bs.getQuantity()
+                            (bs.getService() != null ? bs.getService().getPrice() : 0.0) * bs.getQuantity()
                     )
             ).collect(Collectors.toList()));
+        } else {
+            dto.setServices(Collections.emptyList());
         }
 
         // Map payment

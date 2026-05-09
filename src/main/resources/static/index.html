@@ -7,6 +7,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -20,6 +21,9 @@
   <nav class="nav-menu">
     <div class="nav-item active" onclick="showTab('dashboard')">
       <i class="fas fa-compass"></i> TỔNG QUAN
+    </div>
+    <div class="nav-item" onclick="showTab('reports')">
+      <i class="fas fa-chart-line"></i> BÁO CÁO
     </div>
     <div class="nav-item" onclick="showTab('roomtypes')">
       <i class="fas fa-layer-group"></i> HẠNG PHÒNG
@@ -117,6 +121,93 @@
           </div>
           <div id="dashRooms">
           </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><i class="fas fa-chart-line"></i> Doanh thu theo thời gian</h2>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <select id="revenue-period" onchange="loadRevenueChart()" style="width:180px">
+              <option value="day">Theo ngày</option>
+              <option value="month" selected>Theo tháng</option>
+              <option value="year">Theo năm</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="loadRevenueChart()">
+              <i class="fas fa-sync-alt"></i> Cập nhật
+            </button>
+          </div>
+        </div>
+        <div class="revenue-layout">
+          <div class="revenue-kpi">
+            <p>Tổng doanh thu đã thanh toán</p>
+            <h3 id="revenue-total">0 ₫</h3>
+            <small id="revenue-count">0 kỳ dữ liệu</small>
+          </div>
+          <div class="revenue-chart-wrap">
+            <canvas id="revenueChart" height="120"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-reports" class="tab-content">
+      <div class="report-toolbar">
+        <div>
+          <h2>BÁO CÁO THỐNG KÊ DOANH SỐ RESORT</h2>
+          <small>Resort | <span id="report-date-range">Theo dữ liệu thực tế hệ thống</span></small>
+        </div>
+        <div class="report-filter-chip">
+          <i class="fas fa-filter"></i> Lọc theo thời gian
+        </div>
+      </div>
+
+      <div class="report-kpi-grid">
+        <div class="report-kpi-card">
+          <p>Tổng doanh số</p>
+          <h3 id="reportTotalRevenue">0 ₫</h3>
+        </div>
+        <div class="report-kpi-card">
+          <p>Tổng số đặt phòng</p>
+          <h3 id="reportTotalBookings">0</h3>
+        </div>
+        <div class="report-kpi-card">
+          <p>Công suất phòng trung bình</p>
+          <h3 id="reportOccupancy">0%</h3>
+        </div>
+        <div class="report-kpi-card">
+          <p>Giá phòng trung bình</p>
+          <h3 id="reportAvgRevenue">0 ₫</h3>
+        </div>
+      </div>
+
+      <div class="report-main-grid">
+        <div class="panel">
+          <div class="panel-header"><h2><i class="fas fa-chart-area"></i> Biểu đồ doanh số theo tháng</h2></div>
+          <div class="report-chart-box"><canvas id="reportLineChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h2><i class="fas fa-chart-pie"></i> Tỷ trọng doanh thu theo hạng phòng</h2></div>
+          <div class="report-chart-box"><canvas id="reportDonutChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2><i class="fas fa-table"></i> Chi tiết doanh số theo tháng</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Kỳ</th>
+                <th>Số lượng đặt</th>
+                <th>Lượng khách</th>
+                <th>Doanh số phòng</th>
+                <th>Doanh số dịch vụ</th>
+                <th>Tổng doanh số</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody"></tbody>
+          </table>
         </div>
       </div>
     </section>

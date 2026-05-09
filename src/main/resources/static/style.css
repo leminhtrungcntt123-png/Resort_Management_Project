@@ -607,6 +607,109 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
 .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
 .empty-icon { font-size: 50px; margin-bottom: 20px; color: rgba(255,255,255,0.1); }
 
+.revenue-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.revenue-kpi {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.revenue-kpi p {
+    color: var(--text-muted);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.revenue-kpi h3 {
+    font-family: 'Poppins', sans-serif;
+    color: var(--accent-gold);
+    font-size: 28px;
+}
+
+.revenue-kpi small {
+    color: var(--text-dim);
+}
+
+.revenue-chart-wrap {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 16px;
+}
+
+.report-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.report-toolbar h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.5px;
+}
+
+.report-toolbar small {
+    color: var(--text-muted);
+}
+
+.report-filter-chip {
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+.report-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.report-kpi-card {
+    background: rgba(25, 35, 60, 0.82);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.report-kpi-card p {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.report-kpi-card h3 {
+    margin-top: 8px;
+    font-size: 30px;
+    color: var(--accent-cyan);
+    font-family: 'Poppins', sans-serif;
+}
+
+.report-main-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+}
+
+.report-chart-box {
+    height: 320px;
+}
+
 /* Custom Scrollbar Glass */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
