@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "payments")
 @Data
-@EqualsAndHashCode(callSuper = true)   // FIX: kế thừa BaseEntity
+@EqualsAndHashCode(callSuper = true) // FIX: kế thừa BaseEntity
 @NoArgsConstructor
 @AllArgsConstructor
 public class Payment extends BaseEntity { // FIX: thêm kế thừa BaseEntity
@@ -30,7 +30,7 @@ public class Payment extends BaseEntity { // FIX: thêm kế thừa BaseEntity
 
     // Chưa thanh toán | Đã thanh toán | Thất bại
     @Column(name = "payment_status", length = 50, nullable = false)
-    private String paymentStatus = "Chưa thanh toán";
+    private String paymentStatus = "PENDING";
 
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;

@@ -9,16 +9,14 @@
             "type": "java",
             "name": "Current File",
             "request": "launch",
-            "mainClass": "${file}",
-            "vmArgs": "-Dserver.port=8081"
+            "mainClass": "${file}"
         },
         {
             "type": "java",
             "name": "ResortManagementApplication",
             "request": "launch",
             "mainClass": "resort_management.ResortManagementApplication",
-            "projectName": "resort-management",
-            "vmArgs": "-Dserver.port=8081"
+            "projectName": "resort-management"
         }
     ]
 }
