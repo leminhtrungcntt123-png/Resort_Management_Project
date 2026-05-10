@@ -53,6 +53,25 @@ const I18N = {
             noRoomData: 'Hệ thống phòng chưa được khởi tạo',
             units: 'phòng'
         },
+        reports: {
+            title: 'BÁO CÁO THỐNG KÊ DOANH SỐ RESORT',
+            dateRange: 'Theo dữ liệu thực tế hệ thống',
+            filter: 'Lọc theo thời gian',
+            totalRevenue: 'Tổng doanh số',
+            totalBookings: 'Tổng số đặt phòng',
+            occupancy: 'Công suất phòng trung bình',
+            avgPrice: 'Giá phòng trung bình',
+            monthlyChart: 'Biểu đồ doanh số theo tháng',
+            revenueByType: 'Tỷ trọng doanh thu theo hạng phòng',
+            monthlyDetail: 'Chi tiết doanh số theo tháng',
+            period: 'Kỳ',
+            bookingCount: 'Số lượng đặt',
+            guestCount: 'Lượng khách',
+            roomRevenue: 'Doanh số phòng',
+            serviceRevenue: 'Doanh số dịch vụ',
+            totalSales: 'Tổng doanh số',
+            noData: 'Chưa có dữ liệu doanh thu'
+        },
         sections: {
             roomTypeSetup: 'Thiết lập hạng phòng cao cấp',
             roomTypePortfolio: 'Portfolio Hạng Phòng',
@@ -214,6 +233,25 @@ const I18N = {
             noRecentBookings: 'No recent bookings',
             noRoomData: 'No room data initialized',
             units: 'units'
+        },
+        reports: {
+            title: 'RESORT REVENUE ANALYTICS REPORT',
+            dateRange: 'Based on live system data',
+            filter: 'Filter by time',
+            totalRevenue: 'Total revenue',
+            totalBookings: 'Total bookings',
+            occupancy: 'Average occupancy',
+            avgPrice: 'Average room rate',
+            monthlyChart: 'Monthly revenue trend',
+            revenueByType: 'Revenue share by room type',
+            monthlyDetail: 'Monthly revenue details',
+            period: 'Period',
+            bookingCount: 'Booking count',
+            guestCount: 'Guest count',
+            roomRevenue: 'Room revenue',
+            serviceRevenue: 'Service revenue',
+            totalSales: 'Total revenue',
+            noData: 'No revenue data yet'
         },
         sections: {
             roomTypeSetup: 'Premium room type setup',
@@ -882,7 +920,7 @@ async function loadReports() {
                     <td>${fmt(total)}</td>
                 </tr>
             `;
-        }).join('') || `<tr><td colspan="6" class="empty-state">${currentLang === 'en' ? 'No revenue data yet' : 'Chưa có dữ liệu doanh thu'}</td></tr>`;
+        }).join('') || `<tr><td colspan="6" class="empty-state">${t('reports.noData')}</td></tr>`;
     }
 }
 
@@ -925,6 +963,33 @@ function applyStaticTranslations() {
         const roomsTitle = dashRoomsPanel.querySelector('.panel-header h2');
         if (roomsTitle) roomsTitle.innerHTML = `<i class="fas fa-chart-pie"></i> ${t('dashboard.occupancy')}`;
     }
+
+    // Reports tab
+    const reportToolbarTitle = document.querySelector('#tab-reports .report-toolbar h2');
+    const reportDateRange = document.getElementById('report-date-range');
+    const reportFilterChip = document.querySelector('#tab-reports .report-filter-chip');
+    if (reportToolbarTitle) reportToolbarTitle.textContent = t('reports.title');
+    if (reportDateRange) reportDateRange.textContent = t('reports.dateRange');
+    if (reportFilterChip) reportFilterChip.innerHTML = `<i class="fas fa-filter"></i> ${t('reports.filter')}`;
+
+    const reportKpi = document.querySelectorAll('#tab-reports .report-kpi-card p');
+    if (reportKpi[0]) reportKpi[0].textContent = t('reports.totalRevenue');
+    if (reportKpi[1]) reportKpi[1].textContent = t('reports.totalBookings');
+    if (reportKpi[2]) reportKpi[2].textContent = t('reports.occupancy');
+    if (reportKpi[3]) reportKpi[3].textContent = t('reports.avgPrice');
+
+    const reportHeaders = document.querySelectorAll('#tab-reports .panel .panel-header h2');
+    if (reportHeaders[0]) reportHeaders[0].innerHTML = `<i class="fas fa-chart-area"></i> ${t('reports.monthlyChart')}`;
+    if (reportHeaders[1]) reportHeaders[1].innerHTML = `<i class="fas fa-chart-pie"></i> ${t('reports.revenueByType')}`;
+    if (reportHeaders[2]) reportHeaders[2].innerHTML = `<i class="fas fa-table"></i> ${t('reports.monthlyDetail')}`;
+
+    const reportHead = document.querySelectorAll('#tab-reports thead th');
+    if (reportHead[0]) reportHead[0].textContent = t('reports.period');
+    if (reportHead[1]) reportHead[1].textContent = t('reports.bookingCount');
+    if (reportHead[2]) reportHead[2].textContent = t('reports.guestCount');
+    if (reportHead[3]) reportHead[3].textContent = t('reports.roomRevenue');
+    if (reportHead[4]) reportHead[4].textContent = t('reports.serviceRevenue');
+    if (reportHead[5]) reportHead[5].textContent = t('reports.totalSales');
 
     // Room Types tab
     const rtSection = document.querySelector('#tab-roomtypes .panel:nth-child(1) .panel-header h2');
@@ -1079,10 +1144,30 @@ function setLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('resort_lang', lang);
     applyStaticTranslations();
-    loadDashboard();
-    const activeTab = document.querySelector('.tab-content.active')?.id?.replace('tab-', 'dashboard');
-    if (activeTab && tabTitles[activeTab]) {
-        document.getElementById('pageTitle').textContent = tabTitles[activeTab]();
+
+    // Lấy đúng tên tab đang active
+    const activeTabName = document.querySelector('.tab-content.active')?.id?.replace('tab-', '');
+
+    // Reload đúng tab đang mở thay vì cứng loadDashboard
+    const loaders = {
+        dashboard: loadDashboard,
+        reports: loadReports,
+        roomtypes: loadRoomTypes,
+        rooms: loadRooms,
+        customers: loadCustomers,
+        bookings: loadBookings,
+        services: loadServices
+    };
+
+    if (activeTabName && loaders[activeTabName]) {
+        loaders[activeTabName]();
+    } else {
+        loadDashboard();
+    }
+
+    // Cập nhật tiêu đề trang đúng
+    if (activeTabName && tabTitles[activeTabName]) {
+        document.getElementById('pageTitle').textContent = tabTitles[activeTabName]();
     }
 }
 
