@@ -11,6 +11,35 @@
 
   <link rel="stylesheet" href="style.css">
 </head>
+<div class="chatbot-wrapper">
+  <div class="chatbot-window" id="chatWindow">
+    <div class="chat-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="chat-avatar"><i class="fas fa-robot"></i></div>
+        <div>
+          <h4 style="margin:0; font-size:14px; font-family:'Poppins'; color:#fff;">Aura Assistant</h4>
+          <p style="margin:0; font-size:10px; color:var(--accent-cyan); text-transform:uppercase;">Trợ lý AI Nội Bộ</p>
+        </div>
+      </div>
+      <button class="chat-close-btn" onclick="toggleChat()"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="chat-body" id="chatBody">
+      <div class="chat-message bot-message">
+        <p>Xin chào Lễ tân! Tôi là trợ lý AI. Tôi có thể giúp bạn tìm phòng hoặc tra cứu thông tin hệ thống.</p>
+      </div>
+    </div>
+    
+    <div class="chat-footer">
+      <input type="text" id="chatInput" placeholder="Nhập câu hỏi..." onkeypress="handleChatEnter(event)">
+      <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <button class="chatbot-trigger" id="chatTrigger" onclick="toggleChat()">
+    <i class="fas fa-comment-dots"></i>
+  </button>
+</div>
 <body>
 
 <aside class="sidebar">

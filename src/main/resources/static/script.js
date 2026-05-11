@@ -1176,3 +1176,73 @@ window.onload = function () {
     applyStaticTranslations();
     loadDashboard();
 };
+// ================= CHATBOT LOGIC =================
+const FASTAPI_URL = 'http://localhost:8081'; // Đổi port nếu backend Python chạy port khác
+
+function toggleChat() {
+  const window = document.getElementById('chatWindow');
+  const triggerIcon = document.querySelector('#chatTrigger i');
+  
+  window.classList.toggle('active');
+  
+  // Đổi icon từ tin nhắn sang dấu X
+  if(window.classList.contains('active')) {
+    triggerIcon.className = 'fas fa-times';
+  } else {
+    triggerIcon.className = 'fas fa-comment-dots';
+  }
+}
+
+function handleChatEnter(event) {
+  if (event.key === 'Enter') sendChatMessage();
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (!message) return;
+
+  const chatBody = document.getElementById('chatBody');
+  chatBody.innerHTML += `<div class="chat-message user-message"><p>${message}</p></div>`;
+  input.value = '';
+  
+  const typingId = 'typing-' + Date.now();
+  chatBody.innerHTML += `<div id="${typingId}" class="chat-message bot-message typing-indicator">Aura đang suy nghĩ... <i class="fas fa-circle-notch fa-spin"></i></div>`;
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  try {
+    // SỬA TẠI ĐÂY: Thêm /api vào trước /chat
+    const response = await fetch(`${FASTAPI_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: message }) 
+    });
+
+    if (!response.ok) throw new Error('Lỗi kết nối tới AI Backend');
+    const data = await response.json(); 
+
+    document.getElementById(typingId).remove();
+
+    // SỬA TẠI ĐÂY: Lấy linh hoạt các trường trả về
+    const replyText = data.answer || data.message || data.response || "Xin lỗi, tôi không xử lý được câu hỏi này.";
+    let botHtml = `<div class="chat-message bot-message"><p>${replyText}</p>`;
+    
+    if(data.related_rooms && data.related_rooms.length > 0) {
+      botHtml += `<div style="margin-top:10px; border-top:1px dashed rgba(255,255,255,0.2); padding-top:10px;">`;
+      botHtml += `<span style="font-size:11px; color:var(--accent-gold);">Phòng gợi ý:</span><br>`;
+      data.related_rooms.forEach(room => {
+          botHtml += `<span class="tag tag-blue" style="margin:2px;">Phòng ${room.room_number || 'N/A'}</span>`;
+      });
+      botHtml += `</div>`;
+    }
+    botHtml += `</div>`;
+    
+    chatBody.innerHTML += botHtml;
+
+  } catch (error) {
+    if(document.getElementById(typingId)) document.getElementById(typingId).remove();
+    chatBody.innerHTML += `<div class="chat-message bot-message" style="color:var(--accent-rose)"><p>Lỗi: Không thể kết nối tới Server AI (Cổng 8081). Hãy chắc chắn bạn đã chạy Python Server.</p></div>`;
+  }
+  
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
