@@ -12,3 +12,4 @@ sqlalchemy
 python-dotenv
 pymysql
 cryptography
+sentence-transformers
