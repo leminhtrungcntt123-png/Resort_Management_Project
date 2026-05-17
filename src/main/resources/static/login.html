@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập | AURA RESORT Smart Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        aura: {
+                            dark: '#0b1121',
+                            panel: '#111827',
+                            card: '#1e293b',
+                            primary: '#2dd4bf',
+                            primaryHover: '#14b8a6',
+                            gold: '#fbbf24',
+                            textMuted: '#94a3b8'
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 3s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'blob': 'blob 10s infinite',
+                        'fade-in': 'fadeIn 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        glow: {
+                            '0%, 100%': { filter: 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.6))' },
+                            '50%': { filter: 'drop-shadow(0 0 25px rgba(251, 191, 36, 1))' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: 0, transform: 'translateY(30px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: 0, transform: 'translateX(20px)' },
+                            '100%': { opacity: 1, transform: 'translateX(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #0b1121; }
+
+        .aura-input:focus {
+            outline: none;
+            border-color: #2dd4bf;
+            box-shadow: 0 0 0 1px #2dd4bf, 0 0 15px rgba(45, 212, 191, 0.2);
+        }
+
+        .custom-checkbox {
+            appearance: none;
+            background-color: #1e293b;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.15em;
+            height: 1.15em;
+            border: 1px solid #475569;
+            border-radius: 0.25em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .custom-checkbox::before {
+            content: "";
+            width: 0.65em;
+            height: 0.65em;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+            transform: scale(0);
+            transform-origin: bottom left;
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #0b1121;
+            background-color: #0b1121;
+        }
+
+        .custom-checkbox:checked { background-color: #2dd4bf; border-color: #2dd4bf; }
+        .custom-checkbox:checked::before { transform: scale(1); }
+
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .delay-100 { animation-delay: 100ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-500 { animation-delay: 500ms; }
+
+        .btn-loading .btn-text { display: none; }
+        .btn-loading .spinner { display: inline-block !important; }
+
+        /* Animation chuyển đổi giữa Đăng nhập và Quên MK */
+        .view-hidden { display: none !important; }
+        .view-active { display: block; animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body class="text-white font-sans antialiased h-screen overflow-hidden selection:bg-aura-primary selection:text-aura-dark relative">
+
+<div class="flex h-full w-full">
+
+    <div class="hidden lg:flex lg:w-3/5 relative items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-105 transition-transform duration-[20s] ease-linear hover:scale-110"
+             style="background-image: url('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+
+        <div class="absolute inset-0 bg-gradient-to-r from-aura-dark/95 via-aura-dark/80 to-aura-dark/20"></div>
+
+        <div class="relative z-10 w-full max-w-2xl px-12">
+            <div class="flex items-center gap-4 mb-8 opacity-0 animate-slide-up">
+                <div class="animate-float">
+                    <i class="fa-solid fa-crown text-aura-gold text-5xl animate-glow"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-poppins font-bold tracking-widest text-white drop-shadow-lg">AURA RESORT</h1>
+                    <p class="text-aura-primary text-sm tracking-[0.4em] font-medium mt-1 drop-shadow-md">SMART MANAGEMENT</p>
+                </div>
+            </div>
+            <h2 class="text-3xl font-light text-slate-300 leading-relaxed mb-6 opacity-0 animate-slide-up delay-300">
+                Trải nghiệm không gian quản trị <br>
+                <span class="font-semibold text-white font-poppins">đẳng cấp & tinh tế.</span>
+            </h2>
+            <div class="opacity-0 animate-slide-up delay-500">
+                <p class="text-aura-textMuted max-w-lg border-l-2 border-aura-primary pl-5 leading-relaxed bg-gradient-to-r from-aura-primary/10 to-transparent py-2">
+                    Hệ thống vận hành nội bộ phân quyền cao cấp. Vui lòng đăng nhập bằng tài khoản được cấp phát.
+                    <br><span class="text-xs text-slate-500 mt-2 block"><i class="fa-solid fa-shield-halved"></i> Mọi kết nối đều được mã hóa nội bộ.</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full lg:w-2/5 flex items-center justify-center bg-aura-dark relative overflow-hidden">
+
+        <div class="absolute top-[-10%] right-[-10%] w-72 h-72 bg-aura-primary/10 rounded-full mix-blend-screen filter blur-[60px] animate-blob"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-72 h-72 bg-blue-500/10 rounded-full mix-blend-screen filter blur-[60px] animate-blob" style="animation-delay: 2s;"></div>
+
+        <div class="w-full max-w-md px-8 py-10 glass-panel rounded-2xl relative z-10 mx-4 lg:mx-0 shadow-2xl opacity-0 animate-slide-up delay-100 min-h-[500px] flex flex-col justify-center">
+
+            <div class="flex lg:hidden items-center justify-center gap-3 mb-8 animate-float">
+                <i class="fa-solid fa-crown text-aura-gold text-3xl animate-glow"></i>
+                <div class="text-center">
+                    <h1 class="text-2xl font-poppins font-bold tracking-widest text-white">AURA</h1>
+                </div>
+            </div>
+
+            <div id="viewLogin" class="view-active w-full">
+                <div class="mb-10 text-center lg:text-left">
+                    <h3 class="text-2xl font-poppins font-semibold mb-2 text-white">Đăng nhập hệ thống</h3>
+                    <p class="text-aura-textMuted text-sm">Vui lòng nhập thông tin xác thực</p>
+                </div>
+
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="mb-5 relative group">
+                        <label class="block text-xs font-semibold text-aura-textMuted uppercase tracking-wider mb-2 transition-colors group-focus-within:text-aura-primary">
+                            Tài khoản
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-aura-primary">
+                                <i class="fa-regular fa-user text-slate-400 group-focus-within:text-aura-primary transition-colors"></i>
+                            </div>
+                            <input type="text" id="username" required
+                                   class="aura-input w-full bg-aura-card/80 border border-slate-700 text-white rounded-lg pl-11 pr-4 py-3 text-sm transition-all placeholder-slate-500"
+                                   placeholder="VD: manager">
+                        </div>
+                    </div>
+
+                    <div class="mb-6 relative group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-semibold text-aura-textMuted uppercase tracking-wider transition-colors group-focus-within:text-aura-primary">
+                                Mật khẩu
+                            </label>
+                            <button type="button" onclick="switchView('viewForgot')" class="text-xs text-aura-primary hover:text-white transition-colors focus:outline-none">
+                                Quên mật khẩu?
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-lock text-slate-400 group-focus-within:text-aura-primary transition-colors"></i>
+                            </div>
+                            <input type="password" id="password" required
+                                   class="aura-input w-full bg-aura-card/80 border border-slate-700 text-white rounded-lg pl-11 pr-10 py-3 text-sm transition-all placeholder-slate-500"
+                                   placeholder="••••••••">
+
+                            <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white transition-colors focus:outline-none">
+                                <i class="fa-regular fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        <p id="errorMsg" class="text-rose-400 text-xs mt-2 hidden transition-all"><i class="fa-solid fa-circle-exclamation mr-1"></i> Thông tin đăng nhập không chính xác!</p>
+                    </div>
+
+                    <div class="flex items-center mb-8">
+                        <input type="checkbox" id="remember" class="custom-checkbox" checked>
+                        <label for="remember" class="ml-3 text-sm text-slate-300 cursor-pointer select-none hover:text-white transition-colors">
+                            Ghi nhớ phiên đăng nhập
+                        </label>
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                            class="w-full bg-gradient-to-r from-[#2dd4bf] to-[#0ea5e9] hover:from-[#14b8a6] hover:to-[#0284c7] text-aura-dark font-bold rounded-lg py-3.5 px-4 transition-all duration-300 shadow-[0_4px_15px_rgba(45,212,191,0.3)] hover:shadow-[0_8px_25px_rgba(45,212,191,0.5)] hover:-translate-y-1 flex justify-center items-center gap-2">
+                        <span class="btn-text font-poppins uppercase tracking-wider text-sm">Truy cập Dashboard</span>
+                        <i class="fa-solid fa-circle-notch fa-spin spinner text-lg hidden"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div id="viewForgot" class="view-hidden w-full">
+
+                <button type="button" onclick="switchView('viewLogin')" class="text-slate-400 hover:text-white text-sm mb-6 flex items-center gap-2 transition-colors focus:outline-none">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại
+                </button>
+
+                <div class="mb-8">
+                    <h3 class="text-2xl font-poppins font-semibold mb-2 text-white">Khôi phục mật khẩu</h3>
+                    <p class="text-aura-textMuted text-sm leading-relaxed">Nhập địa chỉ Email liên kết với tài khoản. Hệ thống sẽ gửi một liên kết đặt lại mật khẩu an toàn cho bạn.</p>
+                </div>
+
+                <div id="forgotInputArea">
+                    <form onsubmit="handleForgotPassword(event)">
+                        <div class="mb-8 relative group">
+                            <label class="block text-xs font-semibold text-aura-textMuted uppercase tracking-wider mb-2 transition-colors group-focus-within:text-aura-primary">
+                                Địa chỉ Email Nội Bộ
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-aura-primary">
+                                    <i class="fa-regular fa-envelope text-slate-400 group-focus-within:text-aura-primary transition-colors"></i>
+                                </div>
+                                <input type="email" id="resetEmail" required
+                                       class="aura-input w-full bg-aura-card/80 border border-slate-700 text-white rounded-lg pl-11 pr-4 py-3 text-sm transition-all placeholder-slate-500"
+                                       placeholder="VD: manager@auraresort.com">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submitForgotBtn"
+                                class="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-aura-primary hover:to-blue-500 text-white font-bold rounded-lg py-3.5 px-4 transition-all duration-300 shadow-lg hover:-translate-y-1 flex justify-center items-center gap-2">
+                            <span class="btn-text font-poppins uppercase tracking-wider text-sm">Gửi liên kết khôi phục</span>
+                            <i class="fa-solid fa-circle-notch fa-spin spinner text-lg hidden"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div id="forgotSuccessArea" class="hidden text-center py-6">
+                    <div class="w-16 h-16 bg-aura-primary/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-aura-primary/50 shadow-[0_0_20px_rgba(45,212,191,0.3)]">
+                        <i class="fa-solid fa-check text-2xl text-aura-primary"></i>
+                    </div>
+                    <h4 class="text-white font-semibold text-lg mb-2">Đã gửi liên kết!</h4>
+                    <p class="text-aura-textMuted text-sm mb-8">Vui lòng kiểm tra hộp thư đến (hoặc thư mục Spam) của email: <br><strong id="displaySentEmail" class="text-white font-medium"></strong></p>
+
+                    <button type="button" onclick="resetForgotState()" class="w-full border border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white font-medium rounded-lg py-3 transition-all text-sm">
+                        Trở về màn hình đăng nhập
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="mt-8 text-center border-t border-slate-700/50 pt-5 mt-auto">
+                <p class="text-xs text-slate-500">
+                    Aura Resort System v3.0 &bull; 2026<br>
+                    Powered by SmartTech
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Toggle Hiện/Ẩn mật khẩu
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    const eyeIcon = document.querySelector('#eyeIcon');
+
+    togglePassword.addEventListener('click', function () {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        if(type === 'text') {
+            eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    });
+
+    // 2. Chuyển đổi giữa View Đăng nhập và View Quên mật khẩu
+    function switchView(viewId) {
+        const loginView = document.getElementById('viewLogin');
+        const forgotView = document.getElementById('viewForgot');
+
+        // Xóa báo lỗi cũ (nếu có)
+        document.getElementById('errorMsg').classList.add('hidden');
+
+        if (viewId === 'viewForgot') {
+            loginView.classList.replace('view-active', 'view-hidden');
+            forgotView.classList.replace('view-hidden', 'view-active');
+        } else {
+            forgotView.classList.replace('view-active', 'view-hidden');
+            loginView.classList.replace('view-hidden', 'view-active');
+            // Reset lại form quên pass nếu quay về
+            document.getElementById('resetEmail').value = '';
+        }
+    }
+
+    // 3. Logic: Submit form Quên mật khẩu (Giả lập)
+    function handleForgotPassword(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitForgotBtn');
+        const emailInput = document.getElementById('resetEmail').value;
+        const inputArea = document.getElementById('forgotInputArea');
+        const successArea = document.getElementById('forgotSuccessArea');
+        const displayEmail = document.getElementById('displaySentEmail');
+
+        // Bật loading
+        btn.classList.add('btn-loading');
+        btn.disabled = true;
+
+        // Fake API call 1.5s
+        setTimeout(() => {
+            btn.classList.remove('btn-loading');
+            btn.disabled = false;
+
+            // Ẩn form nhập email, hiện thông báo tích xanh
+            inputArea.classList.add('hidden');
+            successArea.classList.remove('hidden');
+            successArea.classList.add('animate-fade-in'); // Thêm hiệu ứng fade in
+            displayEmail.textContent = emailInput;
+
+        }, 1500);
+    }
+
+    // 4. Reset trạng thái Quên pass và quay lại Login
+    function resetForgotState() {
+        document.getElementById('forgotInputArea').classList.remove('hidden');
+        document.getElementById('forgotSuccessArea').classList.add('hidden');
+        switchView('viewLogin');
+    }
+
+    // 5. Logic: Đăng nhập (Giả lập)
+    function handleLogin(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const username = document.getElementById('username').value.trim();
+        const pass = document.getElementById('password').value.trim();
+
+        errorMsg.classList.add('hidden');
+        btn.classList.add('btn-loading');
+        btn.disabled = true;
+
+        setTimeout(() => {
+            btn.classList.remove('btn-loading');
+            btn.disabled = false;
+
+            // TÀI KHOẢN MẪU: Đổi ở đây
+            if(username === 'manager' && pass === 'manager') {
+                document.body.style.transition = 'opacity 0.5s ease';
+                document.body.style.opacity = '0';
+                setTimeout(() => window.location.href = 'index.html', 500);
+            } else {
+                errorMsg.classList.remove('hidden');
+                const passWrapper = password.parentElement;
+                passWrapper.style.transform = 'translateX(-10px)';
+                setTimeout(() => passWrapper.style.transform = 'translateX(10px)', 100);
+                setTimeout(() => passWrapper.style.transform = 'translateX(-10px)', 200);
+                setTimeout(() => passWrapper.style.transform = 'translateX(0)', 300);
+                passWrapper.style.transition = 'transform 0.1s ease-in-out';
+
+                password.value = '';
+                password.focus();
+            }
+        }, 1200);
+    }
+</script>
+</body>
+</html>

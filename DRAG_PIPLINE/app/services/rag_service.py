@@ -1,5 +1,6 @@
 import os
 import json
+import gc
 from openai import OpenAI
 from qdrant_client import QdrantClient
 from sentence_transformers import SentenceTransformer
@@ -14,7 +15,8 @@ llm_client = OpenAI(
 
 qdrant_client = QdrantClient(url="http://qdrant_db:6333")
 # Model embedding chạy local miễn phí
-embed_model = SentenceTransformer('all-MiniLM-L6-v2')
+# Lúc đầu để None để không tốn RAM
+embed_model = None
 COLLECTION_NAME = "resort_management"
 
 # --- HÀM 1: PHÂN TÍCH TRUY VẤN (ANALYZE QUERY) ---
@@ -43,6 +45,12 @@ def analyze_query(query: str):
 # --- HÀM 2: TRUY XUẤT NGỮ CẢNH (RETRIEVE CONTEXT) ---
 def retrieve_context(query: str, filters: dict, limit: int = 3):
     # Tạo vector từ câu hỏi
+    global embed_model  # <--- Thêm dòng này
+    
+    # bat dau tia model tu luc nay
+    if embed_model is None:
+        print("Hệ thống đang tải Model AI...")
+        embed_model = SentenceTransformer('all-MiniLM-L6-v2')
     query_vector = embed_model.encode(query).tolist()
 
     # THAY ĐỔI Ở ĐÂY:
@@ -112,3 +120,10 @@ def get_rag_response(user_message: str):
     
     # SỬA DÒNG NÀY: Trả về cặp đôi (tuple)
     return final_answer, related_rooms
+def unload_model_service():
+    global embed_model
+    if embed_model is not None:
+        del embed_model
+        embed_model = None
+        gc.collect() # Dọn rác RAM
+        print("Đã giải phóng bộ nhớ AI.")

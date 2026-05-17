@@ -181,11 +181,12 @@ body::after {
 
 /* --- MAIN CONTENT --- */
 .main {
-    margin-left: var(--sidebar-width);
-    flex: 1;
+    margin-left:auto;
     display: flex;
     flex-direction: column;
     width: calc(100% - var(--sidebar-width));
+    overflow-x: hidden;
+    display: center;
 }
 
 .topbar {
@@ -298,7 +299,7 @@ body::after {
     margin: 0 auto;
 }
 
-.tab-content { display: none; animation: slideUp 0.5s ease-out forwards; opacity: 0; }
+.tab-content { display: none; animation: slideUp 0.01s ease-out forwards; opacity: 0; }
 .tab-content.active { display: block; }
 
 @keyframes slideUp {
@@ -558,7 +559,7 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
     align-items: center;
     justify-content: center;
 }
-.modal-bg.show { display: flex; animation: fadeIn 0.3s; }
+.modal-bg.show { display: flex;  }
 .modal {
     background: rgba(15, 30, 50, 0.7);
     border-radius: var(--radius-lg);
@@ -715,6 +716,7 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0, 242, 254, 0.5); }
+
 /* ================= AURA CHATBOT STYLE ================= */
 .chatbot-wrapper {
   position: fixed;
@@ -722,7 +724,6 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
   right: 30px;
   z-index: 9999;
   display: flex;
-  flex-direction: column;
   align-items: flex-end;
 }
 
@@ -748,7 +749,10 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
 }
 
 .chatbot-window {
-  width: 500px;
+  position: absolute;
+  bottom: 75px; /* cao hơn nút trigger */
+  right: 0;
+  width: 380px;
   height: 500px;
   background: rgba(10, 25, 47, 0.95);
   backdrop-filter: blur(15px);
@@ -757,16 +761,15 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
   box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0, 242, 254, 0.15);
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
   overflow: hidden;
-  
-  /* Hiệu ứng ẩn hiện */
+
   opacity: 0;
   transform: scale(0.8);
   transform-origin: bottom right;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+
 
 .chatbot-window.active {
   opacity: 1;
@@ -860,3 +863,110 @@ border-radius: 50%;
   transition: 0.2s;
 }
 .chat-send-btn:hover { transform: scale(1.1); }
+/* --- PROFILE DROPDOWN STYLE --- */
+.admin-profile {
+    position: relative; /* Để menu thả xuống căn theo nút này */
+    cursor: pointer;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    right: 0;
+    width: 260px;
+    background: rgba(10, 25, 47, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+    padding: 15px 0;
+    z-index: 1001;
+
+    /* Hiệu ứng ẩn hiện */
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    pointer-events: none;
+    transition: var(--transition);
+}
+
+.profile-dropdown.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.dropdown-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-avatar.big {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 10px 0;
+}
+
+.dropdown-item {
+    padding: 12px 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.dropdown-item i {
+    width: 20px;
+    font-size: 16px;
+    color: var(--accent-cyan);
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.dropdown-item.logout {
+    color: var(--accent-rose);
+}
+
+.dropdown-item.logout:hover {
+    background: rgba(251, 113, 133, 0.1);
+}
+/* Thêm vào cuối style.css */
+.btn-payment {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 242, 254, 0.5);
+    background: rgba(0, 242, 254, 0.08);
+    color: #00f2fe;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.btn-payment:hover {
+    background: rgba(0, 242, 254, 0.18);
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+    border-color: rgba(0, 242, 254, 0.8);
+}
+
+.btn-payment:active {
+    transform: scale(0.97);
+}

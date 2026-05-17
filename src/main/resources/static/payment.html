@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán | AURA LUXURY RESORT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="payment.css">
+</head>
+<body class="payment-page">
+    <div class="layout-wrapper">
+        
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2><i class="fas fa-crown"></i> AURA RESORT</h2>
+                <p>Smart Management</p>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item" onclick="location.href='index.html'"><i class="fas fa-compass"></i> TỔNG QUAN</div>
+                <div class="nav-item active"><i class="fas fa-credit-card"></i> THANH TOÁN</div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-title">
+                    <h1>Thủ tục Thanh toán</h1>
+                    <p>Hệ thống xử lý giao dịch cao cấp</p>
+                </div>
+                <div class="user-profile">
+                    <span id="current-time"></span>
+                </div>
+            </header>
+
+            <div class="payment-container">
+                <div class="payment-card bill-details animate-fade-in">
+                    <h3 class="card-title"><i class="fas fa-file-invoice-dollar"></i> Chi tiết hóa đơn</h3>
+                    <div class="info-grid">
+                        <div class="info-item"><span>Khách hàng:</span> <strong id="p-customer">-</strong></div>
+                        <div class="info-item"><span>Mã đặt phòng:</span> <strong id="p-id" class="text-cyan">-</strong></div>
+                        <div class="info-item"><span>Hạng phòng:</span> <strong id="p-room-type">-</strong></div>
+                        <div class="info-item"><span>Số ngày lưu trú:</span> <strong id="p-days">-</strong></div>
+                    </div>
+                    <div class="services-list">
+                        <h4>Dịch vụ bổ sung</h4>
+                        <ul id="p-services"></ul>
+                    </div>
+                    <div class="price-summary">
+                        <div class="price-row"><span>Tiền phòng:</span> <span id="p-room-price">0đ</span></div>
+                        <div class="price-row"><span>Dịch vụ:</span> <span id="p-service-total">0đ</span></div>
+                        <div class="price-row"><span>VAT (10%):</span> <span id="p-vat">0đ</span></div>
+                        <hr>
+                        <div class="price-row total"><span>TỔNG THANH TOÁN:</span> <span id="p-total" class="text-gold">0đ</span></div>
+                    </div>
+                </div>
+
+                <div class="payment-card qr-section animate-fade-in-delay">
+                    <h3 class="card-title"><i class="fas fa-qrcode"></i> Thanh toán QR</h3>
+                    <div class="qr-wrapper">
+                        <div class="qr-glow"></div>
+                        <img id="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=AuraResortPayment" alt="QR Code">
+                    </div>
+                    <div class="bank-info">
+                        <p><i class="fas fa-university"></i> Ngân hàng: <strong>VIETCOMBANK (Digital)</strong></p>
+                        <p><i class="fas fa-user-check"></i> Chủ TK: <strong>AURA LUXURY RESORT JSC</strong></p>
+                        <p><i class="fas fa-comment-dots"></i> Nội dung: <strong id="p-msg" class="text-cyan">TT-BOOKING-001</strong></p>
+                    </div>
+                    <button class="btn-pay" onclick="processPayment()">
+                        <span class="btn-text">XÁC NHẬN ĐÃ THANH TOÁN</span>
+                        <div class="btn-loader"></div>
+                    </button>
+                    <p class="secure-text"><i class="fas fa-shield-alt"></i> Giao dịch được mã hóa SSL 256-bit</p>
+                </div>
+            </div> </main> </div> <div id="toast-container"></div>
+    <script src="script.js"></script>
+    <script src="payment.js"></script>
+</body>
+</html>

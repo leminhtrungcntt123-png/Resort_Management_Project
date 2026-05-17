@@ -18,6 +18,12 @@ services:
     restart: unless-stopped
     networks:
       - backend
+    deploy:
+      resources:
+        reservations:
+          memory: "512M"  # Lúc nào cũng cho ít nhất 512MB
+        limits:
+          memory: "1G"    # Tuyệt đối không cho vượt quá 1GB
   mysql_db:
     image: mysql:8.0
     container_name: resort_management

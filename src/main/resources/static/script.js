@@ -51,7 +51,8 @@ const I18N = {
             occupancy: 'Hiện trạng công suất',
             noRecentBookings: 'Không có đặt phòng gần đây',
             noRoomData: 'Hệ thống phòng chưa được khởi tạo',
-            units: 'phòng'
+            units: 'phòng',
+            d1: 'Tổng doanh thu đã thanh toán'
         },
         reports: {
             title: 'BÁO CÁO THỐNG KÊ DOANH SỐ RESORT',
@@ -214,7 +215,7 @@ const I18N = {
         },
         tab: {
             dashboard: 'RESORT OVERVIEW',
-            reports: 'REVENUE REPORTS',
+            reports: 'REPORTS',
             roomtypes: 'ROOM TYPE SYSTEM',
             rooms: 'ROOM MAP & STATUS',
             customers: 'VIP CUSTOMER PROFILES',
@@ -232,7 +233,8 @@ const I18N = {
             occupancy: 'Occupancy status',
             noRecentBookings: 'No recent bookings',
             noRoomData: 'No room data initialized',
-            units: 'units'
+            units: 'units',
+            d1: 'Total paid revenue'
         },
         reports: {
             title: 'RESORT REVENUE ANALYTICS REPORT',
@@ -409,18 +411,16 @@ function statusTag(s) {
 }
 
 function toast(msg, type = 'success') {
-    const t = document.getElementById('toast');
+    const toastEl = document.getElementById('toast');
     const m = document.getElementById('toast-msg');
-    const icon = t.querySelector('i');
+    const icon = toastEl.querySelector('i');
 
     m.textContent = msg;
-    t.className = `toast show ${type}`;
-
+    toastEl.className = `toast show ${type}`;
     if(type === 'success') icon.className = 'fas fa-check-circle';
     else if(type === 'error') icon.className = 'fas fa-exclamation-circle';
     else icon.className = 'fas fa-info-circle';
-
-    setTimeout(() => t.classList.remove('show'), 4000);
+    setTimeout(() => toastEl.classList.remove('show'), 4000);
 }
 
 async function api(method, url, body) {
@@ -486,7 +486,6 @@ async function safeGet(url, fallback) {
         return { ok: false, data: fallback };
     }
 }
-
 async function loadDashboard() {
     try {
         const [roomsRes, bookingsRes, customersRes] = await Promise.all([
@@ -494,6 +493,7 @@ async function loadDashboard() {
             safeGet(`${API}/bookings`, []),
             safeGet(`${API}/customers`, []),
         ]);
+
         const rooms = roomsRes.data;
         const bookings = bookingsRes.data;
         const customers = customersRes.data;
@@ -546,7 +546,6 @@ async function loadDashboard() {
             </div>
         `).join('') || `<p class="empty-state">${t('dashboard.noRoomData')}</p>`;
         loadRevenueChart();
-
     } catch(e) {
         console.error(e);
         const statusIndicator = document.getElementById('serverStatus');
@@ -590,6 +589,70 @@ async function addRoomType() {
     loadRoomTypes();
 }
 
+async function editRoomType(id) {
+    const rt = allRoomTypes.find(r => r.id === id);
+    if (!rt) return;
+
+    document.getElementById('modal-title').textContent = currentLang === 'en' ? 'Edit Room Type' : 'Chỉnh sửa hạng phòng';
+    document.getElementById('modal-body').innerHTML = `
+        <div class="form-grid">
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Room Type Name' : 'Tên hạng phòng'}</label>
+                <input id="edit-rt-name" value="${rt.typeName}">
+            </div>
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Price per Night (VND)' : 'Giá mỗi đêm (VNĐ)'}</label>
+                <input id="edit-rt-price" type="number" value="${rt.pricePerNight}">
+            </div>
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Max Capacity' : 'Sức chứa tối đa'}</label>
+                <input id="edit-rt-capacity" type="number" value="${rt.capacity}">
+            </div>
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Description' : 'Tiện ích nổi bật'}</label>
+                <input id="edit-rt-desc" value="${rt.description || ''}">
+            </div>
+        </div>`;
+
+    document.getElementById('modal-save-btn').onclick = async () => {
+        const name     = document.getElementById('edit-rt-name').value;
+        const price    = document.getElementById('edit-rt-price').value;
+        const capacity = document.getElementById('edit-rt-capacity').value;
+        const desc     = document.getElementById('edit-rt-desc').value;
+
+        if (!name || !price || !capacity)
+            return toast(currentLang === 'en' ? 'Please fill all required fields' : 'Vui lòng nhập đủ thông tin', 'error');
+
+        await api('PUT', `/room-types/${id}`, {
+            typeName: name,
+            pricePerNight: price,
+            capacity: capacity,
+            description: desc
+        });
+
+        toast(currentLang === 'en' ? 'Room type updated' : 'Đã cập nhật hạng phòng', 'success');
+        closeModal();
+        loadRoomTypes();
+    };
+
+    document.getElementById('editModal').classList.add('show');
+}
+
+async function deleteRoomType(id) {
+    const rt = allRoomTypes.find(r => r.id === id);
+    const name = rt ? rt.typeName : `#${id}`;
+    const confirm = window.confirm(
+        currentLang === 'en'
+            ? `Delete room type "${name}"? This cannot be undone.`
+            : `Xác nhận xóa hạng phòng "${name}"? Thao tác không thể hoàn tác.`
+    );
+    if (!confirm) return;
+
+    await api('DELETE', `/room-types/${id}`);
+    toast(currentLang === 'en' ? 'Room type deleted' : 'Đã xóa hạng phòng', 'success');
+    loadRoomTypes();
+}
+
 // --- PHÒNG ---
 async function loadRooms() {
     const data = await fetch(`${API}/rooms`).then(r=>r.json()).catch(()=>[]);
@@ -608,9 +671,76 @@ function renderRooms(data) {
             <td>${fmt(r.roomType?.pricePerNight)}</td>
             <td>${statusTag(r.status)}</td>
             <td>
-                <button class="btn btn-outline btn-sm" onclick="editRoom(${r.id})"><i class="fas fa-sliders-h"></i> ${t('rooms.adjust')}</button>
+                <div style="display:flex; gap:8px">
+                    <button class="btn btn-outline btn-sm" onclick="editRoom(${r.id})"><i class="fas fa-sliders-h"></i> ${t('rooms.adjust')}</button>
+                    <button class="btn btn-outline btn-sm" style="color:var(--accent-rose); border-color:rgba(251,113,133,0.3)" onclick="deleteRoom(${r.id})"><i class="fas fa-trash"></i></button>
+                </div>
             </td>
         </tr>`).join('') || `<tr><td colspan="6" class="empty-state">${t('rooms.noData')}</td></tr>`;
+}
+
+async function editRoom(id) {
+    const r = allRooms.find(x => x.id === id);
+    if (!r) return;
+
+    document.getElementById('modal-title').textContent = currentLang === 'en' ? 'Edit Room' : 'Chỉnh sửa phòng';
+    document.getElementById('modal-body').innerHTML = `
+        <div class="form-grid">
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Room Number' : 'Mã định danh'}</label>
+                <input id="edit-r-number" value="${r.roomNumber}">
+            </div>
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Floor' : 'Khu vực / Tầng'}</label>
+                <input id="edit-r-floor" type="number" value="${r.floorNumber}">
+            </div>
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Room Type' : 'Chuẩn hạng phòng'}</label>
+                <select id="edit-r-type">
+                    ${allRoomTypes.map(rt => `<option value="${rt.id}" ${rt.id === r.roomType?.id ? 'selected' : ''}>${rt.typeName}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Status' : 'Trạng thái'}</label>
+                <select id="edit-r-status">
+                    <option value="Trống"    ${r.status === 'Trống'    ? 'selected' : ''}>${currentLang === 'en' ? 'Available' : 'Trống'}</option>
+                    <option value="Đang ở"   ${r.status === 'Đang ở'   ? 'selected' : ''}>${currentLang === 'en' ? 'Occupied'  : 'Đang ở'}</option>
+                    <option value="Bảo trì"  ${r.status === 'Bảo trì'  ? 'selected' : ''}>${currentLang === 'en' ? 'Maintenance' : 'Bảo trì'}</option>
+                </select>
+            </div>
+        </div>`;
+
+    document.getElementById('modal-save-btn').onclick = async () => {
+        const roomNumber  = document.getElementById('edit-r-number').value;
+        const floorNumber = document.getElementById('edit-r-floor').value;
+        const roomTypeId  = document.getElementById('edit-r-type').value;
+        const status      = document.getElementById('edit-r-status').value;
+
+        if (!roomNumber || !floorNumber)
+            return toast(currentLang === 'en' ? 'Please fill all required fields' : 'Vui lòng nhập đủ thông tin', 'error');
+
+       await api('PUT', `/rooms/${id}`, {
+            roomNumber,
+            floorNumber: parseInt(floorNumber),
+            status,
+            roomTypeId: parseInt(roomTypeId)
+        });
+
+        toast(currentLang === 'en' ? 'Room updated' : 'Đã cập nhật phòng', 'success');
+        closeModal();
+        loadRooms();
+    };
+
+    document.getElementById('editModal').classList.add('show');
+}
+
+async function deleteRoom(id) {
+    const r = allRooms.find(x => x.id === id);
+    const name = r ? r.roomNumber : `#${id}`;
+    if (!window.confirm(currentLang === 'en' ? `Delete room "${name}"?` : `Xác nhận xóa phòng "${name}"?`)) return;
+    await api('DELETE', `/rooms/${id}`);
+    toast(currentLang === 'en' ? 'Room deleted' : 'Đã xóa phòng', 'success');
+    loadRooms();
 }
 
 function filterRooms() {
@@ -634,6 +764,54 @@ async function loadCustomers() {
     renderCustomers(data);
 }
 
+async function editCustomer(id) {
+    const c = allCustomers.find(x => x.id === id);
+    if (!c) return;
+
+    document.getElementById('modal-title').textContent = currentLang === 'en' ? 'Edit Customer Profile' : 'Chỉnh sửa hồ sơ khách hàng';
+    document.getElementById('modal-body').innerHTML = `
+        <div class="form-grid">
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Full Name' : 'Họ và Tên'}</label>
+                <input id="edit-c-name" value="${c.fullName}">
+            </div>
+            <div class="form-group">
+                <label>${currentLang === 'en' ? 'Phone' : 'Hotline cá nhân'}</label>
+                <input id="edit-c-phone" value="${c.phone || ''}">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input id="edit-c-email" type="email" value="${c.email || ''}">
+            </div>
+        </div>`;
+
+    document.getElementById('modal-save-btn').onclick = async () => {
+        const fullName = document.getElementById('edit-c-name').value;
+        const phone    = document.getElementById('edit-c-phone').value;
+        const email    = document.getElementById('edit-c-email').value;
+
+        if (!fullName)
+            return toast(currentLang === 'en' ? 'Please enter customer name' : 'Vui lòng nhập tên khách hàng', 'error');
+
+        await api('PUT', `/customers/${id}`, { fullName, phone, email });
+
+        toast(currentLang === 'en' ? 'Customer profile updated' : 'Đã cập nhật hồ sơ khách hàng', 'success');
+        closeModal();
+        loadCustomers();
+    };
+
+    document.getElementById('editModal').classList.add('show');
+}
+
+async function deleteCustomer(id) {
+    const c = allCustomers.find(x => x.id === id);
+    const name = c ? c.fullName : `#${id}`;
+    if (!window.confirm(currentLang === 'en' ? `Delete customer "${name}"?` : `Xác nhận xóa hồ sơ "${name}"?`)) return;
+    await api('DELETE', `/customers/${id}`);
+    toast(currentLang === 'en' ? 'Customer deleted' : 'Đã xóa hồ sơ khách hàng', 'success');
+    loadCustomers();
+}
+
 function renderCustomers(data) {
     document.getElementById('cust-tbody').innerHTML = data.map(c => `
         <tr>
@@ -644,6 +822,7 @@ function renderCustomers(data) {
             <td>${new Date().toLocaleDateString(currentLang === 'en' ? 'en-US' : 'vi-VN')}</td>
             <td>
                 <button class="btn btn-outline btn-sm" onclick="editCustomer(${c.id})"><i class="fas fa-user-edit"></i> ${t('customers.profile')}</button>
+                <button class="btn btn-outline btn-sm" style="color:var(--accent-rose); border-color:rgba(251,113,133,0.3)" onclick="deleteCustomer(${c.id})"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`).join('');
 }
@@ -673,14 +852,40 @@ async function loadBookings() {
             <td><i class="fas fa-sign-out-alt" style="color:var(--accent-rose); margin-right:5px"></i> ${fmtDate(b.checkOutDate)}</td>
             <td>${statusTag(b.status)}</td>
             <td>
-                <div style="display:flex; gap:8px">
+                <div style="display:flex; gap:8px; align-items:center">
                 ${b.status === 'Chờ' ? `<button class="btn btn-success btn-sm" onclick="updateBStatus(${b.id}, 'Đã xác nhận')"><i class="fas fa-check"></i> ${t('bookings.approve')}</button>` : ''}
+                <button class="btn-payment" onclick="goToPayment(${b.id})"><i class="fas fa-credit-card"></i> Thanh toán</button>
                 <button class="btn btn-outline btn-sm" style="color:var(--accent-rose); border-color:rgba(251, 113, 133, 0.3)" onclick="deleteBooking(${b.id})"><i class="fas fa-times"></i></button>
                 </div>
             </td>
         </tr>`).join('');
 }
+function goToPayment(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
 
+    const checkIn  = new Date(b.checkInDate);
+    const checkOut = new Date(b.checkOutDate);
+    const days = Math.max(1, Math.ceil((checkOut - checkIn) / 86400000));
+
+    const roomPrice = b.bookingRooms?.[0]?.priceAtBooking
+                   ?? b.bookingRooms?.[0]?.room?.roomType?.pricePerNight
+                   ?? 0;
+
+    sessionStorage.setItem('currentPayment', JSON.stringify({
+        bookingId:    b.id,
+        customerName: b.customer?.fullName ?? '-',
+        roomType:     b.bookingRooms?.[0]?.room?.roomType?.typeName ?? '-',
+        roomPrice,
+        days,
+        services: (b.bookingServices ?? []).map(s => ({
+            name:  s.service?.serviceName ?? 'Dịch vụ',
+            price: s.priceAtBooking ?? s.service?.price ?? 0
+        }))
+    }));
+
+    window.location.href = 'payment.html';
+}
 async function addBooking() {
     const payload = {
         customerId: Number(document.getElementById('b-customer').value),
@@ -747,11 +952,17 @@ async function loadRevenueChart() {
 
     const totalEl = document.getElementById('revenue-total');
     const countEl = document.getElementById('revenue-count');
+    const labelEl = document.getElementById('revenue-kpi-label');
     if (totalEl) totalEl.textContent = fmt(totalRevenue);
     if (countEl) {
         countEl.textContent = currentLang === 'en'
             ? `${labels.length} period(s) of data`
             : `${labels.length} kỳ dữ liệu`;
+    }
+    if (labelEl) {
+        labelEl.textContent = currentLang === 'en' 
+            ? ` Total paid revenue` 
+            : ` Tổng doanh thu đã thanh toán`;
     }
 
     const ctx = document.getElementById('revenueChart');
@@ -1144,7 +1355,6 @@ function setLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('resort_lang', lang);
     applyStaticTranslations();
-
     // Lấy đúng tên tab đang active
     const activeTabName = document.querySelector('.tab-content.active')?.id?.replace('tab-', '');
 
@@ -1176,6 +1386,7 @@ window.onload = function () {
     applyStaticTranslations();
     loadDashboard();
 };
+
 // ================= CHATBOT LOGIC =================
 const FASTAPI_URL = 'http://localhost:8081'; // Đổi port nếu backend Python chạy port khác
 
@@ -1185,11 +1396,18 @@ function toggleChat() {
   
   window.classList.toggle('active');
   
-  // Đổi icon từ tin nhắn sang dấu X
   if(window.classList.contains('active')) {
     triggerIcon.className = 'fas fa-times';
   } else {
     triggerIcon.className = 'fas fa-comment-dots';
+
+    // --- THÊM ĐOẠN NÀY ĐỂ GIẢI PHÓNG RAM ---
+    console.log("Đang đóng chatbot, gửi lệnh giải phóng RAM...");
+    fetch(`${FASTAPI_URL}/api/unload`, { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }).catch(err => console.log("Server AI đã đóng hoặc đang nghỉ."));
+    // ---------------------------------------
   }
 }
 
@@ -1245,4 +1463,35 @@ async function sendChatMessage() {
   }
   
   chatBody.scrollTop = chatBody.scrollHeight;
+}
+// --- PROFILE MENU LOGIC ---
+
+// 1. Hàm bật/tắt menu thông tin
+function toggleProfileMenu() {
+    const dropdown = document.getElementById('profileDropdown');
+    dropdown.classList.toggle('active');
+}
+
+// 2. Tự động đóng menu khi click ra ngoài vùng avatar
+window.addEventListener('click', function(e) {
+    const trigger = document.getElementById('profileTrigger');
+    const dropdown = document.getElementById('profileDropdown');
+
+    if (trigger && !trigger.contains(e.target)) {
+        dropdown.classList.remove('active');
+    }
+});
+
+// 3. Hàm xử lý Đăng xuất
+function handleLogout() {
+    // Xóa các thông tin lưu trữ nếu cần (ví dụ: token hoặc ngôn ngữ)
+    // localStorage.removeItem('resort_token');
+
+    // Hiển thị thông báo trước khi thoát
+    toast(currentLang === 'en' ? 'Logging out...' : 'Đang đăng xuất hệ thống...');
+
+    setTimeout(() => {
+        // Chuyển hướng về trang login sau khi đã tách code
+        window.location.href = 'login.html';
+    }, 800);
 }
