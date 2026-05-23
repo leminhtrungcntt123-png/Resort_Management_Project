@@ -2,6 +2,8 @@ package resort_management.dto.response;
 
 import lombok.*;
 import resort_management.entity.Room;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,7 +26,7 @@ public class RoomResponse {
         dto.setId(room.getId());
         dto.setRoomNumber(room.getRoomNumber());
         dto.setFloorNumber(room.getFloorNumber());
-        dto.setStatus(room.getStatus());
+        dto.setStatus(room.getStatus() != null ? room.getStatus().name() : null);
         dto.setCreatedAt(room.getCreatedAt());
         dto.setUpdatedAt(room.getUpdatedAt());
         if (room.getRoomType() != null) {
@@ -43,7 +45,7 @@ public class RoomResponse {
     public static class RoomTypeInfo {
         private Long id;
         private String typeName;
-        private Double pricePerNight;
+        private BigDecimal pricePerNight;
         private Integer capacity;
     }
 }

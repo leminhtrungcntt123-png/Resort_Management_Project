@@ -2,6 +2,8 @@ package resort_management.dto.response;
 
 import lombok.*;
 import resort_management.entity.Service;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -11,7 +13,7 @@ public class ServiceResponse {
 
     private Long id;
     private String serviceName;
-    private Double price;
+    private BigDecimal price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

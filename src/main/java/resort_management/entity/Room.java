@@ -3,13 +3,15 @@ package resort_management.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import resort_management.enums.RoomStatus;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 @Entity
 @Table(name = "rooms")
 @Data
-@EqualsAndHashCode(callSuper = true)   // FIX: kế thừa BaseEntity
+@EqualsAndHashCode(callSuper = true) // FIX: kế thừa BaseEntity
 @NoArgsConstructor
 @AllArgsConstructor
 public class Room extends BaseEntity { // FIX: thêm kế thừa
@@ -22,8 +24,9 @@ public class Room extends BaseEntity { // FIX: thêm kế thừa
     private Integer floorNumber;
 
     // Trống | Đang ở | Bảo trì
-    @Column(length = 50, nullable = false)
-    private String status = "Trống";
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private RoomStatus status = RoomStatus.AVAILABLE;
 
     @ManyToOne
     @JoinColumn(name = "room_type_id", nullable = false)

@@ -2,6 +2,7 @@ package resort_management.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
@@ -15,7 +16,7 @@ public class RoomTypeRequest {
 
     @NotNull(message = "Giá không được để trống")
     @Positive(message = "Giá phải lớn hơn 0")
-    private Double pricePerNight;
+    private BigDecimal pricePerNight;
 
     @NotNull(message = "Sức chứa không được để trống")
     @Positive(message = "Sức chứa phải lớn hơn 0")

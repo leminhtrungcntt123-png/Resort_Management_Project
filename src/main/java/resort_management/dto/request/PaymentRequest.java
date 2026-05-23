@@ -1,5 +1,7 @@
 package resort_management.dto.request;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -10,7 +12,7 @@ public class PaymentRequest {
 
     @NotNull(message = "Số tiền không được để trống")
     @PositiveOrZero(message = "Số tiền không được âm")
-    private Double amount;
+    private BigDecimal amount;
 
     // CASH | CARD
     @NotBlank(message = "Phương thức thanh toán không được để trống")

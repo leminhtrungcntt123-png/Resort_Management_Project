@@ -3,6 +3,7 @@ package resort_management.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "services")
@@ -18,6 +19,6 @@ public class Service extends BaseEntity { // FIX: kế thừa BaseEntity
 
     @NotNull(message = "Giá không được để trống")
     @Positive(message = "Giá phải lớn hơn 0")
-    @Column(nullable = false)
-    private Double price;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal price;
 }

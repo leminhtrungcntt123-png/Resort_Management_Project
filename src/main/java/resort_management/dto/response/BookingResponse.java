@@ -2,6 +2,7 @@ package resort_management.dto.response;
 
 import lombok.*;
 import resort_management.entity.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -18,17 +19,9 @@ public class BookingResponse {
     private LocalDate checkOutDate;
     private String status;
     private LocalDateTime createdAt;
-
-    // Thông tin khách hàng tóm tắt
     private CustomerInfo customer;
-
-    // Danh sách phòng đã đặt
     private List<BookingRoomInfo> rooms;
-
-    // Danh sách dịch vụ kèm theo
     private List<BookingServiceInfo> services;
-
-    // Thông tin thanh toán
     private PaymentInfo payment;
 
     public static BookingResponse from(Booking booking) {
@@ -36,58 +29,63 @@ public class BookingResponse {
         dto.setId(booking.getId());
         dto.setCheckInDate(booking.getCheckInDate());
         dto.setCheckOutDate(booking.getCheckOutDate());
-        dto.setStatus(booking.getStatus());
+        // Enum → String để frontend dễ đọc
+        dto.setStatus(booking.getStatus() != null ? booking.getStatus().name() : null);
         dto.setCreatedAt(booking.getCreatedAt());
 
-        // Map customer
         if (booking.getCustomer() != null) {
             Customer c = booking.getCustomer();
-            dto.setCustomer(new CustomerInfo(c.getId(), c.getFullName(), c.getPhone(), c.getEmail()));
+            dto.setCustomer(new CustomerInfo(
+                    c.getId(), c.getFullName(), c.getPhone(), c.getEmail()));
         }
 
-        // Map rooms
         if (booking.getBookingRooms() != null) {
-            dto.setRooms(booking.getBookingRooms().stream().map(br ->
-                    new BookingRoomInfo(
-                            br.getRoom() != null ? br.getRoom().getId() : null,
-                            br.getRoom() != null ? br.getRoom().getRoomNumber() : null,
-                            br.getRoom() != null ? br.getRoom().getFloorNumber() : null,
-                            (br.getRoom() != null && br.getRoom().getRoomType() != null) ? br.getRoom().getRoomType().getTypeName() : null,
-                            br.getPrice()
-                    )
-            ).collect(Collectors.toList()));
+            dto.setRooms(booking.getBookingRooms().stream().map(br -> new BookingRoomInfo(
+                    br.getRoom() != null ? br.getRoom().getId() : null,
+                    br.getRoom() != null ? br.getRoom().getRoomNumber() : null,
+                    br.getRoom() != null ? br.getRoom().getFloorNumber() : null,
+                    (br.getRoom() != null && br.getRoom().getRoomType() != null)
+                            ? br.getRoom().getRoomType().getTypeName()
+                            : null,
+                    br.getPrice() // BigDecimal
+            )).collect(Collectors.toList()));
         } else {
             dto.setRooms(Collections.emptyList());
         }
 
-        // Map services
         if (booking.getBookingServices() != null) {
-            dto.setServices(booking.getBookingServices().stream().map(bs ->
-                    new BookingServiceInfo(
-                            bs.getService() != null ? bs.getService().getId() : null,
-                            bs.getService() != null ? bs.getService().getServiceName() : null,
-                            bs.getService() != null ? bs.getService().getPrice() : 0.0,
-                            bs.getQuantity(),
-                            (bs.getService() != null ? bs.getService().getPrice() : 0.0) * bs.getQuantity()
-                    )
-            ).collect(Collectors.toList()));
+            dto.setServices(booking.getBookingServices().stream().map(bs -> {
+                BigDecimal unitPrice = bs.getService() != null
+                        ? bs.getService().getPrice()
+                        : BigDecimal.ZERO;
+                BigDecimal subtotal = unitPrice.multiply(
+                        BigDecimal.valueOf(bs.getQuantity()));
+                return new BookingServiceInfo(
+                        bs.getService() != null ? bs.getService().getId() : null,
+                        bs.getService() != null ? bs.getService().getServiceName() : null,
+                        unitPrice,
+                        bs.getQuantity(),
+                        subtotal);
+            }).collect(Collectors.toList()));
         } else {
             dto.setServices(Collections.emptyList());
         }
 
-        // Map payment
         if (booking.getPayment() != null) {
             Payment p = booking.getPayment();
             dto.setPayment(new PaymentInfo(
-                    p.getId(), p.getAmount(), p.getPaymentMethod(),
-                    p.getPaymentStatus(), p.getPaymentDate()
-            ));
+                    p.getId(),
+                    p.getAmount(), // BigDecimal
+                    p.getPaymentMethod() != null ? p.getPaymentMethod().name() : null,
+                    p.getPaymentStatus() != null ? p.getPaymentStatus().name() : null,
+                    p.getPaymentDate()));
         }
 
         return dto;
     }
 
-    @Data @AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class CustomerInfo {
         private Long id;
         private String fullName;
@@ -95,28 +93,31 @@ public class BookingResponse {
         private String email;
     }
 
-    @Data @AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class BookingRoomInfo {
         private Long roomId;
         private String roomNumber;
         private Integer floorNumber;
         private String roomTypeName;
-        private Double priceSnapshot; // Giá tại thời điểm đặt
+        private BigDecimal priceSnapshot; // ← BigDecimal
     }
 
-    @Data @AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class BookingServiceInfo {
         private Long serviceId;
         private String serviceName;
-        private Double unitPrice;
+        private BigDecimal unitPrice; // ← BigDecimal
         private Integer quantity;
-        private Double subtotal;
+        private BigDecimal subtotal; // ← BigDecimal
     }
 
-    @Data @AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class PaymentInfo {
         private Long id;
-        private Double amount;
+        private BigDecimal amount; // ← BigDecimal
         private String paymentMethod;
         private String paymentStatus;
         private LocalDateTime paymentDate;

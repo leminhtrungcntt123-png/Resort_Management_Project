@@ -1,5 +1,7 @@
 package resort_management.dto.response;
 
+import java.math.BigDecimal;
+
 import lombok.Builder;
 import lombok.Getter;
 import resort_management.entity.Employee;
@@ -12,7 +14,7 @@ public class EmployeeResponse {
     private String phone;
     private String email;
     private String position;
-    private Double salary;
+    private BigDecimal salary;
 
     public static EmployeeResponse from(Employee e) {
         return EmployeeResponse.builder()
