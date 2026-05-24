@@ -11,6 +11,8 @@ import resort_management.enums.RoomStatus;
 import resort_management.repository.RoomRepository;
 import resort_management.repository.RoomTypeRepository;
 import resort_management.service.RoomService;
+import resort_management.exception.ResourceNotFoundException;
+import resort_management.exception.BusinessException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -129,9 +131,9 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     public void delete(Long id) {
         Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng ID: " + id));
         if (RoomStatus.OCCUPIED == room.getStatus()) // ← so sánh Enum
-            throw new RuntimeException("Phòng này đang có khách, không được xóa!");
+            throw new BusinessException("Phòng này đang có khách, không được xóa!");
         roomRepository.deleteById(id);
     }
 }
