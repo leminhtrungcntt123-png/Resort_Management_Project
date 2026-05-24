@@ -1,5 +1,7 @@
 package resort_management.dto.request;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,5 +21,5 @@ public class EmployeeRequest {
     private String position;
 
     @PositiveOrZero(message = "Lương không được âm")
-    private Double salary;
+    private BigDecimal salary;
 }

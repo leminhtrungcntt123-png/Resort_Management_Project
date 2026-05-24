@@ -2,6 +2,8 @@ package resort_management.dto.response;
 
 import lombok.*;
 import resort_management.entity.Payment;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -11,7 +13,7 @@ public class PaymentResponse {
 
     private Long id;
     private Long bookingId;
-    private Double amount;
+    private BigDecimal amount;
     private String paymentMethod;
     private String paymentStatus;
     private LocalDateTime paymentDate;
@@ -22,8 +24,8 @@ public class PaymentResponse {
         dto.setId(payment.getId());
         dto.setBookingId(payment.getBooking() != null ? payment.getBooking().getId() : null);
         dto.setAmount(payment.getAmount());
-        dto.setPaymentMethod(payment.getPaymentMethod());
-        dto.setPaymentStatus(payment.getPaymentStatus());
+        dto.setPaymentStatus(payment.getPaymentStatus() != null ? payment.getPaymentStatus().name() : null);
+        dto.setPaymentMethod(payment.getPaymentMethod() != null ? payment.getPaymentMethod().name() : null);
         dto.setPaymentDate(payment.getPaymentDate());
         dto.setCreatedAt(payment.getCreatedAt());
         return dto;

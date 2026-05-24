@@ -1,16 +1,17 @@
 package resort_management.controller;
 
-import resort_management.dto.request.BookingRequest;
-import resort_management.dto.response.BookingResponse;
-import resort_management.entity.*;
-import resort_management.repository.*;
-import resort_management.service.BookingManagementService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import resort_management.dto.request.BookingRequest;
+import resort_management.dto.response.BookingResponse;
+import resort_management.entity.*;
+import resort_management.enums.BookingStatus;
+import resort_management.repository.*;
+import resort_management.service.BookingManagementService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +19,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/api/bookings")
+@RequiredArgsConstructor
 public class BookingController {
 
-    @Autowired private BookingRepository bookingRepository;
-    @Autowired private CustomerRepository customerRepository;
-    @Autowired private RoomRepository roomRepository;
-    @Autowired private ServiceRepository serviceRepository;
-    @Autowired private BookingManagementService bookingService;
+    // ← Chỉ giữ Repository cần thiết cho việc mapping request
+    // Booking cần map Room, Customer, Service trước khi gọi Service
+    private final BookingRepository bookingRepository;
+    private final CustomerRepository customerRepository;
+    private final RoomRepository roomRepository;
+    private final ServiceRepository serviceRepository;
+    private final BookingManagementService bookingService;
 
     @GetMapping
     @Transactional(readOnly = true)
@@ -48,11 +51,20 @@ public class BookingController {
 
     @GetMapping("/status/{status}")
     @Transactional(readOnly = true)
-    public List<BookingResponse> getByStatus(@PathVariable String status) {
-        return bookingRepository.findByStatus(status)
-                .stream()
-                .map(BookingResponse::from)
-                .collect(Collectors.toList());
+    public ResponseEntity<?> getByStatus(@PathVariable String status) {
+        try {
+            BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
+            List<BookingResponse> result = bookingRepository.findByStatus(bookingStatus)
+                    .stream()
+                    .map(BookingResponse::from)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Trạng thái không hợp lệ: " + status
+                            + ". Các giá trị hợp lệ: PENDING, CONFIRMED, CHECKED_IN, CHECKED_OUT, CANCELLED"
+            ));
+        }
     }
 
     @GetMapping("/customer/{customerId}")
@@ -67,7 +79,6 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody BookingRequest request) {
         try {
-            // Map BookingRequest → Booking entity
             Customer customer = customerRepository.findById(request.getCustomerId())
                     .orElseThrow(() -> new Exception(
                             "Không tìm thấy khách hàng ID: " + request.getCustomerId()));
@@ -76,16 +87,17 @@ public class BookingController {
             booking.setCustomer(customer);
             booking.setCheckInDate(request.getCheckInDate());
             booking.setCheckOutDate(request.getCheckOutDate());
-            booking.setStatus("Chờ");
+            booking.setStatus(BookingStatus.PENDING); // ← Enum
 
             // Map danh sách phòng
             List<BookingRoom> bookingRooms = new ArrayList<>();
             for (Long roomId : request.getRoomIds()) {
                 Room room = roomRepository.findById(roomId)
-                        .orElseThrow(() -> new Exception("Không tìm thấy phòng ID: " + roomId));
+                        .orElseThrow(() -> new Exception(
+                                "Không tìm thấy phòng ID: " + roomId));
                 BookingRoom br = new BookingRoom();
                 br.setRoom(room);
-                br.setPrice(room.getRoomType().getPricePerNight()); // Snapshot giá
+                br.setPrice(room.getRoomType().getPricePerNight()); // BigDecimal snapshot
                 br.setBooking(booking);
                 bookingRooms.add(br);
             }
@@ -116,27 +128,32 @@ public class BookingController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
         String newStatus = body.get("status");
-        List<String> validStatuses = List.of("Chờ", "Đã xác nhận", "Đang ở", "Đã hủy", "Đã trả phòng");
-        if (!validStatuses.contains(newStatus)) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Trạng thái không hợp lệ: " + newStatus
-                            + ". Các giá trị hợp lệ: " + validStatuses));
+        try {
+            BookingStatus bookingStatus = BookingStatus.valueOf(newStatus.toUpperCase()); // ← Enum
+            return bookingRepository.findById(id).map(b -> {
+                b.setStatus(bookingStatus);
+                return ResponseEntity.ok(BookingResponse.from(bookingRepository.save(b)));
+            }).orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Trạng thái không hợp lệ: " + newStatus
+                            + ". Các giá trị hợp lệ: PENDING, CONFIRMED, CHECKED_IN, CHECKED_OUT, CANCELLED"
+            ));
         }
-        return bookingRepository.findById(id).map(b -> {
-            b.setStatus(newStatus);
-            return ResponseEntity.ok(BookingResponse.from(bookingRepository.save(b)));
-        }).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}/checkin")
     public ResponseEntity<?> checkin(@PathVariable Long id) {
         try {
             bookingService.checkinBooking(id);
-            return ResponseEntity.ok(Map.of("message", "Check-in thành công! Phòng đã chuyển sang Đang ở."));
+            return ResponseEntity.ok(Map.of("message", "Check-in thành công!"));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -144,9 +161,10 @@ public class BookingController {
     public ResponseEntity<?> checkout(@PathVariable Long id) {
         try {
             bookingService.checkoutBooking(id);
-            return ResponseEntity.ok(Map.of("message", "Trả phòng thành công! Phòng đã được dọn trống."));
+            return ResponseEntity.ok(Map.of("message", "Trả phòng thành công!"));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -156,7 +174,8 @@ public class BookingController {
             bookingService.deleteBooking(id);
             return ResponseEntity.ok(Map.of("message", "Đã xóa booking ID: " + id));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 }

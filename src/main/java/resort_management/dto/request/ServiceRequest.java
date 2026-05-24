@@ -1,5 +1,7 @@
 package resort_management.dto.request;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -13,5 +15,5 @@ public class ServiceRequest {
 
     @NotNull(message = "Giá không được để trống")
     @Positive(message = "Giá phải lớn hơn 0")
-    private Double price;
+    private BigDecimal price;
 }

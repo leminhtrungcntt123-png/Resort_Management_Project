@@ -3,8 +3,12 @@ package resort_management.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import resort_management.enums.PaymentMethod;
+import resort_management.enums.PaymentStatus;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "payments")
@@ -20,17 +24,16 @@ public class Payment extends BaseEntity { // FIX: thêm kế thừa BaseEntity
     private Booking booking;
 
     @PositiveOrZero(message = "Số tiền không được âm")
-    @Column(nullable = false)
-    private Double amount;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal amount;
 
-    // FIX: thêm field này cho khớp với cột payment_method NOT NULL trong SQL
-    // Giá trị: 'CASH' | 'CARD'
-    @Column(name = "payment_method", length = 31, nullable = false)
-    private String paymentMethod = "CASH";
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", length = 10, nullable = false)
+    private PaymentMethod paymentMethod = PaymentMethod.CASH;
 
-    // Chưa thanh toán | Đã thanh toán | Thất bại
-    @Column(name = "payment_status", length = 50, nullable = false)
-    private String paymentStatus = "PENDING";
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", length = 20, nullable = false)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;

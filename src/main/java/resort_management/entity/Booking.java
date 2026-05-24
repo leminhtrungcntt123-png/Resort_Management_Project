@@ -3,9 +3,12 @@ package resort_management.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import resort_management.enums.BookingStatus;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDate;
 import java.util.List;
+
 
 @Entity
 @Table(name = "bookings")
@@ -23,10 +26,10 @@ public class Booking extends BaseEntity { // FIX: kế thừa BaseEntity (bỏ c
     @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
 
-    // FIX: đồng bộ đủ 5 trạng thái với SQL và BookingManagementService
     // Chờ | Đã xác nhận | Đang ở | Đã hủy | Đã trả phòng
-    @Column(name = "status", length = 50, nullable = false)
-    private String status = "Chờ";
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20, nullable = false)
+    private BookingStatus status = BookingStatus.PENDING;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)

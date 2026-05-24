@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "room_types")
@@ -23,8 +24,8 @@ public class RoomType extends BaseEntity { // FIX: kế thừa BaseEntity
 
     @NotNull(message = "Giá không được để trống")
     @Positive(message = "Giá phải lớn hơn 0")
-    @Column(name = "price_per_night", nullable = false)
-    private Double pricePerNight;
+    @Column(name = "price_per_night", nullable = false, precision = 18, scale = 2)
+    private BigDecimal pricePerNight;
 
     @NotNull(message = "Sức chứa không được để trống")
     @Positive(message = "Sức chứa phải lớn hơn 0")

@@ -2,6 +2,8 @@ package resort_management.dto.response;
 
 import lombok.*;
 import resort_management.entity.RoomType;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -12,7 +14,7 @@ public class RoomTypeResponse {
     private Long id;
     private String typeName;
     private String description;
-    private Double pricePerNight;
+    private BigDecimal pricePerNight;
     private Integer capacity;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
