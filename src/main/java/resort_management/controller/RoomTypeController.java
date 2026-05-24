@@ -1,68 +1,47 @@
 package resort_management.controller;
 
-import resort_management.dto.request.RoomTypeRequest;
-import resort_management.dto.response.RoomTypeResponse;
-import resort_management.entity.RoomType;
-import resort_management.repository.RoomTypeRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import resort_management.dto.request.RoomTypeRequest;
+import resort_management.dto.response.RoomTypeResponse;
+import resort_management.service.RoomTypeService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/api/room-types")
+@RequiredArgsConstructor
 public class RoomTypeController {
 
-    @Autowired
-    private RoomTypeRepository roomTypeRepository;
+    private final RoomTypeService roomTypeService;
 
     @GetMapping
     public List<RoomTypeResponse> getAll() {
-        return roomTypeRepository.findAll()
-                .stream()
-                .map(RoomTypeResponse::from)
-                .collect(Collectors.toList());
+        return roomTypeService.getAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<RoomTypeResponse> getById(@PathVariable Long id) {
-        return roomTypeRepository.findById(id)
-                .map(RoomTypeResponse::from)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(roomTypeService.getById(id));
     }
 
     @PostMapping
     public ResponseEntity<RoomTypeResponse> create(@Valid @RequestBody RoomTypeRequest request) {
-        RoomType roomType = new RoomType();
-        roomType.setTypeName(request.getTypeName());
-        roomType.setDescription(request.getDescription());
-        roomType.setPricePerNight(request.getPricePerNight());
-        roomType.setCapacity(request.getCapacity());
-        return ResponseEntity.ok(RoomTypeResponse.from(roomTypeRepository.save(roomType)));
+        return ResponseEntity.ok(roomTypeService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody RoomTypeRequest request) {
-        return roomTypeRepository.findById(id).map(rt -> {
-            rt.setTypeName(request.getTypeName());
-            rt.setDescription(request.getDescription());
-            rt.setPricePerNight(request.getPricePerNight());
-            rt.setCapacity(request.getCapacity());
-            return ResponseEntity.ok(RoomTypeResponse.from(roomTypeRepository.save(rt)));
-        }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<RoomTypeResponse> update(@PathVariable Long id,
+                                                    @Valid @RequestBody RoomTypeRequest request) {
+        return ResponseEntity.ok(roomTypeService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-        if (!roomTypeRepository.existsById(id))
-            return ResponseEntity.notFound().build();
-        roomTypeRepository.deleteById(id);
+    public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+        roomTypeService.delete(id);
         return ResponseEntity.ok(Map.of("message", "Đã xóa hạng phòng ID: " + id));
     }
 }
