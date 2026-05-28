@@ -7,12 +7,11 @@ import resort_management.dto.request.PaymentRequest;
 import resort_management.dto.response.PaymentResponse;
 import resort_management.enums.PaymentMethod;
 import resort_management.enums.PaymentStatus;
+import resort_management.exception.BusinessException;
+import resort_management.exception.ResourceNotFoundException;
 import resort_management.repository.PaymentRepository;
 import resort_management.service.PaymentService;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,7 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse getByBookingId(Long bookingId) {
         return paymentRepository.findByBookingId(bookingId)
                 .map(PaymentResponse::from)
-                .orElseThrow(() -> new RuntimeException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Không tìm thấy hóa đơn cho booking ID: " + bookingId));
     }
 
@@ -44,28 +43,19 @@ public class PaymentServiceImpl implements PaymentService {
     public List<Map<String, Object>> getRevenue(String period) {
         String normalized = period == null ? "month" : period.trim().toLowerCase();
         if (!List.of("day", "month", "year").contains(normalized))
-            throw new RuntimeException("period chỉ nhận: day, month, year");
+            throw new BusinessException("period chỉ nhận: day, month, year");
 
-        DateTimeFormatter formatter = switch (normalized) {
-            case "day"  -> DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            case "year" -> DateTimeFormatter.ofPattern("yyyy");
-            default     -> DateTimeFormatter.ofPattern("yyyy-MM");
+        List<Object[]> results = switch (normalized) {
+            case "day" -> paymentRepository.getRevenueByDay();
+            case "year" -> paymentRepository.getRevenueByYear();
+            default -> paymentRepository.getRevenueByMonth();
         };
 
-        Map<String, BigDecimal> revenueMap = new TreeMap<>();
-        paymentRepository.findAll().stream()
-                .filter(p -> PaymentStatus.PAID == p.getPaymentStatus()) // ← so sánh Enum
-                .filter(p -> p.getPaymentDate() != null)
-                .forEach(p -> {
-                    String key = formatter.format(p.getPaymentDate());
-                    revenueMap.merge(key, p.getAmount(), BigDecimal::add); // ← BigDecimal::add
-                });
-
-        return revenueMap.entrySet().stream()
-                .map(e -> {
+        return results.stream()
+                .map(row -> {
                     Map<String, Object> item = new LinkedHashMap<>();
-                    item.put("period", e.getKey());
-                    item.put("revenue", e.getValue());
+                    item.put("period", row[0]);
+                    item.put("revenue", row[1]);
                     return item;
                 })
                 .collect(Collectors.toList());
@@ -75,31 +65,31 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public PaymentResponse markAsPaid(Long id) {
         return paymentRepository.findById(id).map(p -> {
-            if (PaymentStatus.PAID == p.getPaymentStatus()) // ← so sánh Enum
-                throw new RuntimeException("Hóa đơn này đã được thanh toán rồi!");
-            p.setPaymentStatus(PaymentStatus.PAID);         // ← gán Enum
-            p.setPaymentDate(LocalDateTime.now());
+            if (PaymentStatus.PAID == p.getPaymentStatus())
+                throw new BusinessException("Hóa đơn này đã được thanh toán rồi!");
+            p.setPaymentStatus(PaymentStatus.PAID);
+            p.setPaymentDate(java.time.LocalDateTime.now());
             return PaymentResponse.from(paymentRepository.save(p));
-        }).orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn ID: " + id));
+        }).orElseThrow(() -> new ResourceNotFoundException(
+                "Không tìm thấy hóa đơn ID: " + id));
     }
 
     @Override
     @Transactional
     public PaymentResponse update(Long id, PaymentRequest request) {
         return paymentRepository.findById(id).map(p -> {
-            p.setAmount(request.getAmount()); // BigDecimal → BigDecimal ✅
-            // Convert String → PaymentMethod Enum
+            p.setAmount(request.getAmount());
             try {
                 p.setPaymentMethod(PaymentMethod.valueOf(
-                        request.getPaymentMethod().trim().toUpperCase()
-                ));
+                        request.getPaymentMethod().trim().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException(
+                throw new BusinessException(
                         "Phương thức thanh toán không hợp lệ. Chỉ chấp nhận: CASH, CARD");
             }
-            if (PaymentStatus.PAID == p.getPaymentStatus()) // ← so sánh Enum
-                p.setPaymentDate(LocalDateTime.now());
+            if (PaymentStatus.PAID == p.getPaymentStatus())
+                p.setPaymentDate(java.time.LocalDateTime.now());
             return PaymentResponse.from(paymentRepository.save(p));
-        }).orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn ID: " + id));
+        }).orElseThrow(() -> new ResourceNotFoundException(
+                "Không tìm thấy hóa đơn ID: " + id));
     }
 }
