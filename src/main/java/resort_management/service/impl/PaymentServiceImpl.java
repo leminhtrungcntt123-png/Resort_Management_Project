@@ -15,6 +15,9 @@ import resort_management.service.PaymentService;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Pageable;
+import resort_management.common.PageResponse;
+
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
@@ -91,5 +94,12 @@ public class PaymentServiceImpl implements PaymentService {
             return PaymentResponse.from(paymentRepository.save(p));
         }).orElseThrow(() -> new ResourceNotFoundException(
                 "Không tìm thấy hóa đơn ID: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PaymentResponse> getAllPaged(Pageable pageable) {
+        return PageResponse.of(
+                paymentRepository.findAll(pageable).map(PaymentResponse::from));
     }
 }

@@ -11,6 +11,11 @@ import resort_management.service.PaymentService;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import resort_management.common.PageResponse;
+import resort_management.common.ApiResponse;
+
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
@@ -19,8 +24,18 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping
-    public List<PaymentResponse> getAll() {
-        return paymentService.getAll();
+    public ResponseEntity<ApiResponse<PageResponse<PaymentResponse>>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return ResponseEntity.ok(ApiResponse.success(
+                paymentService.getAllPaged(PageRequest.of(page, size, sort))));
     }
 
     @GetMapping("/booking/{bookingId}")
@@ -41,7 +56,7 @@ public class PaymentController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PaymentResponse> update(@PathVariable Long id,
-                                                   @Valid @RequestBody PaymentRequest request) {
+            @Valid @RequestBody PaymentRequest request) {
         return ResponseEntity.ok(paymentService.update(id, request));
     }
 }

@@ -13,6 +13,8 @@ import resort_management.repository.RoomTypeRepository;
 import resort_management.service.RoomService;
 import resort_management.exception.ResourceNotFoundException;
 import resort_management.exception.BusinessException;
+import org.springframework.data.domain.Pageable;
+import resort_management.common.PageResponse;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -135,5 +137,12 @@ public class RoomServiceImpl implements RoomService {
         if (RoomStatus.OCCUPIED == room.getStatus()) // ← so sánh Enum
             throw new BusinessException("Phòng này đang có khách, không được xóa!");
         roomRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<RoomResponse> getAllPaged(Pageable pageable) {
+        return PageResponse.of(
+                roomRepository.findAll(pageable).map(RoomResponse::from));
     }
 }

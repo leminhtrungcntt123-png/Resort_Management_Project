@@ -11,6 +11,11 @@ import resort_management.service.CustomerService;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import resort_management.common.PageResponse;
+import resort_management.common.ApiResponse;
+
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
@@ -19,8 +24,18 @@ public class CustomerController {
     private final CustomerService customerService; // ← chỉ inject Service
 
     @GetMapping
-    public List<CustomerResponse> getAll() {
-        return customerService.getAll();
+    public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return ResponseEntity.ok(ApiResponse.success(
+                customerService.getAllPaged(PageRequest.of(page, size, sort))));
     }
 
     @GetMapping("/{id}")
@@ -40,7 +55,7 @@ public class CustomerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CustomerResponse> update(@PathVariable Long id,
-                                                    @Valid @RequestBody CustomerRequest request) {
+            @Valid @RequestBody CustomerRequest request) {
         return ResponseEntity.ok(customerService.update(id, request));
     }
 

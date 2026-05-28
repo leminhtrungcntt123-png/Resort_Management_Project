@@ -8,6 +8,11 @@ import resort_management.dto.request.RoomRequest;
 import resort_management.dto.response.RoomResponse;
 import resort_management.service.RoomService;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import resort_management.common.PageResponse;
+import resort_management.common.ApiResponse;
+
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +24,18 @@ public class RoomController {
     private final RoomService roomService;
 
     @GetMapping
-    public List<RoomResponse> getAll() {
-        return roomService.getAll();
+    public ResponseEntity<ApiResponse<PageResponse<RoomResponse>>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return ResponseEntity.ok(ApiResponse.success(
+                roomService.getAllPaged(PageRequest.of(page, size, sort))));
     }
 
     @GetMapping("/{id}")
@@ -40,13 +55,13 @@ public class RoomController {
 
     @PutMapping("/{id}")
     public ResponseEntity<RoomResponse> update(@PathVariable Long id,
-                                                @Valid @RequestBody RoomRequest request) {
+            @Valid @RequestBody RoomRequest request) {
         return ResponseEntity.ok(roomService.update(id, request));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<RoomResponse> updateStatus(@PathVariable Long id,
-                                                      @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body) {
         return ResponseEntity.ok(roomService.updateStatus(id, body.get("status")));
     }
 

@@ -11,6 +11,11 @@ import resort_management.service.EmployeeService;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import resort_management.common.PageResponse;
+import resort_management.common.ApiResponse;
+
 @RestController
 @RequestMapping("/api/employees")
 @RequiredArgsConstructor
@@ -19,8 +24,18 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping
-    public List<EmployeeResponse> getAll() {
-        return employeeService.getAll();
+    public ResponseEntity<ApiResponse<PageResponse<EmployeeResponse>>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return ResponseEntity.ok(ApiResponse.success(
+                employeeService.getAllPaged(PageRequest.of(page, size, sort))));
     }
 
     @GetMapping("/{id}")
