@@ -100,7 +100,7 @@ public class BookingResponse {
         private String roomNumber;
         private Integer floorNumber;
         private String roomTypeName;
-        private BigDecimal priceSnapshot; // ← BigDecimal
+        private BigDecimal priceSnapshot; 
     }
 
     @Data
@@ -108,16 +108,16 @@ public class BookingResponse {
     public static class BookingServiceInfo {
         private Long serviceId;
         private String serviceName;
-        private BigDecimal unitPrice; // ← BigDecimal
+        private BigDecimal unitPrice; 
         private Integer quantity;
-        private BigDecimal subtotal; // ← BigDecimal
+        private BigDecimal subtotal; 
     }
 
     @Data
     @AllArgsConstructor
     public static class PaymentInfo {
         private Long id;
-        private BigDecimal amount; // ← BigDecimal
+        private BigDecimal amount; 
         private String paymentMethod;
         private String paymentStatus;
         private LocalDateTime paymentDate;
