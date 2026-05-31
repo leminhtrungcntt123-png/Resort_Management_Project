@@ -145,4 +145,22 @@ public class RoomServiceImpl implements RoomService {
         return PageResponse.of(
                 roomRepository.findAll(pageable).map(RoomResponse::from));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<RoomResponse> getByStatus(RoomStatus status, Pageable pageable) {
+        return PageResponse.of(
+                roomRepository.findByStatus(status, pageable).map(RoomResponse::from));
+    }
+
+    @Override
+    public PageResponse<RoomResponse> getByFloor(Integer floorNumber, Pageable pageable) {
+        return PageResponse.of(
+                roomRepository.findByFloorNumber(floorNumber, pageable).map(RoomResponse::from));
+    }
+
+    @Override
+    public List<Integer> getFloorNumbers() {
+        return roomRepository.findDistinctFloorNumbers();
+    }
 }

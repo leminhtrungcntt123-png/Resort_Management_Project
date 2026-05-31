@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import resort_management.dto.request.RoomRequest;
 import resort_management.dto.response.RoomResponse;
+import resort_management.enums.RoomStatus;
 import resort_management.service.RoomService;
 
 import org.springframework.data.domain.PageRequest;
@@ -39,35 +40,64 @@ public class RoomController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoomResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(roomService.getById(id));
+    public ResponseEntity<ApiResponse<RoomResponse>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(roomService.getById(id)));
     }
 
     @GetMapping("/status/{status}")
-    public List<RoomResponse> getByStatus(@PathVariable String status) {
-        return roomService.getByStatus(status);
+    public ResponseEntity<ApiResponse<PageResponse<RoomResponse>>> getByStatus(
+            @PathVariable RoomStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return ResponseEntity.ok(ApiResponse.success(
+                roomService.getByStatus(status, PageRequest.of(page, size))));
     }
 
     @PostMapping
-    public ResponseEntity<RoomResponse> create(@Valid @RequestBody RoomRequest request) {
-        return ResponseEntity.ok(roomService.create(request));
+    public ResponseEntity<ApiResponse<RoomResponse>> create(@Valid @RequestBody RoomRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(roomService.create(request)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoomResponse> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<RoomResponse>> update(
+            @PathVariable Long id,
             @Valid @RequestBody RoomRequest request) {
-        return ResponseEntity.ok(roomService.update(id, request));
+        return ResponseEntity.ok(ApiResponse.success(roomService.update(id, request)));
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<RoomResponse> updateStatus(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<RoomResponse>> updateStatus(
+            @PathVariable Long id,
             @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(roomService.updateStatus(id, body.get("status")));
+        return ResponseEntity.ok(ApiResponse.success(
+                roomService.updateStatus(id, body.get("status"))));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> delete(@PathVariable Long id) {
         roomService.delete(id);
-        return ResponseEntity.ok(Map.of("message", "Đã xóa phòng ID: " + id));
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa phòng ID: " + id));
+    }
+
+    @GetMapping("/floor/{floorNumber}")
+    public ResponseEntity<ApiResponse<PageResponse<RoomResponse>>> getByFloor(
+            @PathVariable Integer floorNumber,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "roomNumber") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return ResponseEntity.ok(ApiResponse.success(
+                roomService.getByFloor(floorNumber, PageRequest.of(page, size, sort))));
+    }
+
+    @GetMapping("/floors")
+    public ResponseEntity<ApiResponse<List<Integer>>> getFloorNumbers() {
+        return ResponseEntity.ok(ApiResponse.success(roomService.getFloorNumbers()));
     }
 }
