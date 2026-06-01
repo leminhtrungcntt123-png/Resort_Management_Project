@@ -56,7 +56,7 @@ public class ResortServiceMgmtImpl implements ResortServiceMgmt {
     @Transactional
     public void delete(Long id) {
         if (!serviceRepository.existsById(id))
-            throw new ResourceNotFoundException("Không tìm thấy dịch vụ ID: " + id);
+            throw new RuntimeException("Không tìm thấy dịch vụ ID: " + id);
         serviceRepository.deleteById(id);
     }
 }
