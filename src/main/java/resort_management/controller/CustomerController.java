@@ -27,7 +27,7 @@ public class CustomerController {
     public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "fullName") String sortBy,
             @RequestParam(defaultValue = "asc") String direction) {
 
         Sort sort = direction.equalsIgnoreCase("desc")
@@ -39,29 +39,31 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(customerService.getById(id));
+    public ResponseEntity<ApiResponse<CustomerResponse>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(customerService.getById(id)));
     }
 
     @GetMapping("/search")
-    public List<CustomerResponse> search(@RequestParam String name) {
-        return customerService.searchByName(name);
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> search(@RequestParam String name) {
+        return ResponseEntity.ok(ApiResponse.success(customerService.searchByName(name)));
     }
 
     @PostMapping
-    public ResponseEntity<CustomerResponse> create(@Valid @RequestBody CustomerRequest request) {
-        return ResponseEntity.ok(customerService.create(request));
+    public ResponseEntity<ApiResponse<CustomerResponse>> create(
+            @Valid @RequestBody CustomerRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(customerService.create(request)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CustomerResponse> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<CustomerResponse>> update(
+            @PathVariable Long id,
             @Valid @RequestBody CustomerRequest request) {
-        return ResponseEntity.ok(customerService.update(id, request));
+        return ResponseEntity.ok(ApiResponse.success(customerService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> delete(@PathVariable Long id) {
         customerService.delete(id);
-        return ResponseEntity.ok(Map.of("message", "Đã xóa khách hàng ID: " + id));
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa khách hàng ID: " + id));
     }
 }
