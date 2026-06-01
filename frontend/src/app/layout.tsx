@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-zinc-50">
-        <LangProvider>  {/* ← đổi từ I18nProvider */}
+        <LangProvider>  {}
           <header className="border-b border-zinc-200 bg-white">
             <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
               <h1 className="text-lg font-semibold text-zinc-900">

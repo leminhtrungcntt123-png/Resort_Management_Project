@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import resort_management.common.ApiResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +42,20 @@ public class GlobalExceptionHandler {
             BusinessException ex) {
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    // Trùng dữ liệu DB → 400
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(
+            DataIntegrityViolationException ex) {
+        String message = "Dữ liệu đã tồn tại";
+        if (ex.getMessage().contains("room_number")) {
+            message = "Số phòng này đã tồn tại";
+        } else if (ex.getMessage().contains("email")) {
+            message = "Email này đã được sử dụng";
+        }
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(message));
     }
 
     // Trùng dữ liệu → 409

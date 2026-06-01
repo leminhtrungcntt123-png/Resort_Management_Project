@@ -12,8 +12,11 @@ import resort_management.service.CustomerService;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Pageable;
+import resort_management.common.PageResponse;
+
 @Service
-@RequiredArgsConstructor  // Constructor injection tự động qua Lombok
+@RequiredArgsConstructor // Constructor injection tự động qua Lombok
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
@@ -75,5 +78,12 @@ public class CustomerServiceImpl implements CustomerService {
         if (!customerRepository.existsById(id))
             throw new RuntimeException("Không tìm thấy khách hàng ID: " + id);
         customerRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<CustomerResponse> getAllPaged(Pageable pageable) {
+        return PageResponse.of(
+                customerRepository.findAll(pageable).map(CustomerResponse::from));
     }
 }

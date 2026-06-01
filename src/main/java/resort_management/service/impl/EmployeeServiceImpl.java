@@ -12,6 +12,9 @@ import resort_management.service.EmployeeService;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Pageable;
+import resort_management.common.PageResponse;
+
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -68,5 +71,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (!employeeRepository.existsById(id))
             throw new RuntimeException("Không tìm thấy nhân viên ID: " + id);
         employeeRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<EmployeeResponse> getAllPaged(Pageable pageable) {
+        return PageResponse.of(
+                employeeRepository.findAll(pageable).map(EmployeeResponse::from));
     }
 }
