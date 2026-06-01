@@ -23,7 +23,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity   // Cho phép dùng @PreAuthorize
+@EnableMethodSecurity // Cho phép dùng @PreAuthorize
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -32,80 +32,75 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Tắt CSRF vì dùng JWT (stateless)
-            .csrf(csrf -> csrf.disable())
+                // Tắt CSRF vì dùng JWT (stateless)
+                .csrf(csrf -> csrf.disable())
 
-            // Cấu hình CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Cấu hình CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            // Không dùng Session — JWT tự quản lý
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Không dùng Session — JWT tự quản lý
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            .exceptionHandling(ex -> ex
-                // Không có token → 401
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.setStatus(401);
-                    response.getWriter().write(
-                        "{\"success\":false,\"message\":\"Vui lòng đăng nhập để tiếp tục!\"}"
-                    );
-                })
-                // Có token nhưng không đủ quyền → 403
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.setStatus(403);
-                    response.getWriter().write(
-                        "{\"success\":false,\"message\":\"Bạn không có quyền thực hiện thao tác này!\"}"
-                    );
-                })
-            )
-            
-            // Quy tắc phân quyền endpoint
-            .authorizeHttpRequests(auth -> auth
+                .exceptionHandling(ex -> ex
+                        // Không có token → 401
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(401);
+                            response.getWriter().write(
+                                    "{\"success\":false,\"message\":\"Vui lòng đăng nhập để tiếp tục!\"}");
+                        })
+                        // Có token nhưng không đủ quyền → 403
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(403);
+                            response.getWriter().write(
+                                    "{\"success\":false,\"message\":\"Bạn không có quyền thực hiện thao tác này!\"}");
+                        }))
 
-                // Public — ai cũng vào được
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                // Quy tắc phân quyền endpoint
+                .authorizeHttpRequests(auth -> auth
 
-                // Rooms — xóa chỉ ADMIN
-                .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("ADMIN")
-                // Rooms — thêm/sửa: ADMIN + MANAGER
-                .requestMatchers(HttpMethod.POST, "/api/rooms/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.PATCH, "/api/rooms/**").hasAnyRole("ADMIN", "MANAGER")
+                        // Public — ai cũng vào được
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 
-                // Hạng phòng — thêm/sửa/xóa: ADMIN + MANAGER
-                .requestMatchers(HttpMethod.POST, "/api/room-types/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.PUT, "/api/room-types/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.DELETE, "/api/room-types/**").hasAnyRole("ADMIN", "MANAGER")
+                        // Rooms — xóa chỉ ADMIN
+                        .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("ADMIN")
+                        // Rooms — thêm/sửa: ADMIN + MANAGER
+                        .requestMatchers(HttpMethod.POST, "/api/rooms/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/rooms/**").hasAnyRole("ADMIN", "MANAGER")
 
-                // Dịch vụ — thêm/sửa/xóa: ADMIN + MANAGER
-                .requestMatchers(HttpMethod.POST, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")
+                        // Hạng phòng — thêm/sửa/xóa: ADMIN + MANAGER
+                        .requestMatchers(HttpMethod.POST, "/api/room-types/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/room-types/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/room-types/**").hasAnyRole("ADMIN", "MANAGER")
 
-                // Khách hàng — xóa chỉ ADMIN
-                .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasRole("ADMIN")
+                        // Dịch vụ — thêm/sửa/xóa: ADMIN + MANAGER
+                        .requestMatchers(HttpMethod.POST, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")
 
-                // Booking — hủy chỉ ADMIN + MANAGER
-                .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.PATCH, "/api/bookings/**/status").hasAnyRole("ADMIN", "MANAGER")
+                        // Khách hàng — xóa chỉ ADMIN
+                        .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasRole("ADMIN")
 
-                // Doanh thu — ADMIN + MANAGER
-                .requestMatchers("/api/payments/revenue").hasAnyRole("ADMIN", "MANAGER")
+                        // Booking — hủy chỉ ADMIN + MANAGER
+                        .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/bookings/*/status").hasAnyRole("ADMIN", "MANAGER")
 
-                // Nhân viên — chỉ ADMIN
-                .requestMatchers("/api/employees/**").hasRole("ADMIN")
+                        // Doanh thu — ADMIN + MANAGER
+                        .requestMatchers("/api/payments/revenue").hasAnyRole("ADMIN", "MANAGER")
 
-                // Users — ADMIN tạo mọi role, MANAGER tạo RECEPTIONIST (xử lý trong Service)
-                .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        // Nhân viên — chỉ ADMIN
+                        .requestMatchers("/api/employees/**").hasRole("ADMIN")
 
-                // Tất cả còn lại — cần đăng nhập, mọi role
-                .anyRequest().authenticated()
-            )
+                        // Users — ADMIN tạo mọi role, MANAGER tạo RECEPTIONIST (xử lý trong Service)
+                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER")
 
-            // Thêm JWT Filter vào trước filter mặc định của Spring
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                        // Tất cả còn lại — cần đăng nhập, mọi role
+                        .anyRequest().authenticated())
+
+                // Thêm JWT Filter vào trước filter mặc định của Spring
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
