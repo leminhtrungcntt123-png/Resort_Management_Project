@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import resort_management.dto.request.ServiceRequest;
 import resort_management.dto.response.ServiceResponse;
+import resort_management.exception.ResourceNotFoundException;
 import resort_management.repository.ServiceRepository;
 import resort_management.service.ResortServiceMgmt;
 
@@ -29,7 +30,7 @@ public class ResortServiceMgmtImpl implements ResortServiceMgmt {
     public ServiceResponse getById(Long id) {
         return serviceRepository.findById(id)
                 .map(ServiceResponse::from)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy dịch vụ ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy dịch vụ ID: " + id));
     }
 
     @Override
@@ -45,7 +46,7 @@ public class ResortServiceMgmtImpl implements ResortServiceMgmt {
     @Transactional
     public ServiceResponse update(Long id, ServiceRequest request) {
         resort_management.entity.Service service = serviceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy dịch vụ ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy dịch vụ ID: " + id));
         service.setServiceName(request.getServiceName());
         service.setPrice(request.getPrice());
         return ServiceResponse.from(serviceRepository.save(service));
@@ -55,7 +56,7 @@ public class ResortServiceMgmtImpl implements ResortServiceMgmt {
     @Transactional
     public void delete(Long id) {
         if (!serviceRepository.existsById(id))
-            throw new RuntimeException("Không tìm thấy dịch vụ ID: " + id);
+            throw new ResourceNotFoundException("Không tìm thấy dịch vụ ID: " + id);
         serviceRepository.deleteById(id);
     }
 }
