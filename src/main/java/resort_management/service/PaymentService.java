@@ -16,4 +16,6 @@ public interface PaymentService {
     PaymentResponse update(Long id, PaymentRequest request);
     PageResponse<PaymentResponse> getAllPaged(Pageable pageable);
 
+    long countPending();
+    PageResponse<PaymentResponse> getPendingPaged(Pageable pageable);
 }

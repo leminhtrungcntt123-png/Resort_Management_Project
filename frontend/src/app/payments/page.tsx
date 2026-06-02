@@ -6,6 +6,7 @@ import { Payment, PaymentPageData, RevenueItem } from "@/types/payment";
 import PaymentTable from "@/components/payments/PaymentTable";
 import PaymentPagination from "@/components/payments/PaymentPagination";
 import RevenueChart from "@/components/payments/RevenueChart";
+import PendingPaymentsModal from "@/components/payments/PendingPaymentsModal";
 
 export default function PaymentsPage() {
   const [data, setData] = useState<PaymentPageData | null>(null);
@@ -14,6 +15,10 @@ export default function PaymentsPage() {
   const [refresh, setRefresh] = useState(0);
   const [period, setPeriod] = useState("month");
   const [revenue, setRevenue] = useState<RevenueItem[]>([]);
+
+  // --- Thêm mới ---
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [showPendingModal, setShowPendingModal] = useState(false);
 
   // Fetch payments
   useEffect(() => {
@@ -34,16 +39,29 @@ export default function PaymentsPage() {
   // Fetch revenue
   useEffect(() => {
     async function fetchRevenue() {
-        try {
-            const res = await api.get(`/api/payments/revenue?period=${period}`);
-            const list = Array.isArray(res) ? res : (res.data ?? []);
-            setRevenue(list);
-        } catch (err) {
-            console.error("Lỗi fetch revenue:", err);
-        }
+      try {
+        const res = await api.get(`/api/payments/revenue?period=${period}`);
+        const list = Array.isArray(res) ? res : (res.data ?? []);
+        setRevenue(list);
+      } catch (err) {
+        console.error("Lỗi fetch revenue:", err);
+      }
     }
     fetchRevenue();
-  }, [period,refresh]);
+  }, [period, refresh]);
+
+  // --- Thêm mới: fetch pending count ---
+  useEffect(() => {
+    async function fetchPendingCount() {
+      try {
+        const res = await api.get("/api/payments/pending/count");
+        setPendingCount(res.data ?? 0);
+      } catch (err) {
+        console.error("Lỗi fetch pending count:", err);
+      }
+    }
+    fetchPendingCount();
+  }, [refresh]);
 
   async function handleMarkPaid(id: number) {
     try {
@@ -76,13 +94,24 @@ export default function PaymentsPage() {
             {data?.totalElements ?? "..."}
           </p>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-4">
+
+        {/* --- Sửa: dùng pendingCount thật + nút mở modal --- */}
+        <button
+          onClick={() => setShowPendingModal(true)}
+          className="rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-left
+                     transition hover:border-yellow-400 hover:bg-yellow-100 cursor-pointer"
+        >
           <p className="text-sm text-zinc-500">Chưa thanh toán</p>
-          <p className="mt-2 text-2xl font-semibold text-yellow-600">
-            {data?.content.filter((p) => p.paymentStatus === "PENDING")
-              .length ?? "..."}
-          </p>
-        </div>
+          <div className="mt-2 flex items-center justify-between">
+            <p className="text-2xl font-semibold text-yellow-600">
+              {pendingCount}
+            </p>
+            <span className="text-xs text-yellow-600 underline">
+              Xem tất cả →
+            </span>
+          </div>
+        </button>
+
         <div className="rounded-xl border border-zinc-200 bg-white p-4">
           <p className="text-sm text-zinc-500">Doanh thu kỳ này</p>
           <p className="mt-2 text-2xl font-semibold text-green-600">
@@ -109,6 +138,17 @@ export default function PaymentsPage() {
           last={data.last}
           onPrev={() => setPage((p) => p - 1)}
           onNext={() => setPage((p) => p + 1)}
+        />
+      )}
+
+      {/* --- Modal Pending --- */}
+      {showPendingModal && (
+        <PendingPaymentsModal
+          onClose={() => setShowPendingModal(false)}
+          onConfirmed={() => {
+            setShowPendingModal(false);
+            setRefresh((r) => r + 1); // refresh cả page sau khi xác nhận
+          }}
         />
       )}
     </main>
