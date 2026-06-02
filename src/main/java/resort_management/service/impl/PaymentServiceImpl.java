@@ -102,4 +102,17 @@ public class PaymentServiceImpl implements PaymentService {
         return PageResponse.of(
                 paymentRepository.findAll(pageable).map(PaymentResponse::from));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countPending() {
+        return paymentRepository.countPending();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PaymentResponse> getPendingPaged(Pageable pageable) {
+        return PageResponse.of(
+                paymentRepository.findAllPending(pageable).map(PaymentResponse::from));
+    }
 }
