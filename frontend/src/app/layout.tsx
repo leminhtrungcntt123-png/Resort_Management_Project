@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { LangProvider } from "@/contexts/LangContext";
 import Sidebar from "@/components/Sidebar";
+import ChatWidget from "@/components/ChatWidget"; // 1. Đã import ChatWidget vào đây
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 // Thử tìm xem LanguageSwitcher của bạn nằm ở đâu để import vào, ví dụ:
@@ -57,6 +58,9 @@ export default function RootLayout({
 
                         </div>
                     </div>
+
+                    {/* 2. Đặt ChatWidget ở đây để nút chat nổi lên trên toàn bộ các trang */}
+                    <ChatWidget />
                 </LangProvider>
             </body>
         </html>
