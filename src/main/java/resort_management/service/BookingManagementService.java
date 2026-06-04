@@ -107,7 +107,8 @@ public class BookingManagementService {
         try {
             payment.setPaymentMethod(PaymentMethod.valueOf(normalized)); // ← Enum
         } catch (IllegalArgumentException e) {
-            throw new Exception("Phương thức thanh toán không hợp lệ. Chỉ chấp nhận CASH hoặc CARD.");
+            // Đã sửa lại câu thông báo lỗi
+            throw new Exception("Phương thức thanh toán không hợp lệ. Chỉ chấp nhận CASH, CARD hoặc QR.");
         }
         payment.setPaymentStatus(PaymentStatus.PENDING); // ← Enum
         Payment savedPayment = paymentRepository.save(payment);

@@ -1,6 +1,7 @@
 package resort_management.enums;
 
 public enum PaymentMethod {
-    CASH,   // Tiền mặt
-    CARD    // Thẻ
+    CASH,
+    CARD,
+    QR   // Phải có dòng này thì Java mới nhận diện được mã QR
 }
