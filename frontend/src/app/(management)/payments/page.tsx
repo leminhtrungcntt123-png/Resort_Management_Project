@@ -128,6 +128,8 @@ export default function PaymentsPage() {
         payments={data?.content ?? []}
         loading={loading}
         onMarkPaid={handleMarkPaid}
+        onDeleted={() => setRefresh((r) => r + 1)}
+        onUpdated={() => setRefresh((r) => r + 1)}
       />
 
       {/* Pagination */}

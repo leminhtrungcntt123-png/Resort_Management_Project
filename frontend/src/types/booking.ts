@@ -48,3 +48,38 @@ export interface BookingPageData {
     totalElements: number;
     last: boolean;
 }
+
+export interface BookingDetail {
+    id: number;
+    checkInDate: string;
+    checkOutDate: string;
+    status: string;
+    createdAt: string;
+    customer: {
+        id: number;
+        fullName: string;
+        phone: string;
+        email: string;
+    };
+    rooms: {
+        roomId: number;
+        roomNumber: string;
+        floorNumber: number;
+        roomTypeName: string;
+        priceSnapshot: number;
+    }[];
+    services: {
+        serviceId: number;
+        serviceName: string;
+        unitPrice: number;
+        quantity: number;
+        subtotal: number;
+    }[];
+    payment: {
+        id: number;
+        amount: number;
+        paymentMethod: string;
+        paymentStatus: string;
+        paymentDate: string | null;
+    } | null;
+}

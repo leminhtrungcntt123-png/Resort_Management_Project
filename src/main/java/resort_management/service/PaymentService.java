@@ -10,12 +10,20 @@ import resort_management.common.PageResponse;
 
 public interface PaymentService {
     List<PaymentResponse> getAll();
+
     PaymentResponse getByBookingId(Long bookingId);
+
     List<Map<String, Object>> getRevenue(String period);
+
     PaymentResponse markAsPaid(Long id);
+
     PaymentResponse update(Long id, PaymentRequest request);
+
     PageResponse<PaymentResponse> getAllPaged(Pageable pageable);
 
     long countPending();
+
     PageResponse<PaymentResponse> getPendingPaged(Pageable pageable);
+
+    void delete(Long id);
 }

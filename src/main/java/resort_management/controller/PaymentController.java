@@ -82,4 +82,10 @@ public class PaymentController {
                                 paymentService.getPendingPaged(
                                                 PageRequest.of(page, size, Sort.by("createdAt").descending()))));
         }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+                paymentService.delete(id);
+                return ResponseEntity.ok(ApiResponse.success(null));
+        }
 }

@@ -90,6 +90,8 @@ public class SecurityConfig {
                         // Doanh thu — ADMIN + MANAGER
                         .requestMatchers("/api/payments/revenue").hasAnyRole("ADMIN", "MANAGER")
 
+                        .requestMatchers(HttpMethod.DELETE, "/api/payments/**").hasRole("ADMIN")
+
                         // Nhân viên — chỉ ADMIN
                         .requestMatchers("/api/employees/**").hasRole("ADMIN")
 

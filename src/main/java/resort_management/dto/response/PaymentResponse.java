@@ -19,6 +19,9 @@ public class PaymentResponse {
     private LocalDateTime paymentDate;
     private LocalDateTime createdAt;
 
+    // --- Thêm mới: thông tin booking đính kèm ---
+    private BookingResponse bookingDetail;
+
     public static PaymentResponse from(Payment payment) {
         PaymentResponse dto = new PaymentResponse();
         dto.setId(payment.getId());
@@ -28,6 +31,12 @@ public class PaymentResponse {
         dto.setPaymentMethod(payment.getPaymentMethod() != null ? payment.getPaymentMethod().name() : null);
         dto.setPaymentDate(payment.getPaymentDate());
         dto.setCreatedAt(payment.getCreatedAt());
+
+        // Map booking detail nếu có
+        if (payment.getBooking() != null) {
+            dto.setBookingDetail(BookingResponse.from(payment.getBooking()));
+        }
+
         return dto;
     }
 }

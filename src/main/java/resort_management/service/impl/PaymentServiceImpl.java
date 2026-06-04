@@ -115,4 +115,12 @@ public class PaymentServiceImpl implements PaymentService {
         return PageResponse.of(
                 paymentRepository.findAllPending(pageable).map(PaymentResponse::from));
     }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        if (!paymentRepository.existsById(id))
+            throw new ResourceNotFoundException("Không tìm thấy hóa đơn ID: " + id);
+        paymentRepository.deleteById(id);
+    }
 }
