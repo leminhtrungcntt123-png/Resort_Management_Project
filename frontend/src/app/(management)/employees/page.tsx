@@ -6,6 +6,7 @@ import { Employee, EmployeePageData, EmployeeForm } from "@/types/employee";
 import EmployeeTable      from "@/components/employees/EmployeeTable";
 import EmployeeModal      from "@/components/employees/EmployeeModal";
 import EmployeePagination from "@/components/employees/EmployeePagination";
+import { exportToTxt, exportToExcel } from "@/components/export";
 
 const DEFAULT_FORM: EmployeeForm = {
     fullName: "",
@@ -19,6 +20,7 @@ export default function EmployeesPage() {
     const [data, setData]               = useState<EmployeePageData | null>(null);
     const [page, setPage]               = useState(0);
     const [loading, setLoading]         = useState(true);
+    const [exporting, setExporting]     = useState(false); // Trạng thái khi đang tải dữ liệu xuất file
     const [saving, setSaving]           = useState(false);
     const [form, setForm]               = useState<EmployeeForm>(DEFAULT_FORM);
     const [showModal, setShowModal]     = useState(false);
@@ -43,6 +45,67 @@ export default function EmployeesPage() {
         }
         fetchEmployees();
     }, [page, refresh]);
+
+    // HÀM XỬ LÝ XUẤT FILE TXT (LẤY TOÀN BỘ)
+    const handleExportTxt = async () => {
+        setExporting(true);
+        try {
+            const res = await api.get(`/api/employees?page=0&size=9999&sortBy=fullName&direction=asc`);
+            const allEmployees: Employee[] = res.data?.content ?? [];
+
+            if (allEmployees.length === 0) {
+                alert("Không có dữ liệu nhân viên nào để xuất!");
+                return;
+            }
+
+            const txtData = allEmployees.map((e) => ({
+                "Mã NV": e.id,
+                "Họ và Tên": e.fullName,
+                "Chức Vụ": e.position ?? "N/A",
+                "Số điện thoại": e.phone ?? "N/A",
+                "Email": e.email ?? "N/A",
+                "Mức Lương": `${e.salary?.toLocaleString("vi-VN")}đ`,
+            }));
+
+            exportToTxt(txtData, "Danh sách toàn bộ nhân viên", "tat-ca-nhân-vien");
+        } catch (err) {
+            console.error("Lỗi khi xuất file TXT:", err);
+            alert("Có lỗi xảy ra khi tải dữ liệu nhân viên!");
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    // HÀM XỬ LÝ XUẤT FILE EXCEL (LẤY TOÀN BỘ)
+    const handleExportExcel = async () => {
+        setExporting(true);
+        try {
+            const res = await api.get(`/api/employees?page=0&size=9999&sortBy=fullName&direction=asc`);
+            const allEmployees: Employee[] = res.data?.content ?? [];
+
+            if (allEmployees.length === 0) {
+                alert("Không có dữ liệu nhân viên nào để xuất!");
+                return;
+            }
+
+            const excelData = allEmployees.map((e, index) => ({
+                "STT": index + 1,
+                "Mã Nhân Viên": e.id,
+                "Họ và Tên": e.fullName,
+                "Chức Vụ": e.position ?? "N/A",
+                "Số Điện Thoại": e.phone ?? "N/A",
+                "Email": e.email ?? "N/A",
+                "Mức Lương (VND)": e.salary ?? 0,
+            }));
+
+            exportToExcel(excelData, "Nhân Viên", "danh-sach-nhan-vien-excel");
+        } catch (err) {
+            console.error("Lỗi khi xuất file Excel:", err);
+            alert("Có lỗi xảy ra khi tải dữ liệu nhân viên!");
+        } finally {
+            setExporting(false);
+        }
+    };
 
     async function handleCreate() {
         if (!form.fullName) return;
@@ -109,11 +172,29 @@ export default function EmployeesPage() {
                         Tổng: {data?.totalElements ?? "..."} nhân viên
                     </p>
                 </div>
-                <button
-                    onClick={() => { setShowModal(true); setForm(DEFAULT_FORM); }}
-                    className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
-                    + Thêm nhân viên
-                </button>
+
+                {/* Khối nút bấm bên phải */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleExportTxt}
+                        disabled={loading || exporting}
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+                    >
+                        {exporting ? "Đang xuất..." : "Xuất TXT"}
+                    </button>
+                    <button
+                        onClick={handleExportExcel}
+                        disabled={loading || exporting}
+                        className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                    >
+                        {exporting ? "Đang xuất..." : "Xuất Excel"}
+                    </button>
+                    <button
+                        onClick={() => { setShowModal(true); setForm(DEFAULT_FORM); }}
+                        className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors">
+                        + Thêm nhân viên
+                    </button>
+                </div>
             </div>
 
             {/* Modal Thêm */}

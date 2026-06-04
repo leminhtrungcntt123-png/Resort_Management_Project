@@ -7,6 +7,7 @@ import RoomFilter from "@/components/rooms/RoomFilter";
 import RoomTable from "@/components/rooms/RoomTable";
 import RoomModal from "@/components/rooms/RoomModal";
 import RoomPagination from "@/components/rooms/RoomPagination";
+import { exportToTxt, exportToExcel } from "@/components/export";
 
 const DEFAULT_FORM: RoomForm = {
   roomNumber: "",
@@ -19,6 +20,7 @@ export default function RoomsPage() {
   const [data, setData] = useState<PageData | null>(null);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false); // Trạng thái khi đang tải dữ liệu xuất file
   const [status, setStatus] = useState("ALL");
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [saving, setSaving] = useState(false);
@@ -39,10 +41,10 @@ export default function RoomsPage() {
       setLoading(true);
       try {
         const url = floor
-          ? `/api/rooms/floor/${floor}?page=${page}&size=10&sortBy=roomNumber&direction=asc` // ← thêm sort
+          ? `/api/rooms/floor/${floor}?page=${page}&size=10&sortBy=roomNumber&direction=asc`
           : status === "ALL"
             ? `/api/rooms?page=${page}&size=10&sortBy=${sortBy}&direction=${direction}`
-            : `/api/rooms/status/${status}?page=${page}&size=10&sortBy=roomNumber&direction=asc`; // ← thêm sort
+            : `/api/rooms/status/${status}?page=${page}&size=10&sortBy=roomNumber&direction=asc`;
         const res = await api.get(url);
         setData(res.data);
       } catch (err) {
@@ -66,6 +68,7 @@ export default function RoomsPage() {
     }
     fetchRoomTypes();
   }, []);
+
   // Fetch floors
   useEffect(() => {
     async function fetchFloors() {
@@ -78,6 +81,80 @@ export default function RoomsPage() {
     }
     fetchFloors();
   }, []);
+
+  // HÀM XỬ LÝ XUẤT FILE TXT (ĐỒNG BỘ THEO BỘ LỌC)
+  const handleExportTxt = async () => {
+    setExporting(true);
+    try {
+      const url = floor
+        ? `/api/rooms/floor/${floor}?page=0&size=9999&sortBy=roomNumber&direction=asc`
+        : status === "ALL"
+          ? `/api/rooms?page=0&size=9999&sortBy=${sortBy}&direction=${direction}`
+          : `/api/rooms/status/${status}?page=0&size=9999&sortBy=roomNumber&direction=asc`;
+
+      const res = await api.get(url);
+      const allRooms: Room[] = res.data?.content ?? [];
+
+      if (allRooms.length === 0) {
+        alert("Không có dữ liệu phòng để xuất!");
+        return;
+      }
+
+      const txtData = allRooms.map((r) => ({
+        "Số Phòng": r.roomNumber,
+        "Số Tầng": r.floorNumber,
+        "Loại Phòng": r.roomType?.roomType ?? "N/A",
+        "Trạng Thái": r.status ?? "N/A",
+        "Giá Gốc": `${r.roomType?.price?.toLocaleString("vi-VN")}đ`
+      }));
+
+      const filterLabel = floor ? `tang-${floor}` : status.toLowerCase();
+      exportToTxt(txtData, `Danh sách phòng resort (${filterLabel})`, `danh-sach-phong-${filterLabel}`);
+    } catch (err) {
+      console.error("Lỗi xuất file TXT:", err);
+      alert("Có lỗi xảy ra khi tải dữ liệu phòng!");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // HÀM XỬ LÝ XUẤT FILE EXCEL (ĐỒNG BỘ THEO BỘ LỌC)
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      const url = floor
+        ? `/api/rooms/floor/${floor}?page=0&size=9999&sortBy=roomNumber&direction=asc`
+        : status === "ALL"
+          ? `/api/rooms?page=0&size=9999&sortBy=${sortBy}&direction=${direction}`
+          : `/api/rooms/status/${status}?page=0&size=9999&sortBy=roomNumber&direction=asc`;
+
+      const res = await api.get(url);
+      const allRooms: Room[] = res.data?.content ?? [];
+
+      if (allRooms.length === 0) {
+        alert("Không có dữ liệu phòng để xuất!");
+        return;
+      }
+
+      const excelData = allRooms.map((r, index) => ({
+        "STT": index + 1,
+        "Số Phòng": r.roomNumber,
+        "Tầng số": r.floorNumber,
+        "Tên Loại Phòng": r.roomType?.roomType ?? "N/A",
+        "Giá Phòng / Đêm (VND)": r.roomType?.price ?? 0,
+        "Sức Chứa (Người)": r.roomType?.capacity ?? 0,
+        "Trạng Thái Hiện Tại": r.status ?? "N/A",
+      }));
+
+      const filterLabel = floor ? `tang-${floor}` : status.toLowerCase();
+      exportToExcel(excelData, "Danh Sách Phòng", `danh-sach-phong-${filterLabel}-excel`);
+    } catch (err) {
+      console.error("Lỗi xuất file Excel:", err);
+      alert("Có lỗi xảy ra khi tải dữ liệu phòng!");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   async function handleCreate() {
     if (!form.roomNumber || !form.roomTypeId) return;
@@ -98,14 +175,14 @@ export default function RoomsPage() {
   async function handleUpdate() {
     if (!editRoom || !form.roomNumber || !form.roomTypeId) return;
     setSaving(true);
-    setError(""); // ← có dòng này chưa?
+    setError("");
     try {
       await api.put(`/api/rooms/${editRoom.id}`, form);
       setEditRoom(null);
       setForm(DEFAULT_FORM);
       setRefresh((r) => r + 1);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra"); // ← có dòng này chưa?
+      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
     } finally {
       setSaving(false);
     }
@@ -144,15 +221,33 @@ export default function RoomsPage() {
             Tổng: {data?.totalElements ?? "..."} phòng
           </p>
         </div>
-        <button
-          onClick={() => {
-            setShowModal(true);
-            setForm(DEFAULT_FORM);
-          }}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
-        >
-          + Thêm phòng
-        </button>
+
+        {/* Khối nút chức năng góc phải */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportTxt}
+            disabled={loading || exporting}
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+          >
+            {exporting ? "Đang xuất..." : "Xuất TXT"}
+          </button>
+          <button
+            onClick={handleExportExcel}
+            disabled={loading || exporting}
+            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+          >
+            {exporting ? "Đang xuất..." : "Xuất Excel"}
+          </button>
+          <button
+            onClick={() => {
+              setShowModal(true);
+              setForm(DEFAULT_FORM);
+            }}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
+          >
+            + Thêm phòng
+          </button>
+        </div>
       </div>
 
       {/* Modal Thêm */}

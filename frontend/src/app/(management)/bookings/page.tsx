@@ -8,11 +8,13 @@ import BookingFilter from "@/components/bookings/BookingFilter";
 import BookingPagination from "@/components/bookings/BookingPagination";
 import BookingDetailModal from "@/components/bookings/BookingDetailModal";
 import BookingCreateModal from "@/components/bookings/BookingCreateModal";
+import { exportToTxt, exportToExcel } from "@/components/export";
 
 export default function BookingsPage() {
   const [data, setData] = useState<BookingPageData | null>(null);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false); // Trạng thái khi đang tải dữ liệu xuất file
   const [status, setStatus] = useState("ALL");
   const [refresh, setRefresh] = useState(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -38,9 +40,83 @@ export default function BookingsPage() {
         setLoading(false);
       }
     }
-    // Đã fix: Thêm từ khóa void để chặn warning "Promise returned is ignored"
     void fetchBookings();
   }, [page, status, refresh]);
+
+  // HÀM XỬ LÝ XUẤT FILE TXT (ĐỒNG BỘ THEO STATUS)
+  const handleExportTxt = async () => {
+    setExporting(true);
+    try {
+      const url =
+          status === "ALL"
+              ? `/api/bookings?page=0&size=9999`
+              : `/api/bookings/status/${status}?page=0&size=9999`;
+      const res = await api.get(url);
+      const allBookings: Booking[] = res.data?.content ?? [];
+
+      if (allBookings.length === 0) {
+        alert("Không có dữ liệu đặt phòng để xuất!");
+        return;
+      }
+
+      const txtData = allBookings.map((b) => ({
+        "Mã Đơn": b.id,
+        "Khách Hàng": b.customer?.fullName ?? "N/A",
+        "Số Phòng": b.room?.roomNumber ?? "N/A",
+        "Ngày Check-in": b.checkInDate ?? "N/A",
+        "Ngày Check-out": b.checkOutDate ?? "N/A",
+        "Trạng Thái Đơn": b.status ?? "N/A",
+        "Thanh Toán": b.payment?.paymentStatus ?? "PENDING",
+      }));
+
+      exportToTxt(txtData, `Danh sách đặt phòng (${status})`, `dat-phong-${status.toLowerCase()}`);
+    } catch (err) {
+      console.error("Lỗi xuất file TXT:", err);
+      alert("Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // HÀM XỬ LÝ XUẤT FILE EXCEL (ĐỒNG BỘ THEO STATUS)
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      const url =
+          status === "ALL"
+              ? `/api/bookings?page=0&size=9999`
+              : `/api/bookings/status/${status}?page=0&size=9999`;
+      const res = await api.get(url);
+      const allBookings: Booking[] = res.data?.content ?? [];
+
+      if (allBookings.length === 0) {
+        alert("Không có dữ liệu đặt phòng để xuất!");
+        return;
+      }
+
+      const excelData = allBookings.map((b, index) => ({
+        "STT": index + 1,
+        "Mã Đặt Phòng": b.id,
+        "Tên Khách Hàng": b.customer?.fullName ?? "N/A",
+        "Số Điện Thoại": b.customer?.phone ?? "N/A",
+        "Số Phòng": b.room?.roomNumber ?? "N/A",
+        "Loại Phòng": b.room?.roomType ?? "N/A",
+        "Ngày Vào": b.checkInDate ?? "N/A",
+        "Ngày Ra": b.checkOutDate ?? "N/A",
+        "Trạng Thái Đơn": b.status ?? "N/A",
+        "Phương Thức TT": b.payment?.paymentMethod ?? "N/A",
+        "Trạng Thái TT": b.payment?.paymentStatus ?? "PENDING",
+        "Tổng Tiền (VND)": b.totalAmount ?? 0,
+      }));
+
+      exportToExcel(excelData, "Đặt Phòng", `dat-phong-${status.toLowerCase()}-excel`);
+    } catch (err) {
+      console.error("Lỗi xuất file Excel:", err);
+      alert("Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   async function handleCheckin(id: number) {
     try {
@@ -52,7 +128,6 @@ export default function BookingsPage() {
   }
 
   async function handleCheckout(booking: Booking) {
-    // Đã fix: Ép kiểu an toàn (Safe Type Assertion) thay vì dùng "any"
     type ExtendedBooking = Booking & { paymentMethod?: string };
 
     const method = booking.payment?.paymentMethod || (booking as ExtendedBooking).paymentMethod;
@@ -99,12 +174,29 @@ export default function BookingsPage() {
             </p>
           </div>
 
-          <button
-              onClick={() => setShowCreateModal(true)}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
-          >
-            + Đặt phòng
-          </button>
+          {/* Khối nút bấm chức năng */}
+          <div className="flex items-center gap-2">
+            <button
+                onClick={handleExportTxt}
+                disabled={loading || exporting}
+                className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+            >
+              {exporting ? "Đang xuất..." : "Xuất TXT"}
+            </button>
+            <button
+                onClick={handleExportExcel}
+                disabled={loading || exporting}
+                className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+            >
+              {exporting ? "Đang xuất..." : "Xuất Excel"}
+            </button>
+            <button
+                onClick={() => setShowCreateModal(true)}
+                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
+            >
+              + Đặt phòng
+            </button>
+          </div>
         </div>
 
         {showCreateModal && (
@@ -135,7 +227,6 @@ export default function BookingsPage() {
                 </p>
 
                 <div className="mx-auto bg-zinc-50 rounded-lg p-2 mb-6 w-48 h-48 flex items-center justify-center border border-zinc-200">
-                  {/* Đã fix: Thêm cờ disable ESLint cho dòng img này để không bị báo vàng */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                       src={`https://img.vietqr.io/image/MB-0332458381-compact2.png?amount=6800000&addInfo=Thanh toan don ${qrCheckoutBooking.id}&accountName=VU TIEN`}

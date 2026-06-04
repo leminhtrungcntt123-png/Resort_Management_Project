@@ -6,6 +6,7 @@ import { Customer, CustomerPageData, CustomerForm } from "@/types/customer";
 import CustomerTable from "@/components/customers/CustomerTable";
 import CustomerModal from "@/components/customers/CustomerModal";
 import CustomerPagination from "@/components/customers/CustomerPagination";
+import { exportToTxt, exportToExcel } from "@/components/export";
 
 const DEFAULT_FORM: CustomerForm = {
   fullName: "",
@@ -17,6 +18,7 @@ export default function CustomersPage() {
   const [data, setData] = useState<CustomerPageData | null>(null);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false); // Trạng thái riêng khi đang xuất file
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [saving, setSaving] = useState(false);
@@ -36,7 +38,6 @@ export default function CustomersPage() {
           : `/api/customers?page=${page}&size=10&sortBy=fullName&direction=asc`;
         const res = await api.get(url);
         console.log("search res:", JSON.stringify(res));
-        // Search trả về List, getAll trả về PageData
         if (search) {
           const list = res.data ?? [];
           setData({
@@ -57,6 +58,63 @@ export default function CustomersPage() {
     }
     fetchCustomers();
   }, [page, search, refresh]);
+
+  // HÀM XỬ LÝ XUẤT FILE TXT (LẤY TOÀN BỘ)
+  const handleExportTxt = async () => {
+    setExporting(true);
+    try {
+      const res = await api.get(`/api/customers?page=0&size=9999&sortBy=fullName&direction=asc`);
+      const allCustomers: Customer[] = res.data?.content ?? [];
+
+      if (allCustomers.length === 0) {
+        alert("Không có dữ liệu khách hàng nào để xuất!");
+        return;
+      }
+
+      const txtData = allCustomers.map((c) => ({
+        "Mã KH": c.id,
+        "Họ và Tên": c.fullName,
+        "Số điện thoại": c.phone ?? "N/A",
+        "Email": c.email ?? "N/A",
+      }));
+
+      exportToTxt(txtData, "Danh sách toàn bộ khách hàng", "danh-sach-khach-hang");
+    } catch (err) {
+      console.error("Lỗi khi xuất file TXT:", err);
+      alert("Có lỗi xảy ra khi tải dữ liệu!");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // HÀM XỬ LÝ XUẤT FILE EXCEL (LẤY TOÀN BỘ)
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      const res = await api.get(`/api/customers?page=0&size=9999&sortBy=fullName&direction=asc`);
+      const allCustomers: Customer[] = res.data?.content ?? [];
+
+      if (allCustomers.length === 0) {
+        alert("Không có dữ liệu khách hàng nào để xuất!");
+        return;
+      }
+
+      const excelData = allCustomers.map((c, index) => ({
+        "STT": index + 1,
+        "Mã Khách Hàng": c.id,
+        "Họ và Tên": c.fullName,
+        "Số Điện Thoại": c.phone ?? "N/A",
+        "Email": c.email ?? "N/A",
+      }));
+
+      exportToExcel(excelData, "Khách Hàng", "tat-ca-khach-hang-excel");
+    } catch (err) {
+      console.error("Lỗi khi xuất file Excel:", err);
+      alert("Có lỗi xảy ra khi tải dữ liệu!");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   async function handleCreate() {
     if (!form.fullName) return;
@@ -122,15 +180,33 @@ export default function CustomersPage() {
             Tổng: {data?.totalElements ?? "..."} khách hàng
           </p>
         </div>
-        <button
-          onClick={() => {
-            setShowModal(true);
-            setForm(DEFAULT_FORM);
-          }}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
-        >
-          + Thêm khách hàng
-        </button>
+
+        {/* Nhóm nút chức năng bên phải */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportTxt}
+            disabled={loading || exporting}
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
+          >
+            {exporting ? "Đang xử lý..." : "Xuất TXT"}
+          </button>
+          <button
+            onClick={handleExportExcel}
+            disabled={loading || exporting}
+            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            {exporting ? "Đang xử lý..." : "Xuất Excel"}
+          </button>
+          <button
+            onClick={() => {
+              setShowModal(true);
+              setForm(DEFAULT_FORM);
+            }}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
+          >
+            + Thêm khách hàng
+          </button>
+        </div>
       </div>
 
       {/* Modal Thêm */}
