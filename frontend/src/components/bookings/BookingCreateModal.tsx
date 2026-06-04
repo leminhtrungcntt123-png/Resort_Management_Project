@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/apiClient";
 
-// Đã fix: Định nghĩa chuẩn Type cho các state
 interface CustomerOption {
     id: number;
     fullName: string;
@@ -18,7 +17,6 @@ interface RoomOption {
     };
 }
 
-// Đã fix: Khai báo interface Props để Next.js hiểu onClose và onSuccess
 interface BookingCreateModalProps {
     onClose: () => void;
     onSuccess: () => void;
@@ -42,6 +40,9 @@ export default function BookingCreateModal({ onClose, onSuccess }: BookingCreate
 
     const [customers, setCustomers] = useState<CustomerOption[]>([]);
     const [rooms, setRooms] = useState<RoomOption[]>([]);
+
+    // Lấy ngày hiện tại chuẩn YYYY-MM-DD để chặn đặt phòng quá khứ
+    const todayStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
     useEffect(() => {
         async function fetchOptions() {
@@ -184,6 +185,7 @@ export default function BookingCreateModal({ onClose, onSuccess }: BookingCreate
                             <label className="mb-1 block text-sm font-medium text-zinc-700">Ngày Check-in *</label>
                             <input
                                 type="date"
+                                min={todayStr}
                                 value={checkInDate}
                                 onChange={(e) => setCheckInDate(e.target.value)}
                                 className="w-full rounded-lg border border-zinc-300 p-2.5 outline-none text-sm"
@@ -193,6 +195,7 @@ export default function BookingCreateModal({ onClose, onSuccess }: BookingCreate
                             <label className="mb-1 block text-sm font-medium text-zinc-700">Ngày Check-out *</label>
                             <input
                                 type="date"
+                                min={checkInDate || todayStr}
                                 value={checkOutDate}
                                 onChange={(e) => setCheckOutDate(e.target.value)}
                                 className="w-full rounded-lg border border-zinc-300 p-2.5 outline-none text-sm"
