@@ -1,39 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { getJwtPayload, formatRole } from "@/lib/auth";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { LogOut } from "lucide-react";
 
 const ROLE_BADGE: Record<string, string> = {
-  ROLE_ADMIN: "bg-red-100 text-red-700 border border-red-200",
-  ROLE_MANAGER: "bg-blue-100 text-blue-700 border border-blue-200",
-  ROLE_RECEPTIONIST: "bg-zinc-100 text-zinc-600 border border-zinc-200",
+  ADMIN:        "bg-red-100 text-red-700 border border-red-200",
+  MANAGER:      "bg-blue-100 text-blue-700 border border-blue-200",
+  RECEPTIONIST: "bg-zinc-100 text-zinc-600 border border-zinc-200",
 };
 
 export default function Header() {
-  const [username, setUsername] = useState("");
-  const [role, setRole] = useState("");
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { username, role, formattedRole } = useAuth(); // ← lấy từ AuthContext
+  const [open, setOpen]                   = useState(false);
+  const dropdownRef                       = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const payload = getJwtPayload();
-    if (payload) {
-      setUsername(payload.sub);
-      setRole(payload.role);
-    }
-  }, []);
-
-  // Đóng dropdown khi click ra ngoài
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
         setOpen(false);
-      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -44,16 +30,13 @@ export default function Header() {
     window.location.href = "/login";
   }
 
-  const avatar = username ? username.charAt(0).toUpperCase() : "?";
-  const badgeStyle = ROLE_BADGE[role] ?? ROLE_BADGE.ROLE_RECEPTIONIST;
+  const avatar     = username ? username.charAt(0).toUpperCase() : "?";
+  const badgeStyle = ROLE_BADGE[role ?? ""] ?? ROLE_BADGE.ROLE_RECEPTIONIST;
 
   return (
-    <header
-      className="sticky top-0 z-40 flex h-16 w-full items-center
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center
                        justify-between border-b border-zinc-200
-                       bg-white/80 px-6 backdrop-blur-md"
-    >
-      {/* Trái: Status */}
+                       bg-white/80 px-6 backdrop-blur-md">
       <div className="flex items-center gap-2">
         <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
         <p className="text-xs font-medium text-zinc-500 tracking-wider uppercase">
@@ -61,38 +44,28 @@ export default function Header() {
         </p>
       </div>
 
-      {/* Phải: Language + User */}
       <div className="flex items-center gap-4">
         <LanguageSwitcher />
 
         {username && (
           <div className="relative" ref={dropdownRef}>
-            {/* Trigger: badge + avatar */}
             <button
               onClick={() => setOpen((o) => !o)}
               className="flex items-center gap-2.5 rounded-xl border border-zinc-200
                          bg-white px-3 py-1.5 shadow-sm transition hover:bg-zinc-50"
             >
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeStyle}`}
-              >
-                {formatRole(role)}
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeStyle}`}>
+                {formattedRole}
               </span>
-              <div
-                className="flex h-7 w-7 items-center justify-center
-                              rounded-full bg-zinc-900 text-xs font-bold text-white"
-              >
+              <div className="flex h-7 w-7 items-center justify-center
+                              rounded-full bg-zinc-900 text-xs font-bold text-white">
                 {avatar}
               </div>
             </button>
 
-            {/* Dropdown */}
             {open && (
-              <div
-                className="absolute right-0 top-11 w-48 rounded-xl border border-zinc-200
-                              bg-white shadow-lg overflow-hidden z-50"
-              >
-                {/* Logout */}
+              <div className="absolute right-0 top-11 w-48 rounded-xl border
+                              border-zinc-200 bg-white shadow-lg overflow-hidden z-50">
                 <button
                   onClick={handleLogout}
                   className="flex w-full items-center gap-2.5 px-4 py-3 text-sm
