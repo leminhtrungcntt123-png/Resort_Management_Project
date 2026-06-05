@@ -7,6 +7,7 @@ import EmployeeTable      from "@/components/employees/EmployeeTable";
 import EmployeeModal      from "@/components/employees/EmployeeModal";
 import EmployeePagination from "@/components/employees/EmployeePagination";
 import { exportToTxt, exportToExcel } from "@/components/export";
+import { useLang } from "@/contexts/LangContext";
 
 const DEFAULT_FORM: EmployeeForm = {
     fullName: "",
@@ -17,10 +18,12 @@ const DEFAULT_FORM: EmployeeForm = {
 };
 
 export default function EmployeesPage() {
+    const { t, lang } = useLang();
+
     const [data, setData]               = useState<EmployeePageData | null>(null);
     const [page, setPage]               = useState(0);
     const [loading, setLoading]         = useState(true);
-    const [exporting, setExporting]     = useState(false); // Trạng thái khi đang tải dữ liệu xuất file
+    const [exporting, setExporting]     = useState(false);
     const [saving, setSaving]           = useState(false);
     const [form, setForm]               = useState<EmployeeForm>(DEFAULT_FORM);
     const [showModal, setShowModal]     = useState(false);
@@ -46,7 +49,7 @@ export default function EmployeesPage() {
         fetchEmployees();
     }, [page, refresh]);
 
-    // HÀM XỬ LÝ XUẤT FILE TXT (LẤY TOÀN BỘ)
+    // HÀM XỬ LÝ XUẤT FILE TXT
     const handleExportTxt = async () => {
         setExporting(true);
         try {
@@ -54,29 +57,37 @@ export default function EmployeesPage() {
             const allEmployees: Employee[] = res.data?.content ?? [];
 
             if (allEmployees.length === 0) {
-                alert("Không có dữ liệu nhân viên nào để xuất!");
+                alert(t?.employees?.alerts?.noData || "Không có dữ liệu nhân viên nào để xuất!");
                 return;
             }
 
+            const headers = t?.employees?.tableHeaders;
+
             const txtData = allEmployees.map((e) => ({
-                "Mã NV": e.id,
-                "Họ và Tên": e.fullName,
-                "Chức Vụ": e.position ?? "N/A",
-                "Số điện thoại": e.phone ?? "N/A",
-                "Email": e.email ?? "N/A",
-                "Mức Lương": `${e.salary?.toLocaleString("vi-VN")}đ`,
+                [lang === "en" ? "Emp ID" : "Mã NV"]: e.id,
+                [headers?.name || "Họ và Tên"]: e.fullName,
+                [headers?.position || "Chức Vụ"]: e.position ?? "N/A",
+                [headers?.phone || "Số điện thoại"]: e.phone ?? "N/A",
+                [headers?.email || "Email"]: e.email ?? "N/A",
+                [headers?.salary || "Mức Lương"]: lang === "en"
+                    ? `${e.salary?.toLocaleString("en-US")} VND`
+                    : `${e.salary?.toLocaleString("vi-VN")}đ`,
             }));
 
-            exportToTxt(txtData, "Danh sách toàn bộ nhân viên", "tat-ca-nhân-vien");
+            exportToTxt(
+                txtData,
+                t?.employees?.txtFileName || "Danh sách toàn bộ nhân viên",
+                t?.employees?.txtFileTitle || "tat-ca-nhan-vien"
+            );
         } catch (err) {
             console.error("Lỗi khi xuất file TXT:", err);
-            alert("Có lỗi xảy ra khi tải dữ liệu nhân viên!");
+            alert(t?.employees?.alerts?.errorFetch || "Có lỗi xảy ra khi tải dữ liệu nhân viên!");
         } finally {
             setExporting(false);
         }
     };
 
-    // HÀM XỬ LÝ XUẤT FILE EXCEL (LẤY TOÀN BỘ)
+    // HÀM XỬ LÝ XUẤT FILE EXCEL
     const handleExportExcel = async () => {
         setExporting(true);
         try {
@@ -84,24 +95,30 @@ export default function EmployeesPage() {
             const allEmployees: Employee[] = res.data?.content ?? [];
 
             if (allEmployees.length === 0) {
-                alert("Không có dữ liệu nhân viên nào để xuất!");
+                alert(t?.employees?.alerts?.noData || "Không có dữ liệu nhân viên nào để xuất!");
                 return;
             }
 
+            const headers = t?.employees?.tableHeaders;
+
             const excelData = allEmployees.map((e, index) => ({
-                "STT": index + 1,
-                "Mã Nhân Viên": e.id,
-                "Họ và Tên": e.fullName,
-                "Chức Vụ": e.position ?? "N/A",
-                "Số Điện Thoại": e.phone ?? "N/A",
-                "Email": e.email ?? "N/A",
-                "Mức Lương (VND)": e.salary ?? 0,
+                [lang === "en" ? "No." : "STT"]: index + 1,
+                [lang === "en" ? "Employee ID" : "Mã Nhân Viên"]: e.id,
+                [headers?.name || "Họ và Tên"]: e.fullName,
+                [headers?.position || "Chức Vụ"]: e.position ?? "N/A",
+                [headers?.phone || "Số Điện Thoại"]: e.phone ?? "N/A",
+                [headers?.email || "Email"]: e.email ?? "N/A",
+                [lang === "en" ? "Salary (VND)" : "Mức Lương (VND)"]: e.salary ?? 0,
             }));
 
-            exportToExcel(excelData, "Nhân Viên", "danh-sach-nhan-vien-excel");
+            exportToExcel(
+                excelData,
+                t?.employees?.excelSheetName || "Nhân Viên",
+                t?.employees?.excelFileName || "danh-sach-nhan-vien-excel"
+            );
         } catch (err) {
             console.error("Lỗi khi xuất file Excel:", err);
-            alert("Có lỗi xảy ra khi tải dữ liệu nhân viên!");
+            alert(t?.employees?.alerts?.errorFetch || "Có lỗi xảy ra khi tải dữ liệu nhân viên!");
         } finally {
             setExporting(false);
         }
@@ -117,7 +134,7 @@ export default function EmployeesPage() {
             setForm(DEFAULT_FORM);
             setRefresh(r => r + 1);
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+            setError(err instanceof Error ? err.message : (t?.employees?.alerts?.errorDefault || "Có lỗi xảy ra"));
         } finally {
             setSaving(false);
         }
@@ -133,7 +150,7 @@ export default function EmployeesPage() {
             setForm(DEFAULT_FORM);
             setRefresh(r => r + 1);
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+            setError(err instanceof Error ? err.message : (t?.employees?.alerts?.errorDefault || "Có lỗi xảy ra"));
         } finally {
             setSaving(false);
         }
@@ -167,9 +184,11 @@ export default function EmployeesPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-semibold text-zinc-900">Quản lý Nhân viên</h2>
+                    <h2 className="text-2xl font-semibold text-zinc-900">
+                        {t?.employees?.title || "Quản lý Nhân viên"}
+                    </h2>
                     <p className="mt-1 text-sm text-zinc-500">
-                        Tổng: {data?.totalElements ?? "..."} nhân viên
+                        {t?.employees?.totalPrefix || "Tổng:"} {data?.totalElements ?? "..."} {t?.employees?.totalSuffix || "nhân viên"}
                     </p>
                 </div>
 
@@ -180,19 +199,23 @@ export default function EmployeesPage() {
                         disabled={loading || exporting}
                         className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
                     >
-                        {exporting ? "Đang xuất..." : "Xuất TXT"}
+                        {exporting
+                            ? (lang === "en" ? "Exporting..." : "Đang xuất...")
+                            : (lang === "en" ? "Export TXT" : "Xuất TXT")}
                     </button>
                     <button
                         onClick={handleExportExcel}
                         disabled={loading || exporting}
                         className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                     >
-                        {exporting ? "Đang xuất..." : "Xuất Excel"}
+                        {exporting
+                            ? (lang === "en" ? "Exporting..." : "Đang xuất...")
+                            : (lang === "en" ? "Export Excel" : "Xuất Excel")}
                     </button>
                     <button
                         onClick={() => { setShowModal(true); setForm(DEFAULT_FORM); }}
                         className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors">
-                        + Thêm nhân viên
+                        {t?.employees?.btnAdd || "+ Thêm nhân viên"}
                     </button>
                 </div>
             </div>
@@ -228,20 +251,22 @@ export default function EmployeesPage() {
             {deleteId && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                     <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-                        <h3 className="text-lg font-semibold text-zinc-900">Xác nhận xóa</h3>
+                        <h3 className="text-lg font-semibold text-zinc-900">
+                            {t?.employees?.confirmDelete?.title || "Xác nhận xóa"}
+                        </h3>
                         <p className="mt-2 text-sm text-zinc-500">
-                            Bạn có chắc muốn xóa nhân viên này không?
+                            {t?.employees?.confirmDelete?.message || "Bạn có chắc muốn xóa nhân viên này không?"}
                         </p>
                         <div className="mt-6 flex justify-end gap-2">
                             <button
                                 onClick={() => setDeleteId(null)}
                                 className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50">
-                                Hủy
+                                {t?.employees?.btnCancel || "Hủy"}
                             </button>
                             <button
                                 onClick={handleDelete}
                                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500">
-                                Xóa
+                                {t?.employees?.confirmDelete?.btnDelete || "Xóa"}
                             </button>
                         </div>
                     </div>

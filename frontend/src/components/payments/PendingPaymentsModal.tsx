@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/apiClient";
 import { Payment } from "@/types/payment";
+import { useLang } from "@/contexts/LangContext";
 
 interface Props {
   onClose: () => void;
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
+  const { t, lang } = useLang(); // Gọi hook dịch ngôn ngữ
+
   const [payments, setPayments] = useState<Payment[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(0);
@@ -63,13 +66,12 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
     setConfirming(true);
     setError("");
     try {
-      // Gọi song song tất cả, không chờ từng cái
       await Promise.all(
         [...selected].map((id) => api.patch(`/api/payments/${id}/pay`))
       );
       onConfirmed();
     } catch (err) {
-      setError("Có lỗi xảy ra, vui lòng thử lại.");
+      setError(lang === "en" ? "An error occurred, please try again." : "Có lỗi xảy ra, vui lòng thử lại.");
       console.error(err);
     } finally {
       setConfirming(false);
@@ -90,10 +92,10 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-zinc-900">
-              Thanh toán chờ xử lý
+              {lang === "en" ? "Pending Payments" : "Thanh toán chờ xử lý"}
             </h3>
             <p className="mt-0.5 text-sm text-zinc-500">
-              Đã chọn: {selected.size} hóa đơn
+              {lang === "en" ? `Selected: ${selected.size} invoices` : `Đã chọn: ${selected.size} hóa đơn`}
             </p>
           </div>
           <button
@@ -124,24 +126,24 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
                     className="cursor-pointer"
                   />
                 </th>
-                <th className="px-4 py-3">Booking ID</th>
-                <th className="px-4 py-3">Số tiền</th>
-                <th className="px-4 py-3">Phương thức</th>
-                <th className="px-4 py-3">Ngày tạo</th>
-                <th className="px-4 py-3">Thao tác</th>
+                <th className="px-4 py-3">{t?.payments?.tableHeaders?.booking || "Booking ID"}</th>
+                <th className="px-4 py-3">{t?.payments?.tableHeaders?.amount || "Số tiền"}</th>
+                <th className="px-4 py-3">{t?.payments?.tableHeaders?.method || "Phương thức"}</th>
+                <th className="px-4 py-3">{lang === "en" ? "Created Date" : "Ngày tạo"}</th>
+                <th className="px-4 py-3">{t?.payments?.tableHeaders?.actions || "Thao tác"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="py-10 text-center text-zinc-400">
-                    Đang tải...
+                    {t?.payments?.loading || "Đang tải..."}
                   </td>
                 </tr>
               ) : payments.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-10 text-center text-zinc-400">
-                    🎉 Không có hóa đơn nào chờ xử lý!
+                    {lang === "en" ? "🎉 No pending invoices found!" : "🎉 Không có hóa đơn nào chờ xử lý!"}
                   </td>
                 </tr>
               ) : (
@@ -162,11 +164,13 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
                     </td>
                     <td className="px-4 py-3 font-medium">#{p.bookingId}</td>
                     <td className="px-4 py-3 text-green-700 font-medium">
-                      {p.amount.toLocaleString("vi-VN")}đ
+                      {lang === "en"
+                        ? `${p.amount.toLocaleString("en-US")} VND`
+                        : `${p.amount.toLocaleString("vi-VN")}đ`}
                     </td>
                     <td className="px-4 py-3">{p.paymentMethod}</td>
                     <td className="px-4 py-3 text-zinc-400">
-                      {new Date(p.createdAt).toLocaleDateString("vi-VN")}
+                      {new Date(p.createdAt).toLocaleDateString(lang === "en" ? "en-US" : "vi-VN")}
                     </td>
                     {/* Xác nhận từng cái */}
                     <td className="px-4 py-3">
@@ -176,13 +180,17 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
                             await api.patch(`/api/payments/${p.id}/pay`);
                             onConfirmed();
                           } catch {
-                            setError("Không thể xác nhận hóa đơn #" + p.bookingId);
+                            setError(
+                              lang === "en"
+                                ? `Cannot confirm invoice #${p.bookingId}`
+                                : `Không thể xác nhận hóa đơn #${p.bookingId}`
+                            );
                           }
                         }}
                         className="rounded-lg bg-green-100 px-3 py-1 text-xs
                                    font-medium text-green-700 hover:bg-green-200 transition"
                       >
-                        Xác nhận
+                        {t?.payments?.actionButtons?.confirm || "Xác nhận"}
                       </button>
                     </td>
                   </tr>
@@ -200,17 +208,17 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
               disabled={page === 0}
               className="rounded-lg border px-3 py-1 disabled:opacity-40 hover:bg-zinc-50"
             >
-              ← Trước
+              ← {t?.pagination?.prev || "Trước"}
             </button>
             <span className="text-zinc-500">
-              {page + 1} / {totalPages}
+              {t?.pagination?.page || "Trang"} {page + 1} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={page >= totalPages - 1}
               className="rounded-lg border px-3 py-1 disabled:opacity-40 hover:bg-zinc-50"
             >
-              Sau →
+              {t?.pagination?.next || "Sau"} →
             </button>
           </div>
         )}
@@ -222,7 +230,7 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
             className="rounded-lg border border-zinc-200 px-4 py-2 text-sm
                        text-zinc-600 hover:bg-zinc-50 transition"
           >
-            Đóng
+            {t?.payments?.modalDetail?.btnClose || "Đóng"}
           </button>
           <button
             onClick={handleConfirmSelected}
@@ -231,8 +239,10 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
                        text-white hover:bg-yellow-600 disabled:opacity-40 transition"
           >
             {confirming
-              ? "Đang xử lý..."
-              : `Xác nhận ${selected.size} hóa đơn`}
+              ? (lang === "en" ? "Processing..." : "Đang xử lý...")
+              : lang === "en"
+                ? `Confirm ${selected.size} invoices`
+                : `Xác nhận ${selected.size} hóa đơn`}
           </button>
         </div>
       </div>

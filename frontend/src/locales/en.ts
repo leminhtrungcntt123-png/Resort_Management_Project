@@ -105,6 +105,34 @@ const en = {
         prev: "Previous",
         next: "Next",
         pageOf: "Page {current} of {total}"
+      },
+      form: {
+        createTitle: "Create New Booking",
+        detailTitle: "Booking Details",
+        customerInfo: "Customer Information",
+        newCustomerCheckbox: "+ Add new customer",
+        labelCheckIn: "Check-in Date *",
+        labelCheckOut: "Check-out Date *",
+        labelSelectRoom: "Select Room *",
+        placeholderSelectRoom: "-- Show AVAILABLE rooms only --",
+        labelPaymentMethod: "Payment Method",
+        placeholderSelectCustomer: "-- Look up existing customer --",
+        labelRooms: "Rooms",
+        labelServices: "Services",
+        labelNight: "night",
+        labelTotalAmount: "Total Amount",
+        labelStatus: "Status",
+        methods: {
+          CASH: "Cash (CASH)",
+          CARD: "Credit Card (CARD)",
+          QR: "Bank Transfer / QR Code (QR)"
+        },
+        alerts: {
+          fillRequired: "Please fill in all room and date details.",
+          newCustRequired: "Please enter Full Name and Phone Number for the new customer.",
+          oldCustRequired: "Please select an existing customer.",
+          errorDefault: "An error occurred during processing"
+        }
       }
   },
   rooms: {
@@ -171,6 +199,25 @@ const en = {
     actionButtons: {
       edit: "Edit",
       delete: "Delete"
+    },
+    modal: {
+    createTitle: "Add New Room",
+    editTitle: "Edit Room",
+    roomNumber: "Room Number",
+    placeholderRoomNumber: "E.g., 101",
+    floorNumber: "Floor",
+    roomType: "Room Type",
+    placeholderSelectType: "-- Select room type --",
+    status: "Status",
+    statusOptions: {
+      AVAILABLE: "Available",
+      OCCUPIED: "Occupied",
+      MAINTENANCE: "Maintenance"
+    },
+    btnCancel: "Cancel",
+    btnSave: "Save",
+    btnUpdate: "Update",
+    btnSaving: "Saving..."
     }
   },
     customers: {
@@ -229,8 +276,142 @@ const en = {
     actionButtons: {
     edit: "Edit",
     delete: "Delete"
-  }
-  }
+    }
+  },
+  payments: {
+    title: "Payment Management",
+    totalPrefix: "Total:",
+    totalSuffix: "invoices",
+    btnExportTxt: "Export TXT",
+    btnExportExcel: "Export Excel",
+    statusProcessing: "Exporting...",
+    alertNoData: "No invoice data available to export!",
+    alertError: "An error occurred while fetching invoice data!",
+    statsTotal: "Total Invoices",
+    statsPending: "Unpaid / Pending",
+    statsPendingViewAll: "View all →",
+    statsRevenue: "Revenue this period",
+    notPaidYet: "Unpaid",
+    txtFileName: "Payment Invoice List",
+    txtFileTitle: "all-invoices",
+    excelSheetName: "Invoices",
+    excelFileName: "excel-revenue-report",
+    // Các trường header cho file xuất dữ liệu
+    exportFields: {
+      billId: "Bill ID",
+      bookingId: "Booking ID",
+      amount: "Amount",
+      amountVnd: "Amount (VND)",
+      method: "Method",
+      methodExcel: "Payment Method",
+      status: "Status",
+      statusExcel: "Payment Status",
+      date: "Payment Date",
+      customer: "Customer",
+      stt: "No."
+    },
+    loading: "Loading invoice list...",
+    empty: "No matching invoices found.",
+    tableHeaders: {
+      id: "ID",
+      booking: "Booking",
+      amount: "Amount",
+      method: "Method",
+      status: "Status",
+      date: "Payment Date",
+      actions: "Actions"
+    },
+    status: {
+      PAID: "Paid",
+      PENDING: "Pending"
+    },
+    actionButtons: {
+      confirm: "Confirm",
+      detail: "Detail",
+      edit: "Edit",
+      delete: "Delete"
+    },
+    alerts: {
+      confirmDelete: "Delete invoice #{id}?",
+      deleteError: "Cannot delete invoice!"
+    },
+    modalDetail: {
+      title: "Invoice Details #{id}",
+      bookingRef: "Booking #{id}",
+      sectionBilling: "Billing Information",
+      sectionCustomer: "Customer Information",
+      sectionRooms: "Reserved Rooms",
+      sectionServices: "Services Used",
+      sectionStay: "Stay Period",
+      labelAmount: "Amount",
+      labelMethod: "Method",
+      labelStatus: "Status",
+      labelDate: "Payment Date",
+      labelName: "Full Name",
+      labelPhone: "Phone",
+      labelEmail: "Email",
+      labelRoom: "Room {number} — {type}",
+      labelService: "{name} × {qty}",
+      labelCheckIn: "Check-in",
+      labelCheckOut: "Check-out",
+      labelBookingStatus: "Booking Status",
+      btnClose: "Close"
+    },
+    modalEdit: {
+      title: "Edit Invoice #{id}",
+      labelMethod: "Payment Method",
+      btnCancel: "Cancel",
+      btnSave: "Save Changes",
+      saving: "Saving...",
+      errorDefault: "An error occurred"
+    },
+  },
+  pagination: {
+    page: "Page",
+    prev: "Prev",
+    next: "Next"
+    },
+    chart: {
+    title: "Revenue Statistics",
+    periodMonth: "Monthly",
+    periodYear: "Yearly",
+    periodWeek: "Weekly",
+    revenue: "Revenue"
+  },
+  employees: {
+    title: "Employee Management",
+    totalPrefix: "Total:",
+    totalSuffix: "employees",
+    btnAdd: "+ Add employee",
+    loading: "Loading employees...",
+    empty: "No matching employees found.",
+    btnCancel: "Cancel",
+    btnSave: "Save Changes",
+    btnCreate: "Add New",
+    saving: "Saving...",
+    txtFileName: "Full Employee List",
+    txtFileTitle: "all-employees",
+    excelSheetName: "Employees",
+    excelFileName: "excel-employees-report",
+    tableHeaders: {
+      name: "Full Name",
+      phone: "Phone",
+      email: "Email",
+      position: "Position",
+      salary: "Salary",
+      actions: "Actions"
+    },
+    confirmDelete: {
+      title: "Confirm Delete",
+      message: "Are you sure you want to delete this employee?",
+      btnDelete: "Delete"
+    },
+    alerts: {
+      noData: "No employee data available to export!",
+      errorFetch: "An error occurred while fetching employee data!",
+      errorDefault: "An error occurred"
+    }
+  },
 };
 
 export default en;

@@ -1,6 +1,7 @@
 "use client";
 
 import { RevenueItem } from "@/types/payment";
+import { useLang } from "@/contexts/LangContext";
 
 interface Props {
   data: RevenueItem[];
@@ -16,19 +17,20 @@ function formatPeriod(period: string, type: string): string {
 }
 
 export default function RevenueChart({ data, period, onPeriodChange }: Props) {
+  const { t, lang } = useLang();
+
   const maxRevenue = Math.max(...data.map((d) => d.revenue), 1);
   const totalRevenue = data.reduce((sum, d) => sum + d.revenue, 0);
 
   // Chỉ hiện 12 kỳ gần nhất
   const displayData = data.slice(-12);
 
-  console.log("displayData:", JSON.stringify(displayData));
-  console.log("maxRevenue:", maxRevenue);
-
   return (
     <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-6">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-zinc-900">Doanh thu</h3>
+        <h3 className="font-semibold text-zinc-900">
+          {t?.chart?.title || "Doanh thu"}
+        </h3>
         <div className="flex gap-2">
           {["day", "month", "year"].map((p) => (
             <button
@@ -41,7 +43,11 @@ export default function RevenueChart({ data, period, onPeriodChange }: Props) {
                                     : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50"
                                 }`}
             >
-              {p === "day" ? "Ngày" : p === "month" ? "Tháng" : "Năm"}
+              {p === "day"
+                ? (t?.chart?.day || "Ngày")
+                : p === "month"
+                  ? (t?.chart?.month || "Tháng")
+                  : (t?.chart?.year || "Năm")}
             </button>
           ))}
         </div>
@@ -50,7 +56,7 @@ export default function RevenueChart({ data, period, onPeriodChange }: Props) {
       {/* Bar chart */}
       {displayData.length === 0 ? (
         <p className="mt-8 text-center text-sm text-zinc-400">
-          Chưa có dữ liệu
+          {t?.chart?.empty || "Chưa có dữ liệu"}
         </p>
       ) : (
         <div className="mt-4 flex items-end gap-2" style={{ height: "192px" }}>
@@ -67,7 +73,7 @@ export default function RevenueChart({ data, period, onPeriodChange }: Props) {
                 className="absolute top-0 hidden group-hover:block
                     bg-zinc-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10"
               >
-                {item.revenue.toLocaleString("vi-VN")}đ
+                {lang === "en" ? `${item.revenue.toLocaleString("en-US")} VND` : `${item.revenue.toLocaleString("vi-VN")}đ`}
               </div>
               {/* Bar */}
               <div
@@ -87,9 +93,11 @@ export default function RevenueChart({ data, period, onPeriodChange }: Props) {
 
       {/* Tổng */}
       <div className="mt-4 border-t border-zinc-100 pt-4 flex justify-between">
-        <span className="text-sm text-zinc-500">Tổng ({data.length} kỳ)</span>
+        <span className="text-sm text-zinc-500">
+          {lang === "en" ? `Total (${data.length} periods)` : `Tổng (${data.length} kỳ)`}
+        </span>
         <span className="font-semibold">
-          {totalRevenue.toLocaleString("vi-VN")}đ
+          {lang === "en" ? `${totalRevenue.toLocaleString("en-US")} VND` : `${totalRevenue.toLocaleString("vi-VN")}đ`}
         </span>
       </div>
     </div>

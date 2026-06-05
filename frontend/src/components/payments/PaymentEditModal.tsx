@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api } from "@/lib/apiClient";
 import { Payment } from "@/types/payment";
+import { useLang } from "@/contexts/LangContext";
 
 interface Props {
     payment: Payment;
@@ -11,9 +12,12 @@ interface Props {
 }
 
 export default function PaymentEditModal({ payment, onClose, onUpdated }: Props) {
+    const { t } = useLang();
     const [method, setMethod]   = useState(payment.paymentMethod);
     const [loading, setLoading] = useState(false);
     const [error, setError]     = useState("");
+
+    const m = t?.payments?.modalEdit;
 
     async function handleSubmit() {
         setLoading(true);
@@ -25,7 +29,7 @@ export default function PaymentEditModal({ payment, onClose, onUpdated }: Props)
             });
             onUpdated();
         } catch (err: any) {
-            setError(err.message || "Có lỗi xảy ra");
+            setError(err.message || m?.errorDefault || "Có lỗi xảy ra");
         } finally {
             setLoading(false);
         }
@@ -38,7 +42,7 @@ export default function PaymentEditModal({ payment, onClose, onUpdated }: Props)
         >
             <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
                 <h3 className="text-lg font-semibold text-zinc-900">
-                    Sửa hóa đơn #{payment.id}
+                    {m?.title?.replace("{id}", String(payment.id)) || `Sửa hóa đơn #${payment.id}`}
                 </h3>
 
                 {error && (
@@ -49,16 +53,16 @@ export default function PaymentEditModal({ payment, onClose, onUpdated }: Props)
 
                 <div className="mt-4">
                     <label className="text-sm font-medium text-zinc-700">
-                        Phương thức thanh toán
+                        {m?.labelMethod || "Phương thức thanh toán"}
                     </label>
                     <select
                         value={method}
                         onChange={(e) => setMethod(e.target.value)}
                         className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2
-                                   text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                                   text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 bg-white text-zinc-800"
                     >
-                        <option value="CASH">CASH — Tiền mặt</option>
-                        <option value="CARD">CARD — Thẻ ngân hàng</option>
+                        <option value="CASH">CASH — {t?.payments?.methods?.CASH || "Tiền mặt"}</option>
+                        <option value="CARD">CARD — {t?.payments?.methods?.CREDIT_CARD || "Thẻ ngân hàng"}</option>
                     </select>
                 </div>
 
@@ -67,7 +71,7 @@ export default function PaymentEditModal({ payment, onClose, onUpdated }: Props)
                         onClick={onClose}
                         className="flex-1 rounded-xl border border-zinc-200 py-2.5
                                    text-sm text-zinc-600 hover:bg-zinc-50 transition">
-                        Hủy
+                        {m?.btnCancel || "Hủy"}
                     </button>
                     <button
                         onClick={handleSubmit}
@@ -75,7 +79,7 @@ export default function PaymentEditModal({ payment, onClose, onUpdated }: Props)
                         className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm
                                    font-medium text-white hover:bg-zinc-700
                                    disabled:opacity-40 transition">
-                        {loading ? "Đang lưu..." : "Lưu thay đổi"}
+                        {loading ? (m?.saving || "Đang lưu...") : (m?.btnSave || "Lưu thay đổi")}
                     </button>
                 </div>
             </div>
