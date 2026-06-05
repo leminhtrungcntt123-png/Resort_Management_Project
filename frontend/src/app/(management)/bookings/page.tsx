@@ -9,19 +9,20 @@ import BookingPagination from "@/components/bookings/BookingPagination";
 import BookingDetailModal from "@/components/bookings/BookingDetailModal";
 import BookingCreateModal from "@/components/bookings/BookingCreateModal";
 import { exportToTxt, exportToExcel } from "@/components/export";
+import { useLang } from "@/contexts/LangContext"; // Import hook ngôn ngữ của bạn
 
 export default function BookingsPage() {
+  const { t } = useLang(); // Lấy đối tượng dịch t
   const [data, setData] = useState<BookingPageData | null>(null);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState(false); // Trạng thái khi đang tải dữ liệu xuất file
+  const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState("ALL");
   const [refresh, setRefresh] = useState(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [detailBooking, setDetailBooking] = useState<Booking | null>(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-
   const [qrCheckoutBooking, setQrCheckoutBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function BookingsPage() {
     void fetchBookings();
   }, [page, status, refresh]);
 
-  // HÀM XỬ LÝ XUẤT FILE TXT (ĐỒNG BỘ THEO STATUS)
+  // HÀM XỬ LÝ XUẤT FILE TXT
   const handleExportTxt = async () => {
     setExporting(true);
     try {
@@ -55,30 +56,31 @@ export default function BookingsPage() {
       const allBookings: Booking[] = res.data?.content ?? [];
 
       if (allBookings.length === 0) {
-        alert("Không có dữ liệu đặt phòng để xuất!");
+        alert(t?.bookings?.alertNoData || "Không có dữ liệu đặt phòng để xuất!");
         return;
       }
 
+      const headers = t?.bookings?.txtHeaders;
       const txtData = allBookings.map((b) => ({
-        "Mã Đơn": b.id,
-        "Khách Hàng": b.customer?.fullName ?? "N/A",
-        "Số Phòng": b.room?.roomNumber ?? "N/A",
-        "Ngày Check-in": b.checkInDate ?? "N/A",
-        "Ngày Check-out": b.checkOutDate ?? "N/A",
-        "Trạng Thái Đơn": b.status ?? "N/A",
-        "Thanh Toán": b.payment?.paymentStatus ?? "PENDING",
+        [headers?.code || "Mã Đơn"]: b.id,
+        [headers?.customer || "Khách Hàng"]: b.customer?.fullName ?? "N/A",
+        [headers?.roomNumber || "Số Phòng"]: b.room?.roomNumber ?? "N/A",
+        [headers?.checkIn || "Ngày Check-in"]: b.checkInDate ?? "N/A",
+        [headers?.checkOut || "Ngày Check-out"]: b.checkOutDate ?? "N/A",
+        [headers?.status || "Trạng Thái Đơn"]: b.status ?? "N/A",
+        [headers?.payment || "Thanh Toán"]: b.payment?.paymentStatus ?? "PENDING",
       }));
 
       exportToTxt(txtData, `Danh sách đặt phòng (${status})`, `dat-phong-${status.toLowerCase()}`);
     } catch (err) {
       console.error("Lỗi xuất file TXT:", err);
-      alert("Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!");
+      alert(t?.bookings?.alertError || "Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!");
     } finally {
       setExporting(false);
     }
   };
 
-  // HÀM XỬ LÝ XUẤT FILE EXCEL (ĐỒNG BỘ THEO STATUS)
+  // HÀM XỬ LÝ XUẤT FILE EXCEL
   const handleExportExcel = async () => {
     setExporting(true);
     try {
@@ -90,29 +92,30 @@ export default function BookingsPage() {
       const allBookings: Booking[] = res.data?.content ?? [];
 
       if (allBookings.length === 0) {
-        alert("Không có dữ liệu đặt phòng để xuất!");
+        alert(t?.bookings?.alertNoData || "Không có dữ liệu đặt phòng để xuất!");
         return;
       }
 
+      const headers = t?.bookings?.excelHeaders;
       const excelData = allBookings.map((b, index) => ({
-        "STT": index + 1,
-        "Mã Đặt Phòng": b.id,
-        "Tên Khách Hàng": b.customer?.fullName ?? "N/A",
-        "Số Điện Thoại": b.customer?.phone ?? "N/A",
-        "Số Phòng": b.room?.roomNumber ?? "N/A",
-        "Loại Phòng": b.room?.roomType ?? "N/A",
-        "Ngày Vào": b.checkInDate ?? "N/A",
-        "Ngày Ra": b.checkOutDate ?? "N/A",
-        "Trạng Thái Đơn": b.status ?? "N/A",
-        "Phương Thức TT": b.payment?.paymentMethod ?? "N/A",
-        "Trạng Thái TT": b.payment?.paymentStatus ?? "PENDING",
-        "Tổng Tiền (VND)": b.totalAmount ?? 0,
+        [headers?.stt || "STT"]: index + 1,
+        [headers?.code || "Mã Đặt Phòng"]: b.id,
+        [headers?.customer || "Tên Khách Hàng"]: b.customer?.fullName ?? "N/A",
+        [headers?.phone || "Số Điện Thoại"]: b.customer?.phone ?? "N/A",
+        [headers?.roomNumber || "Số Phòng"]: b.room?.roomNumber ?? "N/A",
+        [headers?.roomType || "Loại Phòng"]: b.room?.roomType ?? "N/A",
+        [headers?.checkIn || "Ngày Vào"]: b.checkInDate ?? "N/A",
+        [headers?.checkOut || "Ngày Ra"]: b.checkOutDate ?? "N/A",
+        [headers?.status || "Trạng Thái Đơn"]: b.status ?? "N/A",
+        [headers?.method || "Phương Thức TT"]: b.payment?.paymentMethod ?? "N/A",
+        [headers?.payStatus || "Trạng Thái TT"]: b.payment?.paymentStatus ?? "PENDING",
+        [headers?.amount || "Tổng Tiền (VND)"]: b.totalAmount ?? 0,
       }));
 
       exportToExcel(excelData, "Đặt Phòng", `dat-phong-${status.toLowerCase()}-excel`);
     } catch (err) {
       console.error("Lỗi xuất file Excel:", err);
-      alert("Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!");
+      alert(t?.bookings?.alertError || "Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!");
     } finally {
       setExporting(false);
     }
@@ -167,34 +170,33 @@ export default function BookingsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-semibold text-zinc-900">
-              Quản lý Đặt phòng
+              {t?.bookings?.title || "Quản lý Đặt phòng"}
             </h2>
             <p className="mt-1 text-sm text-zinc-500">
-              Tổng: {data?.totalElements ?? "..."} đơn đặt phòng
+              {t?.bookings?.totalPrefix || "Tổng:"} {data?.totalElements ?? "..."} {t?.bookings?.totalSuffix || "đơn đặt phòng"}
             </p>
           </div>
 
-          {/* Khối nút bấm chức năng */}
           <div className="flex items-center gap-2">
             <button
                 onClick={handleExportTxt}
                 disabled={loading || exporting}
                 className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
             >
-              {exporting ? "Đang xuất..." : "Xuất TXT"}
+              {exporting ? (t?.bookings?.statusExporting || "Đang xuất...") : (t?.bookings?.btnExportTxt || "Xuất TXT")}
             </button>
             <button
                 onClick={handleExportExcel}
                 disabled={loading || exporting}
                 className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
-              {exporting ? "Đang xuất..." : "Xuất Excel"}
+              {exporting ? (t?.bookings?.statusExporting || "Đang xuất...") : (t?.bookings?.btnExportExcel || "Xuất Excel")}
             </button>
             <button
                 onClick={() => setShowCreateModal(true)}
                 className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
             >
-              + Đặt phòng
+              {t?.bookings?.btnCreate || "+ Đặt phòng"}
             </button>
           </div>
         </div>
@@ -219,11 +221,13 @@ export default function BookingsPage() {
         {qrCheckoutBooking && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
               <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl text-center">
-                <h3 className="text-lg font-bold text-zinc-900 mb-2">Quét mã thanh toán</h3>
+                <h3 className="text-lg font-bold text-zinc-900 mb-2">
+                  {t?.bookings?.qrTitle || "Quét mã thanh toán"}
+                </h3>
                 <p className="text-sm text-zinc-500 mb-4">
-                  Khách hàng: <span className="font-semibold text-zinc-900">{qrCheckoutBooking.customer?.fullName}</span>
+                  {t?.bookings?.qrCustomer || "Khách hàng:"} <span className="font-semibold text-zinc-900">{qrCheckoutBooking.customer?.fullName}</span>
                   <br/>
-                  Mã đơn: <span className="font-semibold text-zinc-900">#{qrCheckoutBooking.id}</span>
+                  {t?.bookings?.qrCode || "Mã đơn:"} <span className="font-semibold text-zinc-900">#{qrCheckoutBooking.id}</span>
                 </p>
 
                 <div className="mx-auto bg-zinc-50 rounded-lg p-2 mb-6 w-48 h-48 flex items-center justify-center border border-zinc-200">
@@ -240,13 +244,13 @@ export default function BookingsPage() {
                       onClick={() => setQrCheckoutBooking(null)}
                       className="w-full rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 font-medium"
                   >
-                    Hủy
+                    {t?.bookings?.qrCancel || "Hủy"}
                   </button>
                   <button
                       onClick={() => executeCheckoutAPI(qrCheckoutBooking.id)}
                       className="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-500"
                   >
-                    Xác nhận đã quét
+                    {t?.bookings?.qrConfirm || "Xác nhận đã quét"}
                   </button>
                 </div>
               </div>
@@ -257,23 +261,23 @@ export default function BookingsPage() {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
               <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
                 <h3 className="text-lg font-semibold text-zinc-900">
-                  Xác nhận xóa
+                  {t?.bookings?.deleteTitle || "Xác nhận xóa"}
                 </h3>
                 <p className="mt-2 text-sm text-zinc-500">
-                  Xóa booking này sẽ trả phòng về trạng thái AVAILABLE.
+                  {t?.bookings?.deleteDesc || "Xóa booking này sẽ trả phòng về trạng thái AVAILABLE."}
                 </p>
                 <div className="mt-6 flex justify-end gap-2">
                   <button
                       onClick={() => setDeleteId(null)}
                       className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50"
                   >
-                    Hủy
+                    {t?.bookings?.deleteCancel || "Hủy"}
                   </button>
                   <button
                       onClick={handleDelete}
                       className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"
                   >
-                    Xóa
+                    {t?.bookings?.deleteConfirm || "Xóa"}
                   </button>
                 </div>
               </div>

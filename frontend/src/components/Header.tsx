@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLang } from "@/contexts/LangContext"; // Import hook quản lý ngôn ngữ
+import LanguageSwitcher from "@/components/LanguageSwitcher"; // Đường dẫn đúng nằm trong thư mục components gốc
 import { LogOut } from "lucide-react";
 
 const ROLE_BADGE: Record<string, string> = {
@@ -12,7 +13,8 @@ const ROLE_BADGE: Record<string, string> = {
 };
 
 export default function Header() {
-  const { username, role, formattedRole } = useAuth(); // ← lấy từ AuthContext
+  const { username, role, formattedRole } = useAuth();
+  const { t } = useLang(); // Lấy đối tượng dịch t từ Context
   const [open, setOpen]                   = useState(false);
   const dropdownRef                       = useRef<HTMLDivElement>(null);
 
@@ -45,6 +47,7 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-4">
+        {/* Nút bấm chuyển đổi ngôn ngữ */}
         <LanguageSwitcher />
 
         {username && (
@@ -72,7 +75,8 @@ export default function Header() {
                              text-red-600 hover:bg-red-50 transition"
                 >
                   <LogOut className="h-4 w-4" />
-                  Đăng xuất
+                  {/* Dịch chữ Đăng xuất động theo file locales */}
+                  {t?.sidebar?.logout || "Đăng xuất"}
                 </button>
               </div>
             )}

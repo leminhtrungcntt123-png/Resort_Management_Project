@@ -1,15 +1,8 @@
 "use client";
 
-const STATUSES = ["ALL", "PENDING", "CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED"];
+import { useLang } from "@/contexts/LangContext"; // Import hook ngôn ngữ
 
-const LABELS: Record<string, string> = {
-    ALL:          "Tất cả",
-    PENDING:      "Chờ xác nhận",
-    CONFIRMED:    "Đã xác nhận",
-    CHECKED_IN:   "Đang ở",
-    CHECKED_OUT:  "Đã trả phòng",
-    CANCELLED:    "Đã hủy",
-};
+const STATUSES = ["ALL", "PENDING", "CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED"];
 
 const COLORS: Record<string, string> = {
     ALL:          "",
@@ -26,6 +19,18 @@ interface Props {
 }
 
 export default function BookingFilter({ status, onChange }: Props) {
+    const { t } = useLang(); // Lấy đối tượng dịch t
+
+    // Định nghĩa object nhãn động lấy từ file locale
+    const LABELS: Record<string, string> = {
+        ALL:          t?.bookings?.filter?.all || "Tất cả",
+        PENDING:      t?.bookings?.filter?.pending || "Chờ xác nhận",
+        CONFIRMED:    t?.bookings?.filter?.confirmed || "Đã xác nhận",
+        CHECKED_IN:   t?.bookings?.filter?.checkedIn || "Đang ở",
+        CHECKED_OUT:  t?.bookings?.filter?.checkedOut || "Đã trả phòng",
+        CANCELLED:    t?.bookings?.filter?.cancelled || "Đã hủy",
+    };
+
     return (
         <div className="mt-4 flex flex-wrap gap-2">
             {STATUSES.map(s => (

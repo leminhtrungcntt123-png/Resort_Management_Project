@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { LangProvider } from "../contexts/LangContext";
 
 const geist = Geist({
     subsets: ['latin'],
@@ -22,8 +23,9 @@ export default function RootLayout({
     return (
         <html lang="vi" className={cn("font-sans antialiased selection:bg-zinc-200", geist.variable)} suppressHydrationWarning>
             <body className="min-h-screen bg-zinc-50/60 text-zinc-900">
-                {/* Chỉ trả về children để trang login không bị dính sidebar */}
-                {children}
+                <LangProvider>
+                    {children}
+                </LangProvider>
             </body>
         </html>
     );

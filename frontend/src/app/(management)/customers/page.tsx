@@ -7,6 +7,7 @@ import CustomerTable from "@/components/customers/CustomerTable";
 import CustomerModal from "@/components/customers/CustomerModal";
 import CustomerPagination from "@/components/customers/CustomerPagination";
 import { exportToTxt, exportToExcel } from "@/components/export";
+import { useLang } from "@/contexts/LangContext"; // Import hook ngôn ngữ
 
 const DEFAULT_FORM: CustomerForm = {
   fullName: "",
@@ -15,10 +16,11 @@ const DEFAULT_FORM: CustomerForm = {
 };
 
 export default function CustomersPage() {
+  const { t } = useLang(); // Sử dụng hook ngôn ngữ
   const [data, setData] = useState<CustomerPageData | null>(null);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState(false); // Trạng thái riêng khi đang xuất file
+  const [exporting, setExporting] = useState(false);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [saving, setSaving] = useState(false);
@@ -37,7 +39,7 @@ export default function CustomersPage() {
           ? `/api/customers/search?name=${encodeURIComponent(search)}`
           : `/api/customers?page=${page}&size=10&sortBy=fullName&direction=asc`;
         const res = await api.get(url);
-        console.log("search res:", JSON.stringify(res));
+
         if (search) {
           const list = res.data ?? [];
           setData({
@@ -59,7 +61,7 @@ export default function CustomersPage() {
     fetchCustomers();
   }, [page, search, refresh]);
 
-  // HÀM XỬ LÝ XUẤT FILE TXT (LẤY TOÀN BỘ)
+  // HÀM XỬ LÝ XUẤT FILE TXT
   const handleExportTxt = async () => {
     setExporting(true);
     try {
@@ -67,27 +69,28 @@ export default function CustomersPage() {
       const allCustomers: Customer[] = res.data?.content ?? [];
 
       if (allCustomers.length === 0) {
-        alert("Không có dữ liệu khách hàng nào để xuất!");
+        alert(t?.customers?.alertNoData || "Không có dữ liệu khách hàng nào để xuất!");
         return;
       }
 
+      const headers = t?.customers?.txtHeaders;
       const txtData = allCustomers.map((c) => ({
-        "Mã KH": c.id,
-        "Họ và Tên": c.fullName,
-        "Số điện thoại": c.phone ?? "N/A",
-        "Email": c.email ?? "N/A",
+        [headers?.customerId || "Mã KH"]: c.id,
+        [headers?.fullName || "Họ và Tên"]: c.fullName,
+        [headers?.phone || "Số điện thoại"]: c.phone ?? "N/A",
+        [headers?.email || "Email"]: c.email ?? "N/A",
       }));
 
       exportToTxt(txtData, "Danh sách toàn bộ khách hàng", "danh-sach-khach-hang");
     } catch (err) {
       console.error("Lỗi khi xuất file TXT:", err);
-      alert("Có lỗi xảy ra khi tải dữ liệu!");
+      alert(t?.customers?.alertError || "Có lỗi xảy ra khi tải dữ liệu!");
     } finally {
       setExporting(false);
     }
   };
 
-  // HÀM XỬ LÝ XUẤT FILE EXCEL (LẤY TOÀN BỘ)
+  // HÀM XỬ LÝ XUẤT FILE EXCEL
   const handleExportExcel = async () => {
     setExporting(true);
     try {
@@ -95,22 +98,23 @@ export default function CustomersPage() {
       const allCustomers: Customer[] = res.data?.content ?? [];
 
       if (allCustomers.length === 0) {
-        alert("Không có dữ liệu khách hàng nào để xuất!");
+        alert(t?.customers?.alertNoData || "Không có dữ liệu khách hàng nào để xuất!");
         return;
       }
 
+      const headers = t?.customers?.excelHeaders;
       const excelData = allCustomers.map((c, index) => ({
-        "STT": index + 1,
-        "Mã Khách Hàng": c.id,
-        "Họ và Tên": c.fullName,
-        "Số Điện Thoại": c.phone ?? "N/A",
-        "Email": c.email ?? "N/A",
+        [headers?.stt || "STT"]: index + 1,
+        [headers?.customerId || "Mã Khách Hàng"]: c.id,
+        [headers?.fullName || "Họ và Tên"]: c.fullName,
+        [headers?.phone || "Số Điện Thoại"]: c.phone ?? "N/A",
+        [headers?.email || "Email"]: c.email ?? "N/A",
       }));
 
       exportToExcel(excelData, "Khách Hàng", "tat-ca-khach-hang-excel");
     } catch (err) {
       console.error("Lỗi khi xuất file Excel:", err);
-      alert("Có lỗi xảy ra khi tải dữ liệu!");
+      alert(t?.customers?.alertError || "Có lỗi xảy ra khi tải dữ liệu!");
     } finally {
       setExporting(false);
     }
@@ -126,7 +130,7 @@ export default function CustomersPage() {
       setForm(DEFAULT_FORM);
       setRefresh((r) => r + 1);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : (t?.customers?.errorDefault || "Có lỗi xảy ra"));
     } finally {
       setSaving(false);
     }
@@ -142,7 +146,7 @@ export default function CustomersPage() {
       setForm(DEFAULT_FORM);
       setRefresh((r) => r + 1);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : (t?.customers?.errorDefault || "Có lỗi xảy ra"));
     } finally {
       setSaving(false);
     }
@@ -174,10 +178,10 @@ export default function CustomersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-zinc-900">
-            Quản lý Khách hàng
+            {t?.customers?.title || "Quản lý Khách hàng"}
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
-            Tổng: {data?.totalElements ?? "..."} khách hàng
+            {t?.customers?.totalPrefix || "Tổng:"} {data?.totalElements ?? "..."} {t?.customers?.totalSuffix || "khách hàng"}
           </p>
         </div>
 
@@ -188,14 +192,14 @@ export default function CustomersPage() {
             disabled={loading || exporting}
             className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
           >
-            {exporting ? "Đang xử lý..." : "Xuất TXT"}
+            {exporting ? (t?.customers?.statusProcessing || "Đang xử lý...") : (t?.customers?.btnExportTxt || "Xuất TXT")}
           </button>
           <button
             onClick={handleExportExcel}
             disabled={loading || exporting}
             className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
           >
-            {exporting ? "Đang xử lý..." : "Xuất Excel"}
+            {exporting ? (t?.customers?.statusProcessing || "Đang xử lý...") : (t?.customers?.btnExportExcel || "Xuất Excel")}
           </button>
           <button
             onClick={() => {
@@ -204,7 +208,7 @@ export default function CustomersPage() {
             }}
             className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
           >
-            + Thêm khách hàng
+            {t?.customers?.btnCreate || "+ Thêm khách hàng"}
           </button>
         </div>
       </div>
@@ -247,23 +251,23 @@ export default function CustomersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-zinc-900">
-              Xác nhận xóa
+              {t?.customers?.deleteTitle || "Xác nhận xóa"}
             </h3>
             <p className="mt-2 text-sm text-zinc-500">
-              Bạn có chắc muốn xóa khách hàng này không?
+              {t?.customers?.deleteDesc || "Bạn có chắc muốn xóa khách hàng này không?"}
             </p>
             <div className="mt-6 flex justify-end gap-2">
               <button
                 onClick={() => setDeleteId(null)}
                 className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50"
               >
-                Hủy
+                {t?.customers?.deleteCancel || "Hủy"}
               </button>
               <button
                 onClick={handleDelete}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"
               >
-                Xóa
+                {t?.customers?.deleteConfirm || "Xóa"}
               </button>
             </div>
           </div>
@@ -282,8 +286,8 @@ export default function CustomersPage() {
               setPage(0);
             }
           }}
-          placeholder="Tìm theo tên..."
-          className="rounded-lg border border-zinc-200 px-3 py-1 text-sm outline-none focus:border-zinc-400 w-64"
+          placeholder={t?.customers?.searchPlaceholder || "Tìm theo tên..."}
+          className="rounded-lg border border-zinc-200 px-3 py-1 text-sm outline-none focus:border-zinc-400 w-64 text-zinc-800 bg-white"
         />
         <button
           onClick={() => {
@@ -292,7 +296,7 @@ export default function CustomersPage() {
           }}
           className="rounded-lg bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-700"
         >
-          Tìm
+          {t?.customers?.btnSearch || "Tìm"}
         </button>
         {search && (
           <button
@@ -301,9 +305,9 @@ export default function CustomersPage() {
               setSearchInput("");
               setPage(0);
             }}
-            className="rounded-lg border border-zinc-200 px-3 py-1 text-sm hover:bg-zinc-50"
+            className="rounded-lg border border-zinc-200 px-3 py-1 text-sm text-zinc-700 hover:bg-zinc-50 bg-white"
           >
-            Xóa tìm kiếm
+            {t?.customers?.btnClearSearch || "Xóa tìm kiếm"}
           </button>
         )}
       </div>

@@ -13,44 +13,47 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
-
-const MENU_GROUPS = [
-  {
-    groupLabel: "Tổng quan",
-    items: [{ label: "Dashboard", href: "/", icon: LayoutDashboard }],
-  },
-  {
-    groupLabel: "Quản lý vận hành",
-    items: [
-      { label: "Sơ đồ phòng", href: "/rooms", icon: Bed },
-      { label: "Đặt phòng", href: "/bookings", icon: CalendarDays },
-      { label: "Khách hàng", href: "/customers", icon: Users },
-    ],
-  },
-  {
-    groupLabel: "Nhân sự & Tài chính",
-    items: [
-      { label: "Thanh toán", href: "/payments", icon: CreditCard },
-      {
-        label: "Nhân viên",
-        href: "/employees",
-        icon: UserSquare2,
-        allowedRoles: ["ADMIN"] as UserRole[], // chỉ ADMIN thấy
-      },
-    ],
-  },
-];
+import { useLang } from "@/contexts/LangContext"; // Import hook quản lý ngôn ngữ
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { role } = useAuth();
+  const { t } = useLang(); // Lấy đối tượng dịch t từ Context
+
+  // Cấu trúc danh mục Menu được cập nhật ngôn ngữ động theo file locale
+  const MENU_GROUPS = [
+    {
+      groupLabel: t?.sidebar?.overview || "Tổng quan",
+      items: [{ label: t?.sidebar?.dashboard || "Dashboard", href: "/", icon: LayoutDashboard }],
+    },
+    {
+      groupLabel: t?.sidebar?.operation || "Quản lý vận hành",
+      items: [
+        { label: t?.sidebar?.rooms || "Sơ đồ phòng", href: "/rooms", icon: Bed },
+        { label: t?.sidebar?.bookings || "Đặt phòng", href: "/bookings", icon: CalendarDays },
+        { label: t?.sidebar?.customers || "Khách hàng", href: "/customers", icon: Users },
+      ],
+    },
+    {
+      groupLabel: t?.sidebar?.hrFinance || "Nhân sự & Tài chính",
+      items: [
+        { label: t?.sidebar?.payments || "Thanh toán", href: "/payments", icon: CreditCard },
+        {
+          label: t?.sidebar?.employees || "Nhân viên",
+          href: "/employees",
+          icon: UserSquare2,
+          allowedRoles: ["ADMIN"] as UserRole[], // Chỉ ADMIN mới có quyền nhìn thấy mục này
+        },
+      ],
+    },
+  ];
 
   return (
     <aside
       className="fixed left-0 top-0 z-50 h-screen w-56 bg-zinc-950
                       flex flex-col border-r border-zinc-900 shadow-2xl select-none"
     >
-      {/* Logo */}
+      {/* Logo vùng phía trên */}
       <div className="px-6 py-6 flex items-center gap-3 border-b border-zinc-900">
         <div
           className="flex h-9 w-9 items-center justify-center rounded-xl
@@ -68,20 +71,20 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Menu */}
+      {/* Vùng Menu các chức năng */}
       <div
         className="flex-1 px-3 py-6 flex flex-col gap-6 overflow-y-auto
                       [scrollbar-width:none] [-ms-overflow-style:none]
                       [&::-webkit-scrollbar]:hidden"
       >
         {MENU_GROUPS.map((group, idx) => {
-          // Lọc item theo role
+          // Lọc danh sách menu hiển thị dựa trên vai trò (Role) người dùng
           const visibleItems = group.items.filter((item) => {
-            if (!item.allowedRoles) return true; // không giới hạn → hiện
-            return item.allowedRoles.includes(role); // có giới hạn → check role
+            if (!item.allowedRoles) return true;
+            return item.allowedRoles.includes(role);
           });
 
-          if (visibleItems.length === 0) return null; // ẩn cả group nếu không có item nào
+          if (visibleItems.length === 0) return null;
 
           return (
             <div key={idx} className="flex flex-col gap-2">
