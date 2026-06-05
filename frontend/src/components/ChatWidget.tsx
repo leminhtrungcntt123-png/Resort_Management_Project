@@ -2,22 +2,20 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Bot, User, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-interface Message {
-  id: string;
-  sender: "user" | "bot";
-  text: string;
-  timestamp: Date; // Đã sửa từ 'limeslamp: Dale' thành 'timestamp: Date' chuẩn TypeScript
-}
+// IMPORT CÁC INTERFACE TỪ FILE RIÊNG
+import { Message, SuggestedAction } from "@/types/chat";
 
 export default function ChatWidget() {
+  const router = useRouter(); 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       sender: "bot",
       text: "Xin chào! Em là Trợ lý ảo Resort. Em có thể giúp gì cho Anh/Chị trong việc quản trị và kiểm tra phòng hôm nay ạ?",
-      timestamp: new Date(),
+      timestamp: new Date(), // Khởi tạo mặc định lúc chạy client
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -33,6 +31,16 @@ export default function ChatWidget() {
   useEffect(() => {
     if (isOpen) scrollToBottom();
   }, [messages, isOpen]);
+
+  // Hàm helper định dạng thời gian an toàn, cân mọi kiểu dữ liệu (Date object, ISO String, v.v.)
+  const formatMessageTime = (timestamp: any) => {
+    try {
+      const dateObj = timestamp instanceof Date ? timestamp : new Date(timestamp);
+      return dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } catch (e) {
+      return "--:--";
+    }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,12 +60,9 @@ export default function ChatWidget() {
     setIsLoading(true);
 
     try {
-      // Đọc link chatbot từ biến môi trường (mặc định nếu thiếu là cổng 8081)
       const CHAT_BASE_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'http://localhost:8081';
       const token = localStorage.getItem('token');
 
-      // Tự gọi fetch thẳng sang cổng 8081 của chatbot
-      // Tự gọi fetch thẳng sang cổng 8080 của chatbot
       const res = await fetch(`${CHAT_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: {
@@ -67,23 +72,23 @@ export default function ChatWidget() {
         body: JSON.stringify({ message: userMessageText }), 
       });
 
-      // === ĐÃ CẬP NHẬT ĐOẠN NÀY ĐỂ BẮT LỖI CHÍNH XÁC ===
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         console.error("👉 LỖI THỰC TẾ TỪ PYTHON:", errorData);
         throw new Error(errorData.detail || `Mã lỗi hệ thống: ${res.status}`);
       }
-      // ===============================================
 
       const response = await res.json();
 
-      // Xử lý phản hồi từ Backend Chatbot (Đọc thuộc tính .answer từ ChatResponse)
+      // Xử lý phản hồi từ Backend Chatbot
       const aiAnswer = response?.answer;
+      const aiActions = response?.suggested_actions; 
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         sender: "bot",
         text: aiAnswer || "Em đã nhận được thông tin nhưng hệ thống phản hồi chưa đúng định dạng.",
+        suggested_actions: aiActions || undefined, 
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMessage]);
@@ -170,10 +175,32 @@ export default function ChatWidget() {
                         : "bg-white text-slate-800 border border-slate-100 rounded-tl-none"
                     }`}
                   >
-                    {msg.text}
+                    <div>{msg.text}</div>
+
+                    {/* Render danh sách nút bấm gợi ý điều hướng của BOT */}
+                    {msg.sender === "bot" && msg.suggested_actions && msg.suggested_actions.length > 0 && (
+                      <div className="flex flex-col gap-1.5 mt-3 pt-2.5 border-t border-slate-100">
+                        {msg.suggested_actions.map((btn, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => {
+                              if (btn.action === 'navigate') {
+                                router.push(btn.payload); 
+                              }
+                            }}
+                            className="w-full text-left px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs rounded-lg transition-all duration-150 flex items-center justify-between active:scale-[0.98] shadow-sm"
+                          >
+                            <span>{btn.label}</span>
+                            <span className="text-[10px] opacity-60">→</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  {/* SỬA ĐỔI TẠI ĐÂY: Gọi hàm helper format time bọc ngoài để tránh crash layout */}
                   <p className="text-[10px] text-slate-400 px-1 text-right">
-                    {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {formatMessageTime(msg.timestamp)}
                   </p>
                 </div>
               </div>
