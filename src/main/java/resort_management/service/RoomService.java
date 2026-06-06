@@ -19,6 +19,6 @@ public interface RoomService {
     void delete(Long id);
     PageResponse<RoomResponse> getAllPaged(Pageable pageable);
     PageResponse<RoomResponse> getByStatus(RoomStatus status, Pageable pageable);
-    PageResponse<RoomResponse> getByFloor(Integer floorNumber, Pageable pageable);
+    PageResponse<RoomResponse> getByFloor(Integer floorNumber, RoomStatus status, Pageable pageable);
     List<Integer> getFloorNumbers();
 }
