@@ -12,7 +12,8 @@ const en = {
   },
   charts: {
     pieTitle: "Room Type Booking Density Analysis",
-    pieDesc: "Real-time statistics calculated directly from the bookings dataset",
+    pieDesc:
+      "Real-time statistics calculated directly from the bookings dataset",
     barTitle: "Monthly Bookings",
     barDesc: "Analysis of booking frequency over timelines",
     totalLabel: "Bookings",
@@ -20,7 +21,7 @@ const en = {
     emptyData: "SQL Server currently has no booking data (Bookings empty)",
     loadingData: "Analyzing dataset...",
     thisMonth: "This month",
-    monthPrefix: "Month"
+    monthPrefix: "Month",
   },
   // BỔ SUNG THÊM PHẦN NÀY CHO SIDEBAR EQUAL VỚI TIẾNG VIỆT
   sidebar: {
@@ -33,112 +34,113 @@ const en = {
     customers: "Customers",
     payments: "Payments",
     employees: "Employees",
-    logout: "Logout"
+    users: "Accounts",
+    logout: "Logout",
   },
   bookings: {
-      title: "Booking Management",
-      totalPrefix: "Total:",
-      totalSuffix: "bookings",
-      btnExportTxt: "Export TXT",
-      btnExportExcel: "Export Excel",
-      btnCreate: "+ New Booking",
-      statusExporting: "Exporting...",
-      alertNoData: "No booking data available to export!",
-      alertError: "An error occurred while fetching booking data!",
-      qrTitle: "Scan Payment QR",
-      qrCustomer: "Customer:",
-      qrCode: "Booking ID:",
-      qrCancel: "Cancel",
-      qrConfirm: "Confirm Scanned",
-      deleteTitle: "Confirm Delete",
-      deleteDesc: "Deleting this booking will reset the room status to AVAILABLE.",
-      deleteCancel: "Cancel",
-      deleteConfirm: "Delete",
-      excelHeaders: {
-        stt: "No.",
-        code: "Booking ID",
-        customer: "Customer Name",
-        phone: "Phone Number",
-        roomNumber: "Room No.",
-        roomType: "Room Type",
-        checkIn: "Check-in Date",
-        checkOut: "Check-out Date",
-        status: "Booking Status",
-        method: "Payment Method",
-        payStatus: "Payment Status",
-        amount: "Total Amount (VND)"
+    title: "Booking Management",
+    totalPrefix: "Total:",
+    totalSuffix: "bookings",
+    btnExportTxt: "Export TXT",
+    btnExportExcel: "Export Excel",
+    btnCreate: "+ New Booking",
+    statusExporting: "Exporting...",
+    alertNoData: "No booking data available to export!",
+    alertError: "An error occurred while fetching booking data!",
+    qrTitle: "Scan Payment QR",
+    qrCustomer: "Customer:",
+    qrCode: "Booking ID:",
+    qrCancel: "Cancel",
+    qrConfirm: "Confirm Scanned",
+    deleteTitle: "Confirm Delete",
+    deleteDesc:
+      "Deleting this booking will reset the room status to AVAILABLE.",
+    deleteCancel: "Cancel",
+    deleteConfirm: "Delete",
+    excelHeaders: {
+      stt: "No.",
+      code: "Booking ID",
+      customer: "Customer Name",
+      phone: "Phone Number",
+      roomNumber: "Room No.",
+      roomType: "Room Type",
+      checkIn: "Check-in Date",
+      checkOut: "Check-out Date",
+      status: "Booking Status",
+      method: "Payment Method",
+      payStatus: "Payment Status",
+      amount: "Total Amount (VND)",
+    },
+    txtHeaders: {
+      code: "Booking ID",
+      customer: "Customer",
+      roomNumber: "Room No.",
+      checkIn: "Check-in Date",
+      checkOut: "Check-out Date",
+      status: "Booking Status",
+      payment: "Payment",
+    },
+    filter: {
+      all: "All",
+      pending: "Pending",
+      confirmed: "Confirmed",
+      checkedIn: "Checked In",
+      checkedOut: "Checked Out",
+      cancelled: "Cancelled",
+    },
+    table: {
+      code: "ID",
+      customer: "Customer",
+      room: "Room",
+      checkIn: "Check-in",
+      checkOut: "Check-out",
+      status: "Status",
+      payment: "Payment",
+      actions: "Actions",
+      loading: "Loading dataset...",
+      empty: "No bookings found.",
+      btnCheckIn: "Check-in",
+      btnCheckOut: "Check-out",
+      btnDetail: "Detail",
+      btnDelete: "Delete",
+    },
+    pagination: {
+      prev: "Previous",
+      next: "Next",
+      pageOf: "Page {current} of {total}",
+    },
+    form: {
+      createTitle: "Create New Booking",
+      detailTitle: "Booking Details",
+      customerInfo: "Customer Information",
+      newCustomerCheckbox: "+ Add new customer",
+      labelCheckIn: "Check-in Date *",
+      labelCheckOut: "Check-out Date *",
+      labelSelectRoom: "Select Room *",
+      placeholderSelectRoom: "-- Show AVAILABLE rooms only --",
+      labelPaymentMethod: "Payment Method",
+      placeholderSelectCustomer: "-- Look up existing customer --",
+      labelRooms: "Rooms",
+      labelServices: "Services",
+      labelNight: "night",
+      labelTotalAmount: "Total Amount",
+      labelStatus: "Status",
+      methods: {
+        CASH: "Cash (CASH)",
+        CARD: "Credit Card (CARD)",
+        QR: "Bank Transfer / QR Code (QR)",
       },
-      txtHeaders: {
-        code: "Booking ID",
-        customer: "Customer",
-        roomNumber: "Room No.",
-        checkIn: "Check-in Date",
-        checkOut: "Check-out Date",
-        status: "Booking Status",
-        payment: "Payment"
+      alerts: {
+        fillRequired: "Please fill in all room and date details.",
+        newCustRequired:
+          "Please enter Full Name and Phone Number for the new customer.",
+        oldCustRequired: "Please select an existing customer.",
+        errorDefault: "An error occurred during processing",
       },
-      filter: {
-        all: "All",
-        pending: "Pending",
-        confirmed: "Confirmed",
-        checkedIn: "Checked In",
-        checkedOut: "Checked Out",
-        cancelled: "Cancelled"
-      },
-      table: {
-        code: "ID",
-        customer: "Customer",
-        room: "Room",
-        checkIn: "Check-in",
-        checkOut: "Check-out",
-        status: "Status",
-        payment: "Payment",
-        actions: "Actions",
-        loading: "Loading dataset...",
-        empty: "No bookings found.",
-        btnCheckIn: "Check-in",
-        btnCheckOut: "Check-out",
-        btnDetail: "Detail",
-        btnDelete: "Delete"
-      },
-      pagination: {
-        prev: "Previous",
-        next: "Next",
-        pageOf: "Page {current} of {total}"
-      },
-      form: {
-        createTitle: "Create New Booking",
-        detailTitle: "Booking Details",
-        customerInfo: "Customer Information",
-        newCustomerCheckbox: "+ Add new customer",
-        labelCheckIn: "Check-in Date *",
-        labelCheckOut: "Check-out Date *",
-        labelSelectRoom: "Select Room *",
-        placeholderSelectRoom: "-- Show AVAILABLE rooms only --",
-        labelPaymentMethod: "Payment Method",
-        placeholderSelectCustomer: "-- Look up existing customer --",
-        labelRooms: "Rooms",
-        labelServices: "Services",
-        labelNight: "night",
-        labelTotalAmount: "Total Amount",
-        labelStatus: "Status",
-        methods: {
-          CASH: "Cash (CASH)",
-          CARD: "Credit Card (CARD)",
-          QR: "Bank Transfer / QR Code (QR)"
-        },
-        alerts: {
-          fillRequired: "Please fill in all room and date details.",
-          newCustRequired: "Please enter Full Name and Phone Number for the new customer.",
-          oldCustRequired: "Please select an existing customer.",
-          errorDefault: "An error occurred during processing"
-        }
-      }
+    },
   },
   rooms: {
-    title: "Resort Room Map",
     subtitle: "Monitor current room status and handle quick operations.",
-    btnCreate: "+ Add Room",
     loading: "Loading room list...",
     empty: "No matching rooms found.",
     filter: {
@@ -146,7 +148,7 @@ const en = {
       available: "Available",
       booked: "Booked",
       occupied: "Occupied",
-      maintenance: "Maintenance"
+      maintenance: "Maintenance",
     },
     card: {
       roomPrefix: "Room",
@@ -154,7 +156,7 @@ const en = {
       price: "Price:",
       status: "Status:",
       btnQuickAction: "Quick Action",
-      btnDetail: "View Detail"
+      btnDetail: "View Detail",
     },
     title: "Room Management",
     totalPrefix: "Total:",
@@ -166,7 +168,8 @@ const en = {
     alertNoData: "No room data available to export!",
     alertError: "An error occurred while fetching room data!",
     deleteTitle: "Confirm Delete",
-    deleteDesc: "Are you sure you want to delete this room? This action cannot be undone.",
+    deleteDesc:
+      "Are you sure you want to delete this room? This action cannot be undone.",
     deleteCancel: "Cancel",
     deleteConfirm: "Delete",
     errorDefault: "An error occurred",
@@ -177,14 +180,14 @@ const en = {
       roomType: "Room Type Name",
       price: "Room Price / Night (VND)",
       capacity: "Capacity (Guests)",
-      status: "Current Status"
+      status: "Current Status",
     },
     txtHeaders: {
       roomNumber: "Room No.",
       floorNumber: "Floor No.",
       roomType: "Room Type",
       status: "Status",
-      price: "Base Price"
+      price: "Base Price",
     },
     allFloors: "All Floors",
     floorPrefix: "Floor",
@@ -194,33 +197,33 @@ const en = {
       roomType: "Room Type",
       price: "Price/Night",
       status: "Status",
-      actions: "Actions"
+      actions: "Actions",
     },
     actionButtons: {
       edit: "Edit",
-      delete: "Delete"
+      delete: "Delete",
     },
     modal: {
-    createTitle: "Add New Room",
-    editTitle: "Edit Room",
-    roomNumber: "Room Number",
-    placeholderRoomNumber: "E.g., 101",
-    floorNumber: "Floor",
-    roomType: "Room Type",
-    placeholderSelectType: "-- Select room type --",
-    status: "Status",
-    statusOptions: {
-      AVAILABLE: "Available",
-      OCCUPIED: "Occupied",
-      MAINTENANCE: "Maintenance"
+      createTitle: "Add New Room",
+      editTitle: "Edit Room",
+      roomNumber: "Room Number",
+      placeholderRoomNumber: "E.g., 101",
+      floorNumber: "Floor",
+      roomType: "Room Type",
+      placeholderSelectType: "-- Select room type --",
+      status: "Status",
+      statusOptions: {
+        AVAILABLE: "Available",
+        OCCUPIED: "Occupied",
+        MAINTENANCE: "Maintenance",
+      },
+      btnCancel: "Cancel",
+      btnSave: "Save",
+      btnUpdate: "Update",
+      btnSaving: "Saving...",
     },
-    btnCancel: "Cancel",
-    btnSave: "Save",
-    btnUpdate: "Update",
-    btnSaving: "Saving..."
-    }
   },
-    customers: {
+  customers: {
     title: "Customer Management",
     totalPrefix: "Total:",
     totalSuffix: "customers",
@@ -247,7 +250,7 @@ const en = {
       fullName: "Full Name",
       phone: "Phone Number",
       email: "Email",
-      actions: "Actions"
+      actions: "Actions",
     },
 
     excelHeaders: {
@@ -255,13 +258,13 @@ const en = {
       customerId: "Customer ID",
       fullName: "Full Name",
       phone: "Phone Number",
-      email: "Email"
+      email: "Email",
     },
     txtHeaders: {
       customerId: "Customer ID",
       fullName: "Full Name",
       phone: "Phone Number",
-      email: "Email"
+      email: "Email",
     },
     modal: {
       createTitle: "Add Customer",
@@ -271,12 +274,12 @@ const en = {
       labelEmail: "Email",
       saving: "Saving...",
       btnSave: "Save",
-      btnUpdate: "Update"
+      btnUpdate: "Update",
     },
     actionButtons: {
-    edit: "Edit",
-    delete: "Delete"
-    }
+      edit: "Edit",
+      delete: "Delete",
+    },
   },
   payments: {
     title: "Payment Management",
@@ -308,7 +311,7 @@ const en = {
       statusExcel: "Payment Status",
       date: "Payment Date",
       customer: "Customer",
-      stt: "No."
+      stt: "No.",
     },
     loading: "Loading invoice list...",
     empty: "No matching invoices found.",
@@ -319,21 +322,21 @@ const en = {
       method: "Method",
       status: "Status",
       date: "Payment Date",
-      actions: "Actions"
+      actions: "Actions",
     },
     status: {
       PAID: "Paid",
-      PENDING: "Pending"
+      PENDING: "Pending",
     },
     actionButtons: {
       confirm: "Confirm",
       detail: "Detail",
       edit: "Edit",
-      delete: "Delete"
+      delete: "Delete",
     },
     alerts: {
       confirmDelete: "Delete invoice #{id}?",
-      deleteError: "Cannot delete invoice!"
+      deleteError: "Cannot delete invoice!",
     },
     modalDetail: {
       title: "Invoice Details #{id}",
@@ -355,7 +358,7 @@ const en = {
       labelCheckIn: "Check-in",
       labelCheckOut: "Check-out",
       labelBookingStatus: "Booking Status",
-      btnClose: "Close"
+      btnClose: "Close",
     },
     modalEdit: {
       title: "Edit Invoice #{id}",
@@ -363,20 +366,20 @@ const en = {
       btnCancel: "Cancel",
       btnSave: "Save Changes",
       saving: "Saving...",
-      errorDefault: "An error occurred"
+      errorDefault: "An error occurred",
     },
   },
   pagination: {
     page: "Page",
     prev: "Prev",
-    next: "Next"
-    },
-    chart: {
+    next: "Next",
+  },
+  chart: {
     title: "Revenue Statistics",
     periodMonth: "Monthly",
     periodYear: "Yearly",
     periodWeek: "Weekly",
-    revenue: "Revenue"
+    revenue: "Revenue",
   },
   employees: {
     title: "Employee Management",
@@ -399,18 +402,18 @@ const en = {
       email: "Email",
       position: "Position",
       salary: "Salary",
-      actions: "Actions"
+      actions: "Actions",
     },
     confirmDelete: {
       title: "Confirm Delete",
       message: "Are you sure you want to delete this employee?",
-      btnDelete: "Delete"
+      btnDelete: "Delete",
     },
     alerts: {
       noData: "No employee data available to export!",
       errorFetch: "An error occurred while fetching employee data!",
-      errorDefault: "An error occurred"
-    }
+      errorDefault: "An error occurred",
+    },
   },
 };
 

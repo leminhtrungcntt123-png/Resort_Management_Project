@@ -33,6 +33,7 @@ const vi = {
     customers: "Khách hàng",
     payments: "Thanh toán",
     employees: "Nhân viên",
+    users: "Tài khoản",
     logout: "Đăng xuất"
   },
   bookings: {
@@ -136,9 +137,7 @@ const vi = {
       }
   },
   rooms: {
-    title: "Sơ đồ phòng Resort",
     subtitle: "Theo dõi trạng thái phòng hiện tại và xử lý vận hành nhanh.",
-    btnCreate: "+ Thêm phòng",
     loading: "Đang tải danh sách phòng...",
     empty: "Không tìm thấy phòng nào phù hợp.",
     filter: {

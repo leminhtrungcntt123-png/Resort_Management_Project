@@ -6,10 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import resort_management.common.ApiResponse;
+import resort_management.dto.request.ChangePasswordRequest;
 import resort_management.dto.request.UserRequest;
 import resort_management.dto.response.UserResponse;
 import resort_management.service.UserService;
-
 import java.util.List;
 
 @RestController
@@ -54,5 +54,15 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         userService.delete(id);
         return ResponseEntity.ok(ApiResponse.success("Đã xóa tài khoản ID: " + id));
+    }
+
+    // PATCH /api/users/change-password
+    @PatchMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            Authentication authentication) {
+        // Lấy username từ JWT token hiện tại
+        userService.changePassword(authentication.getName(), request);
+        return ResponseEntity.ok(ApiResponse.success("Đổi mật khẩu thành công!"));
     }
 }

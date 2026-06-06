@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import resort_management.dto.request.ChangePasswordRequest;
 import resort_management.dto.request.UserRequest;
 import resort_management.dto.response.UserResponse;
 import resort_management.entity.Employee;
@@ -103,5 +105,24 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException(
                     "Không tìm thấy tài khoản ID: " + id);
         userRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(String username, ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy tài khoản: " + username));
+
+        // Kiểm tra mật khẩu cũ có đúng không
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword()))
+            throw new BusinessException("Mật khẩu cũ không đúng!");
+
+        // Kiểm tra mật khẩu mới không được trùng mật khẩu cũ
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword()))
+            throw new BusinessException("Mật khẩu mới không được trùng mật khẩu cũ!");
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

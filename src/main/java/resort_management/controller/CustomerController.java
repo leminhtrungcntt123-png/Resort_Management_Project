@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import resort_management.dto.request.CustomerRequest;
 import resort_management.dto.response.CustomerResponse;
 import resort_management.service.CustomerService;
+import resort_management.dto.request.ChangePasswordRequest;
+
 
 import java.util.List;
 import java.util.Map;
