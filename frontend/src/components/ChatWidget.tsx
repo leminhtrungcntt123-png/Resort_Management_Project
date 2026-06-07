@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Bot, User, Loader2 } from "lucide-react";
+import { MessageSquare, X, Send, Bot, User, Loader2, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 // IMPORT CÁC INTERFACE TỪ FILE RIÊNG
@@ -10,14 +10,20 @@ import { Message, SuggestedAction } from "@/types/chat";
 export default function ChatWidget() {
   const router = useRouter(); 
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      sender: "bot",
-      text: "Xin chào! Em là Trợ lý ảo Resort. Em có thể giúp gì cho Anh/Chị trong việc quản trị và kiểm tra phòng hôm nay ạ?",
-      timestamp: new Date(), // Khởi tạo mặc định lúc chạy client
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  // Thêm useEffect này để nạp tin nhắn chào mừng ngay khi mở trang (chỉ chạy ở Client)
+  useEffect(() => {
+    setMessages([
+      {
+        id: "welcome",
+        sender: "bot",
+        text: "Xin chào! Em là Trợ lý ảo Resort. Em có thể giúp gì cho Anh/Chị trong việc quản trị và kiểm tra phòng hôm nay ạ?",
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
@@ -121,7 +127,6 @@ export default function ChatWidget() {
         </button>
       )}
 
-      {/* Hộp Thoại Giao Diện Chat */}
       {isOpen && (
         <div className="flex h-[500px] w-[380px] flex-col rounded-2xl border shadow-2xl overflow-hidden bg-white border-slate-200">
           {/* Header Cửa Sổ Chat */}
@@ -167,7 +172,7 @@ export default function ChatWidget() {
                 </div>
 
                 {/* Nội dung text bong bóng chat */}
-                <div className="space-y-1">
+                <div className="space-y-1 flex-1 min-w-0">
                   <div
                     className={`rounded-2xl px-3 py-2 text-sm shadow-sm whitespace-pre-line ${
                       msg.sender === "user"
@@ -175,30 +180,30 @@ export default function ChatWidget() {
                         : "bg-white text-slate-800 border border-slate-100 rounded-tl-none"
                     }`}
                   >
-                    <div>{msg.text}</div>
-
-                    {/* Render danh sách nút bấm gợi ý điều hướng của BOT */}
-                    {msg.sender === "bot" && msg.suggested_actions && msg.suggested_actions.length > 0 && (
-                      <div className="flex flex-col gap-1.5 mt-3 pt-2.5 border-t border-slate-100">
-                        {msg.suggested_actions.map((btn, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => {
-                              if (btn.action === 'navigate') {
-                                router.push(btn.payload); 
-                              }
-                            }}
-                            className="w-full text-left px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs rounded-lg transition-all duration-150 flex items-center justify-between active:scale-[0.98] shadow-sm"
-                          >
-                            <span>{btn.label}</span>
-                            <span className="text-[10px] opacity-60">→</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    {msg.text}
                   </div>
-                  {/* SỬA ĐỔI TẠI ĐÂY: Gọi hàm helper format time bọc ngoài để tránh crash layout */}
+
+                  {/* ĐÃ CHUYỂN RA NGOÀI BONG BÓNG TEXT: Giúp nút bấm hiển thị rộng rãi, không bị bóp nghẹt diện tích */}
+                  {msg.sender === "bot" && msg.suggested_actions && msg.suggested_actions.length > 0 && (
+                    <div className="flex flex-col gap-1.5 mt-2 max-w-full">
+                      {msg.suggested_actions.map((btn, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => {
+                            if (btn.action === 'navigate') {
+                              router.push(btn.payload); 
+                            }
+                          }}
+                          className="w-full text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs rounded-xl border border-blue-200 transition-all duration-200 flex items-center justify-between active:scale-[0.98] shadow-sm group"
+                        >
+                          <span>{btn.label}</span>
+                          <ArrowRight className="h-3.5 w-3.5 opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   <p className="text-[10px] text-slate-400 px-1 text-right">
                     {formatMessageTime(msg.timestamp)}
                   </p>
