@@ -12,7 +12,8 @@ const vi = {
   },
   charts: {
     pieTitle: "Phân tích Mật độ Đặt theo Loại phòng",
-    pieDesc: "Số liệu thời gian thực được tính toán trực tiếp từ danh sách đơn đặt phòng",
+    pieDesc:
+      "Số liệu thời gian thực được tính toán trực tiếp từ danh sách đơn đặt phòng",
     barTitle: "Lượt đặt theo tháng",
     barDesc: "Biểu đồ phân tích tần suất đặt phòng theo dòng thời gian",
     totalLabel: "Lượt đặt",
@@ -20,7 +21,7 @@ const vi = {
     emptyData: "SQL Server hiện tại chưa có dữ liệu đặt phòng (Bookings trống)",
     loadingData: "Đang phân tích dữ liệu...",
     thisMonth: "Tháng này",
-    monthPrefix: "Tháng"
+    monthPrefix: "Tháng",
   },
   // BỔ SUNG THÊM PHẦN NÀY CHO SIDEBAR
   sidebar: {
@@ -34,107 +35,108 @@ const vi = {
     payments: "Thanh toán",
     employees: "Nhân viên",
     users: "Tài khoản",
-    logout: "Đăng xuất"
+    services: "Dịch vụ",
+    logout: "Đăng xuất",
   },
   bookings: {
-      title: "Quản lý Đặt phòng",
-      totalPrefix: "Tổng:",
-      totalSuffix: "đơn đặt phòng",
-      btnExportTxt: "Xuất TXT",
-      btnExportExcel: "Xuất Excel",
-      btnCreate: "+ Đặt phòng",
-      statusExporting: "Đang xuất...",
-      alertNoData: "Không có dữ liệu đặt phòng để xuất!",
-      alertError: "Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!",
-      qrTitle: "Quét mã thanh toán",
-      qrCustomer: "Khách hàng:",
-      qrCode: "Mã đơn:",
-      qrCancel: "Hủy",
-      qrConfirm: "Xác nhận đã quét",
-      deleteTitle: "Xác nhận xóa",
-      deleteDesc: "Xóa booking này sẽ trả phòng về trạng thái AVAILABLE.",
-      deleteCancel: "Hủy",
-      deleteConfirm: "Xóa",
-      excelHeaders: {
-        stt: "STT",
-        code: "Mã Đặt Phòng",
-        customer: "Tên Khách Hàng",
-        phone: "Số Điện Thoại",
-        roomNumber: "Số Phòng",
-        roomType: "Loại Phòng",
-        checkIn: "Ngày Vào",
-        checkOut: "Ngày Ra",
-        status: "Trạng Thái Đơn",
-        method: "Phương Thức TT",
-        payStatus: "Trạng Thái TT",
-        amount: "Tổng Tiền (VND)"
+    title: "Quản lý Đặt phòng",
+    totalPrefix: "Tổng:",
+    totalSuffix: "đơn đặt phòng",
+    btnExportTxt: "Xuất TXT",
+    btnExportExcel: "Xuất Excel",
+    btnCreate: "+ Đặt phòng",
+    statusExporting: "Đang xuất...",
+    alertNoData: "Không có dữ liệu đặt phòng để xuất!",
+    alertError: "Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!",
+    qrTitle: "Quét mã thanh toán",
+    qrCustomer: "Khách hàng:",
+    qrCode: "Mã đơn:",
+    qrCancel: "Hủy",
+    qrConfirm: "Xác nhận đã quét",
+    deleteTitle: "Xác nhận xóa",
+    deleteDesc: "Xóa booking này sẽ trả phòng về trạng thái AVAILABLE.",
+    deleteCancel: "Hủy",
+    deleteConfirm: "Xóa",
+    excelHeaders: {
+      stt: "STT",
+      code: "Mã Đặt Phòng",
+      customer: "Tên Khách Hàng",
+      phone: "Số Điện Thoại",
+      roomNumber: "Số Phòng",
+      roomType: "Loại Phòng",
+      checkIn: "Ngày Vào",
+      checkOut: "Ngày Ra",
+      status: "Trạng Thái Đơn",
+      method: "Phương Thức TT",
+      payStatus: "Trạng Thái TT",
+      amount: "Tổng Tiền (VND)",
+    },
+    txtHeaders: {
+      code: "Mã Đơn",
+      customer: "Khách Hàng",
+      roomNumber: "Số Phòng",
+      checkIn: "Ngày Check-in",
+      checkOut: "Ngày Check-out",
+      status: "Trạng Thái Đơn",
+      payment: "Thanh Toán",
+    },
+    filter: {
+      all: "Tất cả",
+      pending: "Chờ xác nhận",
+      confirmed: "Đã xác nhận",
+      checkedIn: "Đã nhận phòng (Checked-in)",
+      checkedOut: "Đã trả phòng (Checked-out)",
+      cancelled: "Đã hủy",
+    },
+    table: {
+      code: "Mã đơn",
+      customer: "Khách hàng",
+      room: "Phòng",
+      checkIn: "Ngày vào",
+      checkOut: "Ngày ra",
+      status: "Trạng thái",
+      payment: "Thanh toán",
+      actions: "Thao tác",
+      loading: "Đang tải dữ liệu...",
+      empty: "Không có đơn đặt phòng nào.",
+      btnCheckIn: "Nhận phòng",
+      btnCheckOut: "Trả phòng",
+      btnDetail: "Chi tiết",
+      btnDelete: "Xóa",
+    },
+    pagination: {
+      prev: "Trang trước",
+      next: "Trang sau",
+      pageOf: "Trang {current} trên {total}",
+    },
+    form: {
+      createTitle: "Tạo đơn đặt phòng mới",
+      detailTitle: "Chi tiết Booking",
+      customerInfo: "Thông tin khách hàng",
+      newCustomerCheckbox: "+ Thêm khách mới",
+      labelCheckIn: "Ngày Check-in *",
+      labelCheckOut: "Ngày Check-out *",
+      labelSelectRoom: "Chọn Phòng *",
+      placeholderSelectRoom: "-- Chỉ hiển thị phòng TRỐNG --",
+      labelPaymentMethod: "Phương thức thanh toán",
+      placeholderSelectCustomer: "-- Tra cứu khách hàng cũ --",
+      labelRooms: "Phòng",
+      labelServices: "Dịch vụ",
+      labelNight: "đêm",
+      labelTotalAmount: "Tổng tiền",
+      labelStatus: "Trạng thái",
+      methods: {
+        CASH: "Tiền mặt (CASH)",
+        CARD: "Thẻ quẹt (CARD)",
+        QR: "Chuyển khoản / Mã QR (QR)",
       },
-      txtHeaders: {
-        code: "Mã Đơn",
-        customer: "Khách Hàng",
-        roomNumber: "Số Phòng",
-        checkIn: "Ngày Check-in",
-        checkOut: "Ngày Check-out",
-        status: "Trạng Thái Đơn",
-        payment: "Thanh Toán"
+      alerts: {
+        fillRequired: "Vui lòng điền đầy đủ thông tin phòng và ngày.",
+        newCustRequired: "Vui lòng nhập Tên và Số điện thoại cho khách mới.",
+        oldCustRequired: "Vui lòng chọn một khách hàng cũ.",
+        errorDefault: "Có lỗi xảy ra khi xử lý",
       },
-      filter: {
-        all: "Tất cả",
-        pending: "Chờ xác nhận",
-        confirmed: "Đã xác nhận",
-        checkedIn: "Đã nhận phòng (Checked-in)",
-        checkedOut: "Đã trả phòng (Checked-out)",
-        cancelled: "Đã hủy"
-      },
-      table: {
-        code: "Mã đơn",
-        customer: "Khách hàng",
-        room: "Phòng",
-        checkIn: "Ngày vào",
-        checkOut: "Ngày ra",
-        status: "Trạng thái",
-        payment: "Thanh toán",
-        actions: "Thao tác",
-        loading: "Đang tải dữ liệu...",
-        empty: "Không có đơn đặt phòng nào.",
-        btnCheckIn: "Nhận phòng",
-        btnCheckOut: "Trả phòng",
-        btnDetail: "Chi tiết",
-        btnDelete: "Xóa"
-      },
-      pagination: {
-        prev: "Trang trước",
-        next: "Trang sau",
-        pageOf: "Trang {current} trên {total}"
-      },
-      form: {
-        createTitle: "Tạo đơn đặt phòng mới",
-        detailTitle: "Chi tiết Booking",
-        customerInfo: "Thông tin khách hàng",
-        newCustomerCheckbox: "+ Thêm khách mới",
-        labelCheckIn: "Ngày Check-in *",
-        labelCheckOut: "Ngày Check-out *",
-        labelSelectRoom: "Chọn Phòng *",
-        placeholderSelectRoom: "-- Chỉ hiển thị phòng TRỐNG --",
-        labelPaymentMethod: "Phương thức thanh toán",
-        placeholderSelectCustomer: "-- Tra cứu khách hàng cũ --",
-        labelRooms: "Phòng",
-        labelServices: "Dịch vụ",
-        labelNight: "đêm",
-        labelTotalAmount: "Tổng tiền",
-        labelStatus: "Trạng thái",
-        methods: {
-          CASH: "Tiền mặt (CASH)",
-          CARD: "Thẻ quẹt (CARD)",
-          QR: "Chuyển khoản / Mã QR (QR)"
-        },
-        alerts: {
-          fillRequired: "Vui lòng điền đầy đủ thông tin phòng và ngày.",
-          newCustRequired: "Vui lòng nhập Tên và Số điện thoại cho khách mới.",
-          oldCustRequired: "Vui lòng chọn một khách hàng cũ.",
-          errorDefault: "Có lỗi xảy ra khi xử lý"
-        }
-      }
+    },
   },
   rooms: {
     subtitle: "Theo dõi trạng thái phòng hiện tại và xử lý vận hành nhanh.",
@@ -145,7 +147,7 @@ const vi = {
       available: "Phòng trống (Available)",
       booked: "Đã đặt (Booked)",
       occupied: "Đang ở (Occupied)",
-      maintenance: "Bảo trì (Maintenance)"
+      maintenance: "Bảo trì (Maintenance)",
     },
     card: {
       roomPrefix: "Phòng",
@@ -153,7 +155,7 @@ const vi = {
       price: "Giá:",
       status: "Trạng thái:",
       btnQuickAction: "Thao tác nhanh",
-      btnDetail: "Xem chi tiết"
+      btnDetail: "Xem chi tiết",
     },
     title: "Quản lý Phòng",
     totalPrefix: "Tổng:",
@@ -165,7 +167,8 @@ const vi = {
     alertNoData: "Không có dữ liệu phòng để xuất!",
     alertError: "Có lỗi xảy ra khi tải dữ liệu phòng!",
     deleteTitle: "Xác nhận xóa",
-    deleteDesc: "Bạn có chắc muốn xóa phòng này không? Hành động này không thể hoàn tác.",
+    deleteDesc:
+      "Bạn có chắc muốn xóa phòng này không? Hành động này không thể hoàn tác.",
     deleteCancel: "Hủy",
     deleteConfirm: "Xóa",
     errorDefault: "Có lỗi xảy ra",
@@ -176,14 +179,14 @@ const vi = {
       roomType: "Tên Loại Phòng",
       price: "Giá Phòng / Đêm (VND)",
       capacity: "Sức Chứa (Người)",
-      status: "Trạng Thái Hiện Tại"
+      status: "Trạng Thái Hiện Tại",
     },
     txtHeaders: {
       roomNumber: "Số Phòng",
       floorNumber: "Số Tầng",
       roomType: "Loại Phòng",
       status: "Trạng Thái",
-      price: "Giá Gốc"
+      price: "Giá Gốc",
     },
     allFloors: "Tất cả tầng",
     floorPrefix: "Tầng",
@@ -193,33 +196,33 @@ const vi = {
       roomType: "Loại phòng",
       price: "Giá/đêm",
       status: "Trạng thái",
-      actions: "Thao tác"
+      actions: "Thao tác",
     },
     actionButtons: {
       edit: "Sửa",
-      delete: "Xóa"
+      delete: "Xóa",
     },
     modal: {
-    createTitle: "Thêm phòng mới",
-    editTitle: "Sửa phòng",
-    roomNumber: "Số phòng",
-    placeholderRoomNumber: "VD: 101",
-    floorNumber: "Tầng",
-    roomType: "Loại phòng",
-    placeholderSelectType: "-- Chọn loại phòng --",
-    status: "Trạng thái",
-    statusOptions: {
-      AVAILABLE: "Còn trống",
-      OCCUPIED: "Đang ở",
-      MAINTENANCE: "Bảo trì"
+      createTitle: "Thêm phòng mới",
+      editTitle: "Sửa phòng",
+      roomNumber: "Số phòng",
+      placeholderRoomNumber: "VD: 101",
+      floorNumber: "Tầng",
+      roomType: "Loại phòng",
+      placeholderSelectType: "-- Chọn loại phòng --",
+      status: "Trạng thái",
+      statusOptions: {
+        AVAILABLE: "Còn trống",
+        OCCUPIED: "Đang ở",
+        MAINTENANCE: "Bảo trì",
+      },
+      btnCancel: "Hủy",
+      btnSave: "Lưu",
+      btnUpdate: "Cập nhật",
+      btnSaving: "Đang lưu...",
     },
-    btnCancel: "Hủy",
-    btnSave: "Lưu",
-    btnUpdate: "Cập nhật",
-    btnSaving: "Đang lưu..."
-    }
   },
-    customers: {
+  customers: {
     title: "Quản lý Khách hàng",
     totalPrefix: "Tổng:",
     totalSuffix: "khách hàng",
@@ -246,7 +249,7 @@ const vi = {
       fullName: "Họ tên",
       phone: "Số điện thoại",
       email: "Email",
-      actions: "Thao tác"
+      actions: "Thao tác",
     },
 
     excelHeaders: {
@@ -254,13 +257,13 @@ const vi = {
       customerId: "Mã Khách Hàng",
       fullName: "Họ và Tên",
       phone: "Số Điện Thoại",
-      email: "Email"
+      email: "Email",
     },
     txtHeaders: {
       customerId: "Mã KH",
       fullName: "Họ và Tên",
       phone: "Số điện thoại",
-      email: "Email"
+      email: "Email",
     },
     modal: {
       createTitle: "Thêm khách hàng",
@@ -270,8 +273,42 @@ const vi = {
       labelEmail: "Email",
       saving: "Đang lưu...",
       btnSave: "Lưu",
-      btnUpdate: "Cập nhật"
-    }
+      btnUpdate: "Cập nhật",
+    },
+  },
+  services: {
+    title: "Quản lý Dịch vụ",
+    total: "dịch vụ",
+    btnAdd: "+ Thêm dịch vụ",
+    loading: "Đang tải...",
+    empty: "Chưa có dịch vụ nào",
+    tableHeaders: {
+      id: "ID",
+      name: "Tên dịch vụ",
+      price: "Giá",
+      createdAt: "Ngày tạo",
+      actions: "Thao tác",
+    },
+    modal: {
+      createTitle: "Thêm dịch vụ mới",
+      editTitle: "Sửa dịch vụ",
+      labelName: "Tên dịch vụ",
+      placeholderName: "VD: Massage thư giãn",
+      labelPrice: "Giá (VNĐ)",
+      placeholderPrice: "VD: 500000",
+      btnCancel: "Hủy",
+      btnSave: "Thêm mới",
+      btnUpdate: "Cập nhật",
+      saving: "Đang lưu...",
+      errorRequired: "Vui lòng điền đầy đủ thông tin!",
+      errorPrice: "Giá phải là số dương!",
+    },
+    actionButtons: {
+      edit: "Sửa",
+      delete: "Xóa",
+    },
+    confirmDelete: 'Xóa dịch vụ "{name}"?',
+    deleteError: "Không thể xóa dịch vụ!",
   },
   payments: {
     title: "Quản lý Thanh toán",
@@ -303,7 +340,7 @@ const vi = {
       statusExcel: "Trạng Thái TT",
       date: "Ngày Thanh Toán",
       customer: "Khách Hàng",
-      stt: "STT"
+      stt: "STT",
     },
     loading: "Đang tải danh sách hóa đơn...",
     empty: "Không tìm thấy hóa đơn nào phù hợp.",
@@ -314,21 +351,21 @@ const vi = {
       method: "Phương thức",
       status: "Trạng thái",
       date: "Ngày thanh toán",
-      actions: "Thao tác"
+      actions: "Thao tác",
     },
     status: {
       PAID: "Đã thanh toán",
-      PENDING: "Chưa thanh toán"
+      PENDING: "Chưa thanh toán",
     },
     actionButtons: {
       confirm: "Xác nhận",
       detail: "Chi tiết",
       edit: "Sửa",
-      delete: "Xóa"
+      delete: "Xóa",
     },
     alerts: {
       confirmDelete: "Xóa hóa đơn #{id}?",
-      deleteError: "Không thể xóa hóa đơn!"
+      deleteError: "Không thể xóa hóa đơn!",
     },
     modalDetail: {
       title: "Chi tiết hóa đơn #{id}",
@@ -350,7 +387,7 @@ const vi = {
       labelCheckIn: "Check-in",
       labelCheckOut: "Check-out",
       labelBookingStatus: "Trạng thái booking",
-      btnClose: "Đóng"
+      btnClose: "Đóng",
     },
     modalEdit: {
       title: "Sửa hóa đơn #{id}",
@@ -358,20 +395,20 @@ const vi = {
       btnCancel: "Hủy",
       btnSave: "Lưu thay đổi",
       saving: "Đang lưu...",
-      errorDefault: "Có lỗi xảy ra"
+      errorDefault: "Có lỗi xảy ra",
     },
   },
   pagination: {
     page: "Trang",
     prev: "Trước",
-    next: "Sau"
-    },
-    chart: {
+    next: "Sau",
+  },
+  chart: {
     title: "Thống kê doanh thu",
     periodMonth: "Theo tháng",
     periodYear: "Theo năm",
     periodWeek: "Theo tuần",
-    revenue: "Doanh thu"
+    revenue: "Doanh thu",
   },
   employees: {
     title: "Quản lý Nhân viên",
@@ -394,20 +431,19 @@ const vi = {
       email: "Email",
       position: "Chức vụ",
       salary: "Lương",
-      actions: "Thao tác"
+      actions: "Thao tác",
     },
     confirmDelete: {
       title: "Xác nhận xóa",
       message: "Bạn có chắc muốn xóa nhân viên này không?",
-      btnDelete: "Xóa"
+      btnDelete: "Xóa",
     },
     alerts: {
       noData: "Không có dữ liệu nhân viên nào để xuất!",
       errorFetch: "Có lỗi xảy ra khi tải dữ liệu nhân viên!",
-      errorDefault: "Có lỗi xảy ra"
-    }
+      errorDefault: "Có lỗi xảy ra",
+    },
   },
-
 };
 
 export default vi;
