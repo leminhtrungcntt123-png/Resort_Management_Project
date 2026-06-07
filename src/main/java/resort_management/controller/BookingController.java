@@ -194,4 +194,21 @@ public class BookingController {
                     .body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    // POST /api/bookings/{id}/services
+    @PostMapping("/{id}/services")
+    public ResponseEntity<ApiResponse<BookingResponse>> addService(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        try {
+            Long serviceId = Long.valueOf(body.get("serviceId").toString());
+            Integer quantity = Integer.valueOf(body.get("quantity").toString());
+            BookingResponse response = bookingService.addServiceToBooking(id, serviceId, quantity);
+            return ResponseEntity.ok(ApiResponse.success(
+                    "Thêm dịch vụ thành công!", response));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
 }

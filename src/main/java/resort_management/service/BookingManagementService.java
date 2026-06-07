@@ -3,6 +3,8 @@ package resort_management.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import resort_management.dto.response.BookingResponse;
 import resort_management.entity.*;
 import resort_management.enums.BookingStatus;
 import resort_management.enums.PaymentMethod;
@@ -65,8 +67,7 @@ public class BookingManagementService {
 
             // Tính tiền: price * số ngày
             totalAmount = totalAmount.add(
-                    pricePerNight.multiply(BigDecimal.valueOf(totalDays))
-            );
+                    pricePerNight.multiply(BigDecimal.valueOf(totalDays)));
         }
 
         // 3. Xử lý dịch vụ kèm theo
@@ -81,8 +82,7 @@ public class BookingManagementService {
 
                 // Tính tiền dịch vụ: price * quantity
                 totalAmount = totalAmount.add(
-                        service.getPrice().multiply(BigDecimal.valueOf(bs.getQuantity()))
-                );
+                        service.getPrice().multiply(BigDecimal.valueOf(bs.getQuantity())));
             }
         }
 
@@ -146,13 +146,16 @@ public class BookingManagementService {
             throw new RuntimeException("Đơn này đã kết thúc, không thể trả phòng lại!");
         }
 
-        booking.setStatus(BookingStatus.CHECKED_OUT); // ← Enum
+        // Tính lại tiền trước khi checkout
+        recalculatePayment(booking);
+
+        booking.setStatus(BookingStatus.CHECKED_OUT);
 
         if (booking.getBookingRooms() != null) {
             for (BookingRoom br : booking.getBookingRooms()) {
                 Room room = br.getRoom();
                 if (room != null) {
-                    room.setStatus(RoomStatus.AVAILABLE); // ← Enum
+                    room.setStatus(RoomStatus.AVAILABLE);
                     roomRepository.save(room);
                 }
             }
@@ -184,5 +187,79 @@ public class BookingManagementService {
             }
         }
         bookingRepository.save(booking);
+    }
+
+    // Thêm dịch vụ vào booking đang CHECKED_IN
+    @Transactional
+    public BookingResponse addServiceToBooking(Long bookingId, Long serviceId, Integer quantity) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Không tìm thấy booking ID: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.CHECKED_IN)
+            throw new RuntimeException(
+                    "Chỉ có thể thêm dịch vụ cho booking đang CHECKED_IN!");
+
+        resort_management.entity.Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Không tìm thấy dịch vụ ID: " + serviceId));
+
+        // Kiểm tra dịch vụ đã có trong booking chưa — nếu có thì cộng thêm quantity
+        boolean existed = false;
+        if (booking.getBookingServices() != null) {
+            for (BookingService bs : booking.getBookingServices()) {
+                if (bs.getService().getId().equals(serviceId)) {
+                    bs.setQuantity(bs.getQuantity() + quantity);
+                    existed = true;
+                    break;
+                }
+            }
+        }
+
+        if (!existed) {
+            BookingService bs = new BookingService();
+            bs.setBooking(booking);
+            bs.setService(service);
+            bs.setQuantity(quantity);
+            if (booking.getBookingServices() == null)
+                booking.setBookingServices(new java.util.ArrayList<>());
+            booking.getBookingServices().add(bs);
+        }
+
+        // Tính lại tổng tiền payment
+        recalculatePayment(booking);
+
+        return BookingResponse.from(bookingRepository.save(booking));
+    }
+
+    // Tính lại tổng tiền: phòng + dịch vụ
+    private void recalculatePayment(Booking booking) {
+        long totalDays = ChronoUnit.DAYS.between(
+                booking.getCheckInDate(), booking.getCheckOutDate());
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        // Tiền phòng
+        if (booking.getBookingRooms() != null) {
+            for (BookingRoom br : booking.getBookingRooms()) {
+                total = total.add(
+                        br.getPrice().multiply(BigDecimal.valueOf(totalDays)));
+            }
+        }
+
+        // Tiền dịch vụ
+        if (booking.getBookingServices() != null) {
+            for (BookingService bs : booking.getBookingServices()) {
+                total = total.add(
+                        bs.getService().getPrice()
+                                .multiply(BigDecimal.valueOf(bs.getQuantity())));
+            }
+        }
+
+        // Cập nhật payment
+        if (booking.getPayment() != null) {
+            booking.getPayment().setAmount(total);
+            paymentRepository.save(booking.getPayment());
+        }
     }
 }

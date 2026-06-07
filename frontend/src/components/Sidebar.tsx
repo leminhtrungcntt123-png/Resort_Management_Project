@@ -11,6 +11,7 @@ import {
   UserSquare2,
   Building2,
   ShieldCheck,
+  ConciergeBell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
@@ -51,6 +52,12 @@ export default function Sidebar() {
           href: "/customers",
           icon: Users,
         },
+        {
+          label: t?.sidebar?.services || "Dịch vụ",
+          href: "/services",
+          icon: ConciergeBell,
+          allowedRoles: ["ADMIN", "MANAGER"] as UserRole[],
+        },
       ],
     },
     {
@@ -67,7 +74,7 @@ export default function Sidebar() {
           icon: UserSquare2,
           allowedRoles: ["ADMIN"] as UserRole[],
         },
-        
+
         {
           label: t?.sidebar?.users || "Tài khoản",
           href: "/users",
