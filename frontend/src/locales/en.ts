@@ -450,6 +450,106 @@ const en = {
       errorDefault: "An error occurred",
     },
   },
+  services: {
+    title: "Service Management",
+    totalPrefix: "Total:",
+    totalSuffix: "services",
+    btnCreate: "+ Add Service",
+    loading: "Loading services...",
+    empty: "No services found.",
+    tableHeaders: {
+      name: "Service Name",
+      price: "Price",
+      unit: "Unit",
+      status: "Status",
+      actions: "Actions"
+    },
+    modal: {
+      createTitle: "Add New Service",
+      editTitle: "Edit Service",
+      name: "Service Name",
+      placeholderName: "E.g., Laundry, Mineral Water...",
+      price: "Price (VND)",
+      unit: "Unit",
+      placeholderUnit: "E.g., Time, Bottle, Plate...",
+      status: "Operational Status",
+      statusOptions: {
+        AVAILABLE: "Available",
+        OUT_OF_STOCK: "Out of Stock",
+        DISABLED: "Disabled"
+      }
+    },
+    tableHeaders: {
+      id: "ID",
+      name: "Service Name",
+      price: "Price",
+      createdAt: "Created At", // Thêm cột này
+      actions: "Actions"
+    },
+    modal: {
+      // ... Các từ khóa modal cũ
+      createTitle: "Add New Service",
+      editTitle: "Edit Service",
+      name: "Service Name",
+      placeholderName: "E.g., Relaxing Massage", // Cập nhật tương ứng
+      price: "Price (VND)",
+      placeholderPrice: "E.g., 500000",
+      btnCancel: "Cancel",
+      btnCreate: "Add New",
+      btnUpdate: "Update",
+      btnSaving: "Saving...",
+      // Thêm mớ alerts/errors này:
+      errorRequired: "Please fill in all information!",
+      errorPrice: "Price must be a positive number!",
+      confirmDelete: 'Delete service "{name}"?',
+      deleteError: "Could not delete service!",
+      errorDefault: "An error occurred"
+    }
+  },
+  users: {
+    title: "Account Management",
+    totalPrefix: "Total:",
+    totalSuffix: "accounts",
+    btnCreate: "+ Create Account",
+    loading: "Loading accounts...",
+    empty: "No accounts found.",
+    tableHeaders: {
+      id: "ID",
+      username: "Username",
+      role: "Role",
+      employee: "Employee",
+      status: "Status",
+      actions: "Actions"
+    },
+    statusOptions: {
+      active: "Active",
+      locked: "Locked"
+    },
+    actionButtons: {
+      lock: "Lock",
+      unlock: "Unlock",
+      delete: "Delete"
+    },
+    modal: {
+      createTitle: "Create New Account",
+      username: "Username",
+      placeholderUsername: "Minimum 4 characters",
+      password: "Password",
+      placeholderPassword: "Minimum 6 characters",
+      role: "Role",
+      roleOptions: {
+        ADMIN: "ADMIN",
+        MANAGER: "MANAGER",
+        RECEPTIONIST: "RECEPTIONIST"
+      },
+      btnCancel: "Cancel",
+      btnCreate: "Create Account",
+      btnCreating: "Creating...",
+      errorRequired: "Please fill in all information!",
+      errorDefault: "An error occurred",
+      confirmDelete: 'Delete account "{username}"?'
+    }
+  },
 };
 
 export default en;
