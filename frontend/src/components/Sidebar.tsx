@@ -10,6 +10,8 @@ import {
   CreditCard,
   UserSquare2,
   Building2,
+  ShieldCheck,
+  ConciergeBell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
@@ -24,25 +26,60 @@ export default function Sidebar() {
   const MENU_GROUPS = [
     {
       groupLabel: t?.sidebar?.overview || "Tổng quan",
-      items: [{ label: t?.sidebar?.dashboard || "Dashboard", href: "/", icon: LayoutDashboard }],
+      items: [
+        {
+          label: t?.sidebar?.dashboard || "Dashboard",
+          href: "/",
+          icon: LayoutDashboard,
+        },
+      ],
     },
     {
       groupLabel: t?.sidebar?.operation || "Quản lý vận hành",
       items: [
-        { label: t?.sidebar?.rooms || "Sơ đồ phòng", href: "/rooms", icon: Bed },
-        { label: t?.sidebar?.bookings || "Đặt phòng", href: "/bookings", icon: CalendarDays },
-        { label: t?.sidebar?.customers || "Khách hàng", href: "/customers", icon: Users },
+        {
+          label: t?.sidebar?.rooms || "Sơ đồ phòng",
+          href: "/rooms",
+          icon: Bed,
+        },
+        {
+          label: t?.sidebar?.bookings || "Đặt phòng",
+          href: "/bookings",
+          icon: CalendarDays,
+        },
+        {
+          label: t?.sidebar?.customers || "Khách hàng",
+          href: "/customers",
+          icon: Users,
+        },
+        {
+          label: t?.sidebar?.services || "Dịch vụ",
+          href: "/services",
+          icon: ConciergeBell,
+          allowedRoles: ["ADMIN", "MANAGER"] as UserRole[],
+        },
       ],
     },
     {
       groupLabel: t?.sidebar?.hrFinance || "Nhân sự & Tài chính",
       items: [
-        { label: t?.sidebar?.payments || "Thanh toán", href: "/payments", icon: CreditCard },
+        {
+          label: t?.sidebar?.payments || "Thanh toán",
+          href: "/payments",
+          icon: CreditCard,
+        },
         {
           label: t?.sidebar?.employees || "Nhân viên",
           href: "/employees",
           icon: UserSquare2,
-          allowedRoles: ["ADMIN"] as UserRole[], // Chỉ ADMIN mới có quyền nhìn thấy mục này
+          allowedRoles: ["ADMIN"] as UserRole[],
+        },
+
+        {
+          label: t?.sidebar?.users || "Tài khoản",
+          href: "/users",
+          icon: ShieldCheck,
+          allowedRoles: ["ADMIN"] as UserRole[],
         },
       ],
     },

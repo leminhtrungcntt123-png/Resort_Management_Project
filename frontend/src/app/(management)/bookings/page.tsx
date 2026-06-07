@@ -10,6 +10,7 @@ import BookingDetailModal from "@/components/bookings/BookingDetailModal";
 import BookingCreateModal from "@/components/bookings/BookingCreateModal";
 import { exportToTxt, exportToExcel } from "@/components/export";
 import { useLang } from "@/contexts/LangContext"; // Import hook ngôn ngữ của bạn
+import AddServiceModal from "@/components/bookings/AddServiceModal";
 
 export default function BookingsPage() {
   const { t } = useLang(); // Lấy đối tượng dịch t
@@ -23,16 +24,22 @@ export default function BookingsPage() {
   const [detailBooking, setDetailBooking] = useState<Booking | null>(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [qrCheckoutBooking, setQrCheckoutBooking] = useState<Booking | null>(null);
+  const [qrCheckoutBooking, setQrCheckoutBooking] = useState<Booking | null>(
+    null,
+  );
+
+  const [addServiceBooking, setAddServiceBooking] = useState<Booking | null>(
+    null,
+  );
 
   useEffect(() => {
     async function fetchBookings() {
       setLoading(true);
       try {
         const url =
-            status === "ALL"
-                ? `/api/bookings?page=${page}&size=10`
-                : `/api/bookings/status/${status}?page=${page}&size=10`;
+          status === "ALL"
+            ? `/api/bookings?page=${page}&size=10`
+            : `/api/bookings/status/${status}?page=${page}&size=10`;
         const res = await api.get(url);
         setData(res.data);
       } catch (err) {
@@ -49,14 +56,16 @@ export default function BookingsPage() {
     setExporting(true);
     try {
       const url =
-          status === "ALL"
-              ? `/api/bookings?page=0&size=9999`
-              : `/api/bookings/status/${status}?page=0&size=9999`;
+        status === "ALL"
+          ? `/api/bookings?page=0&size=9999`
+          : `/api/bookings/status/${status}?page=0&size=9999`;
       const res = await api.get(url);
       const allBookings: Booking[] = res.data?.content ?? [];
 
       if (allBookings.length === 0) {
-        alert(t?.bookings?.alertNoData || "Không có dữ liệu đặt phòng để xuất!");
+        alert(
+          t?.bookings?.alertNoData || "Không có dữ liệu đặt phòng để xuất!",
+        );
         return;
       }
 
@@ -64,17 +73,25 @@ export default function BookingsPage() {
       const txtData = allBookings.map((b) => ({
         [headers?.code || "Mã Đơn"]: b.id,
         [headers?.customer || "Khách Hàng"]: b.customer?.fullName ?? "N/A",
-        [headers?.roomNumber || "Số Phòng"]: b.room?.roomNumber ?? "N/A",
+        [headers?.roomNumber || "Số Phòng"]: b.rooms?.[0]?.roomNumber ?? "N/A",
         [headers?.checkIn || "Ngày Check-in"]: b.checkInDate ?? "N/A",
         [headers?.checkOut || "Ngày Check-out"]: b.checkOutDate ?? "N/A",
         [headers?.status || "Trạng Thái Đơn"]: b.status ?? "N/A",
-        [headers?.payment || "Thanh Toán"]: b.payment?.paymentStatus ?? "PENDING",
+        [headers?.payment || "Thanh Toán"]:
+          b.payment?.paymentStatus ?? "PENDING",
       }));
 
-      exportToTxt(txtData, `Danh sách đặt phòng (${status})`, `dat-phong-${status.toLowerCase()}`);
+      exportToTxt(
+        txtData,
+        `Danh sách đặt phòng (${status})`,
+        `dat-phong-${status.toLowerCase()}`,
+      );
     } catch (err) {
       console.error("Lỗi xuất file TXT:", err);
-      alert(t?.bookings?.alertError || "Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!");
+      alert(
+        t?.bookings?.alertError ||
+          "Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!",
+      );
     } finally {
       setExporting(false);
     }
@@ -85,14 +102,16 @@ export default function BookingsPage() {
     setExporting(true);
     try {
       const url =
-          status === "ALL"
-              ? `/api/bookings?page=0&size=9999`
-              : `/api/bookings/status/${status}?page=0&size=9999`;
+        status === "ALL"
+          ? `/api/bookings?page=0&size=9999`
+          : `/api/bookings/status/${status}?page=0&size=9999`;
       const res = await api.get(url);
       const allBookings: Booking[] = res.data?.content ?? [];
 
       if (allBookings.length === 0) {
-        alert(t?.bookings?.alertNoData || "Không có dữ liệu đặt phòng để xuất!");
+        alert(
+          t?.bookings?.alertNoData || "Không có dữ liệu đặt phòng để xuất!",
+        );
         return;
       }
 
@@ -102,20 +121,29 @@ export default function BookingsPage() {
         [headers?.code || "Mã Đặt Phòng"]: b.id,
         [headers?.customer || "Tên Khách Hàng"]: b.customer?.fullName ?? "N/A",
         [headers?.phone || "Số Điện Thoại"]: b.customer?.phone ?? "N/A",
-        [headers?.roomNumber || "Số Phòng"]: b.room?.roomNumber ?? "N/A",
-        [headers?.roomType || "Loại Phòng"]: b.room?.roomType ?? "N/A",
+        [headers?.roomNumber || "Số Phòng"]: b.rooms?.[0]?.roomNumber ?? "N/A",
+        [headers?.roomType || "Loại Phòng"]: b.rooms?.[0]?.roomTypeName ?? "N/A",
         [headers?.checkIn || "Ngày Vào"]: b.checkInDate ?? "N/A",
         [headers?.checkOut || "Ngày Ra"]: b.checkOutDate ?? "N/A",
         [headers?.status || "Trạng Thái Đơn"]: b.status ?? "N/A",
-        [headers?.method || "Phương Thức TT"]: b.payment?.paymentMethod ?? "N/A",
-        [headers?.payStatus || "Trạng Thái TT"]: b.payment?.paymentStatus ?? "PENDING",
+        [headers?.method || "Phương Thức TT"]:
+          b.payment?.paymentMethod ?? "N/A",
+        [headers?.payStatus || "Trạng Thái TT"]:
+          b.payment?.paymentStatus ?? "PENDING",
         [headers?.amount || "Tổng Tiền (VND)"]: b.totalAmount ?? 0,
       }));
 
-      exportToExcel(excelData, "Đặt Phòng", `dat-phong-${status.toLowerCase()}-excel`);
+      exportToExcel(
+        excelData,
+        "Đặt Phòng",
+        `dat-phong-${status.toLowerCase()}-excel`,
+      );
     } catch (err) {
       console.error("Lỗi xuất file Excel:", err);
-      alert(t?.bookings?.alertError || "Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!");
+      alert(
+        t?.bookings?.alertError ||
+          "Có lỗi xảy ra khi tải dữ liệu đơn đặt phòng!",
+      );
     } finally {
       setExporting(false);
     }
@@ -133,7 +161,9 @@ export default function BookingsPage() {
   async function handleCheckout(booking: Booking) {
     type ExtendedBooking = Booking & { paymentMethod?: string };
 
-    const method = booking.payment?.paymentMethod || (booking as ExtendedBooking).paymentMethod;
+    const method =
+      booking.payment?.paymentMethod ||
+      (booking as ExtendedBooking).paymentMethod;
     const isPaid = booking.payment?.paymentStatus === "PAID";
 
     if (method === "QR" && !isPaid) {
@@ -166,150 +196,174 @@ export default function BookingsPage() {
   }
 
   return (
-      <main className="mx-auto w-full max-w-6xl px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-zinc-900">
-              {t?.bookings?.title || "Quản lý Đặt phòng"}
-            </h2>
-            <p className="mt-1 text-sm text-zinc-500">
-              {t?.bookings?.totalPrefix || "Tổng:"} {data?.totalElements ?? "..."} {t?.bookings?.totalSuffix || "đơn đặt phòng"}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-                onClick={handleExportTxt}
-                disabled={loading || exporting}
-                className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
-            >
-              {exporting ? (t?.bookings?.statusExporting || "Đang xuất...") : (t?.bookings?.btnExportTxt || "Xuất TXT")}
-            </button>
-            <button
-                onClick={handleExportExcel}
-                disabled={loading || exporting}
-                className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-            >
-              {exporting ? (t?.bookings?.statusExporting || "Đang xuất...") : (t?.bookings?.btnExportExcel || "Xuất Excel")}
-            </button>
-            <button
-                onClick={() => setShowCreateModal(true)}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
-            >
-              {t?.bookings?.btnCreate || "+ Đặt phòng"}
-            </button>
-          </div>
+    <main className="mx-auto w-full max-w-6xl px-6 py-10">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-semibold text-zinc-900">
+            {t?.bookings?.title || "Quản lý Đặt phòng"}
+          </h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            {t?.bookings?.totalPrefix || "Tổng:"} {data?.totalElements ?? "..."}{" "}
+            {t?.bookings?.totalSuffix || "đơn đặt phòng"}
+          </p>
         </div>
 
-        {showCreateModal && (
-            <BookingCreateModal
-                onClose={() => setShowCreateModal(false)}
-                onSuccess={() => {
-                  setShowCreateModal(false);
-                  setRefresh((r) => r + 1);
-                }}
-            />
-        )}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportTxt}
+            disabled={loading || exporting}
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+          >
+            {exporting
+              ? t?.bookings?.statusExporting || "Đang xuất..."
+              : t?.bookings?.btnExportTxt || "Xuất TXT"}
+          </button>
+          <button
+            onClick={handleExportExcel}
+            disabled={loading || exporting}
+            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+          >
+            {exporting
+              ? t?.bookings?.statusExporting || "Đang xuất..."
+              : t?.bookings?.btnExportExcel || "Xuất Excel"}
+          </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
+          >
+            {t?.bookings?.btnCreate || "+ Đặt phòng"}
+          </button>
+        </div>
+      </div>
 
-        {detailBooking && (
-            <BookingDetailModal
-                booking={detailBooking}
-                onClose={() => setDetailBooking(null)}
-            />
-        )}
-
-        {qrCheckoutBooking && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-              <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl text-center">
-                <h3 className="text-lg font-bold text-zinc-900 mb-2">
-                  {t?.bookings?.qrTitle || "Quét mã thanh toán"}
-                </h3>
-                <p className="text-sm text-zinc-500 mb-4">
-                  {t?.bookings?.qrCustomer || "Khách hàng:"} <span className="font-semibold text-zinc-900">{qrCheckoutBooking.customer?.fullName}</span>
-                  <br/>
-                  {t?.bookings?.qrCode || "Mã đơn:"} <span className="font-semibold text-zinc-900">#{qrCheckoutBooking.id}</span>
-                </p>
-
-                <div className="mx-auto bg-zinc-50 rounded-lg p-2 mb-6 w-48 h-48 flex items-center justify-center border border-zinc-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                      src={`https://img.vietqr.io/image/MB-0332458381-compact2.png?amount=6800000&addInfo=Thanh toan don ${qrCheckoutBooking.id}&accountName=VU TIEN`}
-                      alt="QR Code"
-                      className="w-full h-full object-contain"
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                      onClick={() => setQrCheckoutBooking(null)}
-                      className="w-full rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 font-medium"
-                  >
-                    {t?.bookings?.qrCancel || "Hủy"}
-                  </button>
-                  <button
-                      onClick={() => executeCheckoutAPI(qrCheckoutBooking.id)}
-                      className="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-500"
-                  >
-                    {t?.bookings?.qrConfirm || "Xác nhận đã quét"}
-                  </button>
-                </div>
-              </div>
-            </div>
-        )}
-
-        {deleteId && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-                <h3 className="text-lg font-semibold text-zinc-900">
-                  {t?.bookings?.deleteTitle || "Xác nhận xóa"}
-                </h3>
-                <p className="mt-2 text-sm text-zinc-500">
-                  {t?.bookings?.deleteDesc || "Xóa booking này sẽ trả phòng về trạng thái AVAILABLE."}
-                </p>
-                <div className="mt-6 flex justify-end gap-2">
-                  <button
-                      onClick={() => setDeleteId(null)}
-                      className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50"
-                  >
-                    {t?.bookings?.deleteCancel || "Hủy"}
-                  </button>
-                  <button
-                      onClick={handleDelete}
-                      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"
-                  >
-                    {t?.bookings?.deleteConfirm || "Xóa"}
-                  </button>
-                </div>
-              </div>
-            </div>
-        )}
-
-        <BookingFilter
-            status={status}
-            onChange={(s) => {
-              setStatus(s);
-              setPage(0);
-            }}
+      {showCreateModal && (
+        <BookingCreateModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => {
+            setShowCreateModal(false);
+            setRefresh((r) => r + 1);
+          }}
         />
+      )}
 
-        <BookingTable
-            bookings={data?.content ?? []}
-            loading={loading}
-            onCheckin={handleCheckin}
-            onCheckout={handleCheckout}
-            onDelete={(id) => setDeleteId(id)}
-            onDetail={(booking) => setDetailBooking(booking)}
+      {detailBooking && (
+        <BookingDetailModal
+          booking={detailBooking}
+          onClose={() => setDetailBooking(null)}
         />
+      )}
 
-        {data && (
-            <BookingPagination
-                page={data.page}
-                totalPages={data.totalPages}
-                last={data.last}
-                onPrev={() => setPage((p) => p - 1)}
-                onNext={() => setPage((p) => p + 1)}
-            />
-        )}
-      </main>
+      {qrCheckoutBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl text-center">
+            <h3 className="text-lg font-bold text-zinc-900 mb-2">
+              {t?.bookings?.qrTitle || "Quét mã thanh toán"}
+            </h3>
+            <p className="text-sm text-zinc-500 mb-4">
+              {t?.bookings?.qrCustomer || "Khách hàng:"}{" "}
+              <span className="font-semibold text-zinc-900">
+                {qrCheckoutBooking.customer?.fullName}
+              </span>
+              <br />
+              {t?.bookings?.qrCode || "Mã đơn:"}{" "}
+              <span className="font-semibold text-zinc-900">
+                #{qrCheckoutBooking.id}
+              </span>
+            </p>
+
+            <div className="mx-auto bg-zinc-50 rounded-lg p-2 mb-6 w-48 h-48 flex items-center justify-center border border-zinc-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://img.vietqr.io/image/MB-0332458381-compact2.png?amount=6800000&addInfo=Thanh toan don ${qrCheckoutBooking.id}&accountName=VU TIEN`}
+                alt="QR Code"
+                className="w-full h-full object-contain"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setQrCheckoutBooking(null)}
+                className="w-full rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 font-medium"
+              >
+                {t?.bookings?.qrCancel || "Hủy"}
+              </button>
+              <button
+                onClick={() => executeCheckoutAPI(qrCheckoutBooking.id)}
+                className="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-500"
+              >
+                {t?.bookings?.qrConfirm || "Xác nhận đã quét"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-zinc-900">
+              {t?.bookings?.deleteTitle || "Xác nhận xóa"}
+            </h3>
+            <p className="mt-2 text-sm text-zinc-500">
+              {t?.bookings?.deleteDesc ||
+                "Xóa booking này sẽ trả phòng về trạng thái AVAILABLE."}
+            </p>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setDeleteId(null)}
+                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50"
+              >
+                {t?.bookings?.deleteCancel || "Hủy"}
+              </button>
+              <button
+                onClick={handleDelete}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"
+              >
+                {t?.bookings?.deleteConfirm || "Xóa"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BookingFilter
+        status={status}
+        onChange={(s) => {
+          setStatus(s);
+          setPage(0);
+        }}
+      />
+
+      <BookingTable
+        bookings={data?.content ?? []}
+        loading={loading}
+        onCheckin={handleCheckin}
+        onCheckout={handleCheckout}
+        onDelete={(id) => setDeleteId(id)}
+        onDetail={(booking) => setDetailBooking(booking)}
+        onAddService={(booking) => setAddServiceBooking(booking)}
+      />
+
+      {data && (
+        <BookingPagination
+          page={data.page}
+          totalPages={data.totalPages}
+          last={data.last}
+          onPrev={() => setPage((p) => p - 1)}
+          onNext={() => setPage((p) => p + 1)}
+        />
+      )}
+
+      {addServiceBooking && (
+        <AddServiceModal
+          booking={addServiceBooking}
+          onClose={() => setAddServiceBooking(null)}
+          onSuccess={() => {
+            setAddServiceBooking(null);
+            setRefresh((r) => r + 1);
+          }}
+        />
+      )}
+    </main>
   );
 }

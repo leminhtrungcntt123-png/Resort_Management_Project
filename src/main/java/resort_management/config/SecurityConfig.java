@@ -80,6 +80,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyRole("ADMIN", "MANAGER")
 
+                        // Thêm dịch vụ vào booking — ADMIN + MANAGER + RECEPTIONIST
+                        .requestMatchers(HttpMethod.POST, "/api/bookings/*/services").authenticated()
+                        
                         // Khách hàng — xóa chỉ ADMIN
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasRole("ADMIN")
 
