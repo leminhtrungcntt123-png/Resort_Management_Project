@@ -14,6 +14,7 @@ export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
+  const [search, setSearch] = useState(""); // ← thêm mới
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -37,6 +38,11 @@ export default function ServicesPage() {
     }
     fetchServices();
   }, [refresh]);
+
+  // Filter client-side theo search
+  const filteredServices = services.filter((svc) =>
+      svc.serviceName.toLowerCase().includes(search.toLowerCase())
+  );
 
   function openCreate() {
     setEditService(null);
@@ -120,10 +126,10 @@ export default function ServicesPage() {
         )}
       </div>
 
-      {/* Table */}
-      <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-zinc-500">
+        {/* Table */}
+        <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-50 text-zinc-500">
             <tr>
               <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.id || "ID"}</th>
               <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.name || "Tên dịch vụ"}</th>
@@ -131,8 +137,8 @@ export default function ServicesPage() {
               <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.createdAt || "Ngày tạo"}</th>
               {canEdit && <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.actions || "Thao tác"}</th>}
             </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100">
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
             {loading ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-zinc-400">
@@ -181,11 +187,49 @@ export default function ServicesPage() {
                     </td>
                   )}
                 </tr>
-              ))
+            ) : (
+                filteredServices.map((svc) => (
+                    <tr key={svc.id} className="hover:bg-zinc-50">
+                      <td className="px-4 py-3 text-zinc-400">#{svc.id}</td>
+                      <td className="px-4 py-3 font-medium text-zinc-900">
+                        {svc.serviceName}
+                      </td>
+                      <td className="px-4 py-3 text-green-700 font-medium">
+                        {svc.price.toLocaleString("vi-VN")}đ
+                      </td>
+                      <td className="px-4 py-3 text-zinc-400">
+                        {new Date(svc.createdAt).toLocaleDateString("vi-VN")}
+                      </td>
+                      {canEdit && (
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <button
+                                  onClick={() => openEdit(svc)}
+                                  className="rounded-lg border border-zinc-200 px-3 py-1
+                                     text-xs text-zinc-700 hover:bg-zinc-50 transition"
+                              >
+                                Sửa
+                              </button>
+                              {isAdmin && (
+                                  <button
+                                      onClick={() =>
+                                          handleDelete(svc.id, svc.serviceName)
+                                      }
+                                      className="rounded-lg border border-red-200 px-3 py-1
+                                       text-xs text-red-600 hover:bg-red-50 transition"
+                                  >
+                                    Xóa
+                                  </button>
+                              )}
+                            </div>
+                          </td>
+                      )}
+                    </tr>
+                ))
             )}
-          </tbody>
-        </table>
-      </div>
+            </tbody>
+          </table>
+        </div>
 
       {/* Modal Thêm/Sửa */}
       {showModal && (
@@ -208,11 +252,11 @@ export default function ServicesPage() {
               </button>
             </div>
 
-            {error && (
-              <p className="mt-3 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">
-                {error}
-              </p>
-            )}
+                {error && (
+                    <p className="mt-3 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">
+                      {error}
+                    </p>
+                )}
 
             <div className="mt-4 space-y-4">
               <div>
@@ -261,9 +305,7 @@ export default function ServicesPage() {
                     : (svcLang?.modal?.btnCreate || "Thêm mới")}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
   );
 }

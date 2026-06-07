@@ -26,4 +26,7 @@ public interface PaymentService {
     PageResponse<PaymentResponse> getPendingPaged(Pageable pageable);
 
     void delete(Long id);
+
+    // --- Thêm mới ---
+    java.math.BigDecimal getRevenueToday();
 }

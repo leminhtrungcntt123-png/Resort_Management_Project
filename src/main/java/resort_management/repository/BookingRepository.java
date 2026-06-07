@@ -16,22 +16,22 @@ import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+
         List<Booking> findByStatus(BookingStatus status);
 
         List<Booking> findByCustomerId(Long customerId);
 
-        // VŨ KHÍ CHỐNG TRÙNG PHÒNG: Tìm các Booking đang chiếm dụng phòng này trong
-        // khoảng thời gian được yêu cầu
+        // Tìm booking trùng lịch — loại trừ CANCELLED và CHECKED_OUT
         @Query("SELECT b FROM Booking b JOIN b.bookingRooms br " +
-                        "WHERE br.room.id = :roomId " +
-                        "AND b.status != 'Đã hủy' " +
-                        "AND b.checkInDate < :checkOutDate " +
-                        "AND b.checkOutDate > :checkInDate")
+                "WHERE br.room.id = :roomId " +
+                "AND b.status NOT IN (:excludedStatuses) " +
+                "AND b.checkInDate < :checkOutDate " +
+                "AND b.checkOutDate > :checkInDate")
         List<Booking> findOverlappingBookings(
-                        @Param("roomId") Long roomId,
-                        @Param("checkInDate") LocalDate checkInDate,
-                        @Param("checkOutDate") LocalDate checkOutDate);
+                @Param("roomId") Long roomId,
+                @Param("checkInDate") LocalDate checkInDate,
+                @Param("checkOutDate") LocalDate checkOutDate,
+                @Param("excludedStatuses") List<BookingStatus> excludedStatuses);
 
         Page<Booking> findByStatus(BookingStatus status, Pageable pageable);
-
 }
