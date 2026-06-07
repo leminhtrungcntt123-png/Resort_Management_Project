@@ -4,6 +4,7 @@ import { useState } from "react";
 import { api } from "@/lib/apiClient";
 import { User } from "@/types/user";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLang } from "@/contexts/LangContext";
 
 interface Props {
   users: User[];
@@ -19,6 +20,9 @@ const ROLE_BADGE: Record<string, string> = {
 
 export default function UserTable({ users, loading, onRefresh }: Props) {
   const { isAdmin, username } = useAuth();
+  const { t } = useLang();
+  const usrLang = t?.users;
+
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
   async function handleToggleLock(id: number) {
@@ -33,8 +37,9 @@ export default function UserTable({ users, loading, onRefresh }: Props) {
     }
   }
 
-  async function handleDelete(id: number, username: string) {
-    if (!confirm(`Xóa tài khoản "${username}"?`)) return;
+  async function handleDelete(id: number, uName: string) {
+    const confirmMsg = (usrLang?.modal?.confirmDelete || 'Xóa tài khoản "{username}"?').replace("{username}", uName);
+    if (!confirm(confirmMsg)) return;
     try {
       await api.delete(`/api/users/${id}`);
       onRefresh();
@@ -48,25 +53,25 @@ export default function UserTable({ users, loading, onRefresh }: Props) {
       <table className="w-full text-sm">
         <thead className="bg-zinc-50 text-zinc-500">
           <tr>
-            <th className="px-4 py-3 text-left">ID</th>
-            <th className="px-4 py-3 text-left">Username</th>
-            <th className="px-4 py-3 text-left">Role</th>
-            <th className="px-4 py-3 text-left">Nhân viên</th>
-            <th className="px-4 py-3 text-left">Trạng thái</th>
-            <th className="px-4 py-3 text-left">Thao tác</th>
+            <th className="px-4 py-3 text-left">{usrLang?.tableHeaders?.id || "ID"}</th>
+            <th className="px-4 py-3 text-left">{usrLang?.tableHeaders?.username || "Username"}</th>
+            <th className="px-4 py-3 text-left">{usrLang?.tableHeaders?.role || "Role"}</th>
+            <th className="px-4 py-3 text-left">{usrLang?.tableHeaders?.employee || "Nhân viên"}</th>
+            <th className="px-4 py-3 text-left">{usrLang?.tableHeaders?.status || "Trạng thái"}</th>
+            <th className="px-4 py-3 text-left">{usrLang?.tableHeaders?.actions || "Thao tác"}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100">
           {loading ? (
             <tr>
               <td colSpan={6} className="px-4 py-8 text-center text-zinc-400">
-                Đang tải...
+                {usrLang?.loading || "Đang tải..."}
               </td>
             </tr>
           ) : users.length === 0 ? (
             <tr>
               <td colSpan={6} className="px-4 py-8 text-center text-zinc-400">
-                Không có tài khoản nào
+                {usrLang?.empty || "Không có tài khoản nào"}
               </td>
             </tr>
           ) : (
@@ -81,7 +86,7 @@ export default function UserTable({ users, loading, onRefresh }: Props) {
                     className={`rounded-full px-2.5 py-0.5 text-xs font-semibold
                                     ${ROLE_BADGE[user.role] ?? ROLE_BADGE.RECEPTIONIST}`}
                   >
-                    {user.role}
+                    {usrLang?.modal?.roleOptions?.[user.role as keyof typeof usrLang.modal.roleOptions] || user.role}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-zinc-500">
@@ -96,7 +101,9 @@ export default function UserTable({ users, loading, onRefresh }: Props) {
                                         : "bg-red-100 text-red-600"
                                     }`}
                   >
-                    {user.isActive ? "Hoạt động" : "Đã khóa"}
+                    {user.isActive
+                      ? (usrLang?.statusOptions?.active || "Hoạt động")
+                      : (usrLang?.statusOptions?.locked || "Đã khóa")}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -106,8 +113,7 @@ export default function UserTable({ users, loading, onRefresh }: Props) {
                       <button
                         onClick={() => handleToggleLock(user.id)}
                         disabled={loadingId === user.id}
-                        className={`rounded-lg border px-3 py-1 text-xs
-                                                   transition disabled:opacity-40
+                        className={`rounded-lg border px-3 py-1 text-xs transition disabled:opacity-40
                                                    ${
                                                      user.isActive
                                                        ? "border-yellow-200 text-yellow-700 hover:bg-yellow-50"
@@ -117,18 +123,17 @@ export default function UserTable({ users, loading, onRefresh }: Props) {
                         {loadingId === user.id
                           ? "..."
                           : user.isActive
-                            ? "Khóa"
-                            : "Mở khóa"}
+                            ? (usrLang?.actionButtons?.lock || "Khóa")
+                            : (usrLang?.actionButtons?.unlock || "Mở khóa")}
                       </button>
                     )}
                     {/* Xóa — chỉ ADMIN */}
                     {isAdmin && user.username !== username && (
                       <button
                         onClick={() => handleDelete(user.id, user.username)}
-                        className="rounded-lg border border-red-200 px-3 py-1
-                                                       text-xs text-red-600 hover:bg-red-50 transition"
+                        className="rounded-lg border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50 transition"
                       >
-                        Xóa
+                        {t?.rooms?.actionButtons?.delete || "Xóa"}
                       </button>
                     )}
                   </div>

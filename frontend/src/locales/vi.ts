@@ -444,6 +444,106 @@ const vi = {
       errorDefault: "Có lỗi xảy ra",
     },
   },
+  services: {
+    title: "Quản lý Dịch vụ",
+    totalPrefix: "Tổng:",
+    totalSuffix: "dịch vụ",
+    btnCreate: "+ Thêm dịch vụ",
+    loading: "Đang tải danh sách dịch vụ...",
+    empty: "Không tìm thấy dịch vụ nào.",
+    tableHeaders: {
+      name: "Tên dịch vụ",
+      price: "Đơn giá",
+      unit: "Đơn vị tính",
+      status: "Trạng thái",
+      actions: "Thao tác"
+    },
+    modal: {
+      createTitle: "Thêm dịch vụ mới",
+      editTitle: "Sửa dịch vụ",
+      name: "Tên dịch vụ",
+      placeholderName: "VD: Giặt là, Nước suối...",
+      price: "Đơn giá (VND)",
+      unit: "Đơn vị tính",
+      placeholderUnit: "VD: Lượt, Chai, Đĩa...",
+      status: "Trạng thái vận hành",
+      statusOptions: {
+        AVAILABLE: "Sẵn sàng cung cấp",
+        OUT_OF_STOCK: "Tạm hết hàng",
+        DISABLED: "Ngừng kinh doanh"
+      }
+    },
+    tableHeaders: {
+      id: "ID",
+      name: "Tên dịch vụ",
+      price: "Giá",
+      createdAt: "Ngày tạo", // Thêm cột này
+      actions: "Thao tác"
+    },
+    modal: {
+      // ... Các từ khóa modal cũ
+      createTitle: "Thêm dịch vụ mới",
+      editTitle: "Sửa dịch vụ",
+      name: "Tên dịch vụ",
+      placeholderName: "VD: Massage thư giãn", // Cập nhật cho giống code của bạn
+      price: "Giá (VNĐ)",
+      placeholderPrice: "VD: 500000",
+      btnCancel: "Hủy",
+      btnCreate: "Thêm mới",
+      btnUpdate: "Cập nhật",
+      btnSaving: "Đang lưu...",
+      // Thêm mớ alerts/errors này:
+      errorRequired: "Vui lòng điền đầy đủ thông tin!",
+      errorPrice: "Giá phải là số dương!",
+      confirmDelete: 'Xóa dịch vụ "{name}"?',
+      deleteError: "Không thể xóa dịch vụ!",
+      errorDefault: "Có lỗi xảy ra"
+    }
+  },
+  users: {
+    title: "Quản lý Tài khoản",
+    totalPrefix: "Tổng:",
+    totalSuffix: "tài khoản",
+    btnCreate: "+ Tạo tài khoản",
+    loading: "Đang tải danh sách tài khoản...",
+    empty: "Không có tài khoản nào",
+    tableHeaders: {
+      id: "ID",
+      username: "Username",
+      role: "Role",
+      employee: "Nhân viên",
+      status: "Trạng thái",
+      actions: "Thao tác"
+    },
+    statusOptions: {
+      active: "Hoạt động",
+      locked: "Đã khóa"
+    },
+    actionButtons: {
+      lock: "Khóa",
+      unlock: "Mở khóa",
+      delete: "Xóa"
+    },
+    modal: {
+      createTitle: "Tạo tài khoản mới",
+      username: "Username",
+      placeholderUsername: "Tối thiểu 4 ký tự",
+      password: "Mật khẩu",
+      placeholderPassword: "Tối thiểu 6 ký tự",
+      role: "Role",
+      roleOptions: {
+        ADMIN: "ADMIN",
+        MANAGER: "MANAGER",
+        RECEPTIONIST: "RECEPTIONIST"
+      },
+      btnCancel: "Hủy",
+      btnCreate: "Tạo tài khoản",
+      btnCreating: "Đang tạo...",
+      errorRequired: "Vui lòng điền đầy đủ thông tin!",
+      errorDefault: "Có lỗi xảy ra",
+      confirmDelete: 'Xóa tài khoản "{username}"?'
+    }
+  },
 };
 
 export default vi;

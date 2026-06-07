@@ -8,7 +8,9 @@ import { useLang } from "@/contexts/LangContext";
 
 export default function ServicesPage() {
   const { canEdit, isAdmin } = useAuth();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const svcLang = t?.services;
+
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
@@ -54,13 +56,11 @@ export default function ServicesPage() {
 
   async function handleSave() {
     if (!name.trim() || !price) {
-      setError(
-        t?.services?.modal?.errorRequired || "Vui lòng điền đầy đủ thông tin!",
-      );
+      setError(svcLang?.modal?.errorRequired || "Vui lòng điền đầy đủ thông tin!");
       return;
     }
     if (isNaN(Number(price)) || Number(price) <= 0) {
-      setError(t?.services?.modal?.errorPrice || "Giá phải là số dương!");
+      setError(svcLang?.modal?.errorPrice || "Giá phải là số dương!");
       return;
     }
     setSaving(true);
@@ -80,31 +80,21 @@ export default function ServicesPage() {
       setShowModal(false);
       setRefresh((r) => r + 1);
     } catch (err: any) {
-      setError(err.message || "Có lỗi xảy ra");
+      setError(err.message || (svcLang?.modal?.errorDefault || "Có lỗi xảy ra"));
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(id: number, name: string) {
-    // Confirm delete
-    if (
-      !confirm(
-        (t?.services?.confirmDelete || 'Xóa dịch vụ "{name}"?').replace(
-          "{name}",
-          name,
-        ),
-      )
-    )
-      return;
+    const confirmMsg = (svcLang?.modal?.confirmDelete || 'Xóa dịch vụ "{name}"?').replace("{name}", name);
+    if (!confirm(confirmMsg)) return;
+
     try {
       await api.delete(`/api/services/${id}`);
       setRefresh((r) => r + 1);
     } catch (err: any) {
-      // Alert delete error
-      alert(
-        err.message || t?.services?.deleteError || "Không thể xóa dịch vụ!",
-      );
+      alert(err.message || (svcLang?.modal?.deleteError || "Không thể xóa dịch vụ!"));
     }
   }
 
@@ -114,19 +104,18 @@ export default function ServicesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-zinc-900">
-            Quản lý Dịch vụ
+            {svcLang?.title || "Quản lý Dịch vụ"}
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
-            Tổng: {services.length} dịch vụ
+            {svcLang?.totalPrefix || "Tổng:"} {services.length} {svcLang?.totalSuffix || "dịch vụ"}
           </p>
         </div>
         {canEdit && (
           <button
             onClick={openCreate}
-            className="rounded-xl bg-zinc-900 px-4 py-2.5 text-sm
-                                   font-medium text-white hover:bg-zinc-700 transition"
+            className="rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 transition"
           >
-            + Thêm dịch vụ
+            {svcLang?.btnCreate || "+ Thêm dịch vụ"}
           </button>
         )}
       </div>
@@ -136,24 +125,24 @@ export default function ServicesPage() {
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 text-zinc-500">
             <tr>
-              <th className="px-4 py-3 text-left">ID</th>
-              <th className="px-4 py-3 text-left">Tên dịch vụ</th>
-              <th className="px-4 py-3 text-left">Giá</th>
-              <th className="px-4 py-3 text-left">Ngày tạo</th>
-              {canEdit && <th className="px-4 py-3 text-left">Thao tác</th>}
+              <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.id || "ID"}</th>
+              <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.name || "Tên dịch vụ"}</th>
+              <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.price || "Giá"}</th>
+              <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.createdAt || "Ngày tạo"}</th>
+              {canEdit && <th className="px-4 py-3 text-left">{svcLang?.tableHeaders?.actions || "Thao tác"}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
             {loading ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-zinc-400">
-                  Đang tải...
+                  {svcLang?.loading || "Đang tải..."}
                 </td>
               </tr>
             ) : services.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-zinc-400">
-                  Chưa có dịch vụ nào
+                  {svcLang?.empty || "Chưa có dịch vụ nào"}
                 </td>
               </tr>
             ) : (
@@ -164,30 +153,28 @@ export default function ServicesPage() {
                     {svc.serviceName}
                   </td>
                   <td className="px-4 py-3 text-green-700 font-medium">
-                    {svc.price.toLocaleString("vi-VN")}đ
+                    {lang === "en"
+                      ? `${svc.price.toLocaleString("en-US")} VND`
+                      : `${svc.price.toLocaleString("vi-VN")}đ`}
                   </td>
                   <td className="px-4 py-3 text-zinc-400">
-                    {new Date(svc.createdAt).toLocaleDateString("vi-VN")}
+                    {new Date(svc.createdAt).toLocaleDateString(lang === "en" ? "en-US" : "vi-VN")}
                   </td>
                   {canEdit && (
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => openEdit(svc)}
-                          className="rounded-lg border border-zinc-200 px-3 py-1
-                                                           text-xs text-zinc-700 hover:bg-zinc-50 transition"
+                          className="rounded-lg border border-zinc-200 px-3 py-1 text-xs text-zinc-700 hover:bg-zinc-50 transition"
                         >
-                          Sửa
+                          {t?.rooms?.actionButtons?.edit || "Sửa"}
                         </button>
                         {isAdmin && (
                           <button
-                            onClick={() =>
-                              handleDelete(svc.id, svc.serviceName)
-                            }
-                            className="rounded-lg border border-red-200 px-3 py-1
-                                                               text-xs text-red-600 hover:bg-red-50 transition"
+                            onClick={() => handleDelete(svc.id, svc.serviceName)}
+                            className="rounded-lg border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50 transition"
                           >
-                            Xóa
+                            {t?.rooms?.actionButtons?.delete || "Xóa"}
                           </button>
                         )}
                       </div>
@@ -209,7 +196,9 @@ export default function ServicesPage() {
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-zinc-900">
-                {editService ? "Sửa dịch vụ" : "Thêm dịch vụ mới"}
+                {editService
+                  ? (svcLang?.modal?.editTitle || "Sửa dịch vụ")
+                  : (svcLang?.modal?.createTitle || "Thêm dịch vụ mới")}
               </h3>
               <button
                 onClick={() => setShowModal(false)}
@@ -228,31 +217,27 @@ export default function ServicesPage() {
             <div className="mt-4 space-y-4">
               <div>
                 <label className="text-sm font-medium text-zinc-700">
-                  Tên dịch vụ
+                  {svcLang?.modal?.name || "Tên dịch vụ"}
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="VD: Massage thư giãn"
-                  className="mt-1.5 w-full rounded-xl border border-zinc-200
-                                               px-3 py-2 text-sm focus:outline-none
-                                               focus:ring-2 focus:ring-zinc-300"
+                  placeholder={svcLang?.modal?.placeholderName || "VD: Massage thư giãn"}
+                  className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
                 />
               </div>
               <div>
                 <label className="text-sm font-medium text-zinc-700">
-                  Giá (VNĐ)
+                  {svcLang?.modal?.price || "Giá (VNĐ)"}
                 </label>
                 <input
                   type="number"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  placeholder="VD: 500000"
+                  placeholder={svcLang?.modal?.placeholderPrice || "VD: 500000"}
                   min={1}
-                  className="mt-1.5 w-full rounded-xl border border-zinc-200
-                                               px-3 py-2 text-sm focus:outline-none
-                                               focus:ring-2 focus:ring-zinc-300"
+                  className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
                 />
               </div>
             </div>
@@ -260,19 +245,20 @@ export default function ServicesPage() {
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 rounded-xl border border-zinc-200 py-2.5
-                                           text-sm text-zinc-600 hover:bg-zinc-50 transition"
+                className="flex-1 rounded-xl border border-zinc-200 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 transition"
               >
-                Hủy
+                {svcLang?.modal?.btnCancel || "Hủy"}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm
-                                           font-medium text-white hover:bg-zinc-700
-                                           disabled:opacity-40 transition"
+                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-40 transition"
               >
-                {saving ? "Đang lưu..." : editService ? "Cập nhật" : "Thêm mới"}
+                {saving
+                  ? (svcLang?.modal?.btnSaving || "Đang lưu...")
+                  : editService
+                    ? (svcLang?.modal?.btnUpdate || "Cập nhật")
+                    : (svcLang?.modal?.btnCreate || "Thêm mới")}
               </button>
             </div>
           </div>
