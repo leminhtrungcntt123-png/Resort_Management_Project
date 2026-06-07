@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api } from "@/lib/apiClient";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLang } from "@/contexts/LangContext";
 
 interface Props {
     onClose: () => void;
@@ -11,6 +12,9 @@ interface Props {
 
 export default function UserModal({ onClose, onCreated }: Props) {
     const { isAdmin } = useAuth();
+    const { t } = useLang();
+    const uModal = t?.users?.modal;
+
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole]         = useState("RECEPTIONIST");
@@ -25,7 +29,7 @@ export default function UserModal({ onClose, onCreated }: Props) {
 
     async function handleSubmit() {
         if (!username.trim() || !password.trim()) {
-            setError("Vui lòng điền đầy đủ thông tin!");
+            setError(uModal?.errorRequired || "Vui lòng điền đầy đủ thông tin!");
             return;
         }
         setLoading(true);
@@ -34,7 +38,7 @@ export default function UserModal({ onClose, onCreated }: Props) {
             await api.post("/api/users", { username, password, role });
             onCreated();
         } catch (err: any) {
-            setError(err.message || "Có lỗi xảy ra");
+            setError(err.message || (uModal?.errorDefault || "Có lỗi xảy ra"));
         } finally {
             setLoading(false);
         }
@@ -49,7 +53,7 @@ export default function UserModal({ onClose, onCreated }: Props) {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-zinc-900">
-                        Tạo tài khoản mới
+                        {uModal?.createTitle || "Tạo tài khoản mới"}
                     </h3>
                     <button onClick={onClose}
                         className="text-zinc-400 hover:text-zinc-600 text-xl font-bold">
@@ -67,46 +71,45 @@ export default function UserModal({ onClose, onCreated }: Props) {
                     {/* Username */}
                     <div>
                         <label className="text-sm font-medium text-zinc-700">
-                            Username
+                            {uModal?.username || "Username"}
                         </label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Tối thiểu 4 ký tự"
-                            className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2
-                                       text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                            placeholder={uModal?.placeholderUsername || "Tối thiểu 4 ký tự"}
+                            className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
                         />
                     </div>
 
                     {/* Password */}
                     <div>
                         <label className="text-sm font-medium text-zinc-700">
-                            Mật khẩu
+                            {uModal?.password || "Mật khẩu"}
                         </label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Tối thiểu 6 ký tự"
-                            className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2
-                                       text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                            placeholder={uModal?.placeholderPassword || "Tối thiểu 6 ký tự"}
+                            className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
                         />
                     </div>
 
                     {/* Role */}
                     <div>
                         <label className="text-sm font-medium text-zinc-700">
-                            Role
+                            {uModal?.role || "Role"}
                         </label>
                         <select
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
-                            className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2
-                                       text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                            className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
                         >
                             {availableRoles.map((r) => (
-                                <option key={r} value={r}>{r}</option>
+                                <option key={r} value={r}>
+                                    {uModal?.roleOptions?.[r as keyof typeof uModal.roleOptions] || r}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -115,17 +118,14 @@ export default function UserModal({ onClose, onCreated }: Props) {
                 <div className="mt-6 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 rounded-xl border border-zinc-200 py-2.5
-                                   text-sm text-zinc-600 hover:bg-zinc-50 transition">
-                        Hủy
+                        className="flex-1 rounded-xl border border-zinc-200 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 transition">
+                        {uModal?.btnCancel || "Hủy"}
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm
-                                   font-medium text-white hover:bg-zinc-700
-                                   disabled:opacity-40 transition">
-                        {loading ? "Đang tạo..." : "Tạo tài khoản"}
+                        className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-40 transition">
+                        {loading ? (uModal?.btnCreating || "Đang tạo...") : (uModal?.btnCreate || "Tạo tài khoản")}
                     </button>
                 </div>
             </div>

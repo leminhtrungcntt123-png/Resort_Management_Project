@@ -22,7 +22,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> findByStatus(RoomStatus status, Pageable pageable);
     Page<Room> findByFloorNumber(Integer floorNumber, Pageable pageable);
 
-    // Tìm danh sách tầng có trong DB
-@Query("SELECT DISTINCT r.floorNumber FROM Room r ORDER BY r.floorNumber")
-List<Integer> findDistinctFloorNumbers();
+    // --- Thêm mới: filter kết hợp floor + status ---
+    Page<Room> findByFloorNumberAndStatus(Integer floorNumber, RoomStatus status, Pageable pageable);
+
+    @Query("SELECT DISTINCT r.floorNumber FROM Room r ORDER BY r.floorNumber")
+    List<Integer> findDistinctFloorNumbers();
 }

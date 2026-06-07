@@ -86,14 +86,15 @@ public class RoomController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "roomNumber") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction) {
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(required = false) RoomStatus status) {
 
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
 
         return ResponseEntity.ok(ApiResponse.success(
-                roomService.getByFloor(floorNumber, PageRequest.of(page, size, sort))));
+                roomService.getByFloor(floorNumber, status, PageRequest.of(page, size, sort))));
     }
 
     @GetMapping("/floors")

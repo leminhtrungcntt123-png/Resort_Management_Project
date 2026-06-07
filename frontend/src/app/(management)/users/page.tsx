@@ -5,8 +5,12 @@ import { api } from "@/lib/apiClient";
 import { User } from "@/types/user";
 import UserTable from "@/components/users/UserTable";
 import UserModal from "@/components/users/UserModal";
+import { useLang } from "@/contexts/LangContext";
 
 export default function UsersPage() {
+    const { t } = useLang();
+    const usrLang = t?.users;
+
     const [users, setUsers]         = useState<User[]>([]);
     const [loading, setLoading]     = useState(true);
     const [refresh, setRefresh]     = useState(0);
@@ -33,18 +37,17 @@ export default function UsersPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-semibold text-zinc-900">
-                        Quản lý tài khoản
+                        {usrLang?.title || "Quản lý Tài khoản"}
                     </h2>
                     <p className="mt-1 text-sm text-zinc-500">
-                        Tổng: {users.length} tài khoản
+                        {usrLang?.totalPrefix || "Tổng:"} {users.length} {usrLang?.totalSuffix || "tài khoản"}
                     </p>
                 </div>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="rounded-xl bg-zinc-900 px-4 py-2.5 text-sm
-                               font-medium text-white hover:bg-zinc-700 transition"
+                    className="rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 transition"
                 >
-                    + Tạo tài khoản
+                    {usrLang?.btnCreate || "+ Tạo tài khoản"}
                 </button>
             </div>
 

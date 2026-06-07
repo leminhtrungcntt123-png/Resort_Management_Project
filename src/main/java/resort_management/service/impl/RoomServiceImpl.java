@@ -46,7 +46,7 @@ public class RoomServiceImpl implements RoomService {
     @Transactional(readOnly = true)
     public List<RoomResponse> getByStatus(String status) {
         try {
-            RoomStatus roomStatus = RoomStatus.valueOf(status.toUpperCase()); // ← String → Enum
+            RoomStatus roomStatus = RoomStatus.valueOf(status.toUpperCase());
             return roomRepository.findByStatus(roomStatus).stream()
                     .map(RoomResponse::from)
                     .collect(Collectors.toList());
@@ -66,21 +66,19 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new RuntimeException(
                         "Không tìm thấy hạng phòng ID: " + request.getRoomTypeId()));
 
-        // Convert String status → RoomStatus Enum (mặc định AVAILABLE)
         RoomStatus roomStatus = RoomStatus.AVAILABLE;
         if (request.getStatus() != null && !request.getStatus().isBlank()) {
             try {
                 roomStatus = RoomStatus.valueOf(request.getStatus().toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Trạng thái không hợp lệ: " + request.getStatus()
-                        + ". Các giá trị hợp lệ: AVAILABLE, OCCUPIED, MAINTENANCE");
+                throw new RuntimeException("Trạng thái không hợp lệ: " + request.getStatus());
             }
         }
 
         Room room = new Room();
         room.setRoomNumber(request.getRoomNumber());
         room.setFloorNumber(request.getFloorNumber());
-        room.setStatus(roomStatus); // ← Enum
+        room.setStatus(roomStatus);
         room.setRoomType(roomType);
         return RoomResponse.from(roomRepository.save(room));
     }
@@ -95,18 +93,16 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new RuntimeException(
                         "Không tìm thấy hạng phòng ID: " + request.getRoomTypeId()));
 
-        // Convert String status → RoomStatus Enum
         RoomStatus roomStatus;
         try {
             roomStatus = RoomStatus.valueOf(request.getStatus().toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new RuntimeException("Trạng thái không hợp lệ: " + request.getStatus()
-                    + ". Các giá trị hợp lệ: AVAILABLE, OCCUPIED, MAINTENANCE");
+            throw new RuntimeException("Trạng thái không hợp lệ: " + request.getStatus());
         }
 
         room.setRoomNumber(request.getRoomNumber());
         room.setFloorNumber(request.getFloorNumber());
-        room.setStatus(roomStatus); // ← Enum
+        room.setStatus(roomStatus);
         room.setRoomType(roomType);
         return RoomResponse.from(roomRepository.save(room));
     }
@@ -114,18 +110,16 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public RoomResponse updateStatus(Long id, String status) {
-        // Convert String → Enum, tự validate luôn
         RoomStatus roomStatus;
         try {
             roomStatus = RoomStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new RuntimeException("Trạng thái không hợp lệ: " + status
-                    + ". Các giá trị hợp lệ: AVAILABLE, OCCUPIED, MAINTENANCE");
+            throw new RuntimeException("Trạng thái không hợp lệ: " + status);
         }
 
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng ID: " + id));
-        room.setStatus(roomStatus); // ← Enum
+        room.setStatus(roomStatus);
         return RoomResponse.from(roomRepository.save(room));
     }
 
@@ -134,7 +128,7 @@ public class RoomServiceImpl implements RoomService {
     public void delete(Long id) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng ID: " + id));
-        if (RoomStatus.OCCUPIED == room.getStatus()) // ← so sánh Enum
+        if (RoomStatus.OCCUPIED == room.getStatus())
             throw new BusinessException("Phòng này đang có khách, không được xóa!");
         roomRepository.deleteById(id);
     }
@@ -154,7 +148,14 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public PageResponse<RoomResponse> getByFloor(Integer floorNumber, Pageable pageable) {
+    @Transactional(readOnly = true)
+    public PageResponse<RoomResponse> getByFloor(Integer floorNumber, RoomStatus status, Pageable pageable) {
+        // Nếu có status → filter kết hợp, không thì chỉ filter theo tầng
+        if (status != null) {
+            return PageResponse.of(
+                    roomRepository.findByFloorNumberAndStatus(floorNumber, status, pageable)
+                            .map(RoomResponse::from));
+        }
         return PageResponse.of(
                 roomRepository.findByFloorNumber(floorNumber, pageable).map(RoomResponse::from));
     }

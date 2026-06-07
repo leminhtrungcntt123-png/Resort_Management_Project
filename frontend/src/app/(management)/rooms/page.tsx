@@ -8,7 +8,7 @@ import RoomTable from "@/components/rooms/RoomTable";
 import RoomModal from "@/components/rooms/RoomModal";
 import RoomPagination from "@/components/rooms/RoomPagination";
 import { exportToTxt, exportToExcel } from "@/components/export";
-import { useLang } from "@/contexts/LangContext"; // Import hook ngôn ngữ
+import { useLang } from "@/contexts/LangContext";
 
 const DEFAULT_FORM: RoomForm = {
   roomNumber: "",
@@ -18,7 +18,7 @@ const DEFAULT_FORM: RoomForm = {
 };
 
 export default function RoomsPage() {
-  const { t } = useLang(); // Lấy đối tượng dịch t
+  const { t } = useLang();
   const [data, setData] = useState<PageData | null>(null);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -42,11 +42,22 @@ export default function RoomsPage() {
     async function fetchRooms() {
       setLoading(true);
       try {
-        const url = floor
-          ? `/api/rooms/floor/${floor}?page=${page}&size=10&sortBy=roomNumber&direction=asc`
-          : status === "ALL"
-            ? `/api/rooms?page=${page}&size=10&sortBy=${sortBy}&direction=${direction}`
-            : `/api/rooms/status/${status}?page=${page}&size=10&sortBy=roomNumber&direction=asc`;
+        let url = "";
+
+        if (floor !== null && status !== "ALL") {
+          // Kết hợp cả tầng + trạng thái
+          url = `/api/rooms/floor/${floor}?page=${page}&size=10&sortBy=roomNumber&direction=asc&status=${status}`;
+        } else if (floor !== null) {
+          // Chỉ lọc theo tầng
+          url = `/api/rooms/floor/${floor}?page=${page}&size=10&sortBy=roomNumber&direction=asc`;
+        } else if (status !== "ALL") {
+          // Chỉ lọc theo trạng thái
+          url = `/api/rooms/status/${status}?page=${page}&size=10&sortBy=roomNumber&direction=asc`;
+        } else {
+          // Tất cả
+          url = `/api/rooms?page=${page}&size=10&sortBy=${sortBy}&direction=${direction}`;
+        }
+
         const res = await api.get(url);
         setData(res.data);
       } catch (err) {
@@ -56,7 +67,7 @@ export default function RoomsPage() {
       }
     }
     fetchRooms();
-  }, [page, status, floor, refresh]);
+  }, [page, status, floor, refresh, sortBy, direction]);
 
   // Fetch room types
   useEffect(() => {
@@ -84,15 +95,20 @@ export default function RoomsPage() {
     fetchFloors();
   }, []);
 
-  // HÀM XỬ LÝ XUẤT FILE TXT
+  // Xuất TXT
   const handleExportTxt = async () => {
     setExporting(true);
     try {
-      const url = floor
-        ? `/api/rooms/floor/${floor}?page=0&size=9999&sortBy=roomNumber&direction=asc`
-        : status === "ALL"
-          ? `/api/rooms?page=0&size=9999&sortBy=${sortBy}&direction=${direction}`
-          : `/api/rooms/status/${status}?page=0&size=9999&sortBy=roomNumber&direction=asc`;
+      let url = "";
+      if (floor !== null && status !== "ALL") {
+        url = `/api/rooms/floor/${floor}?page=0&size=9999&sortBy=roomNumber&direction=asc&status=${status}`;
+      } else if (floor !== null) {
+        url = `/api/rooms/floor/${floor}?page=0&size=9999&sortBy=roomNumber&direction=asc`;
+      } else if (status !== "ALL") {
+        url = `/api/rooms/status/${status}?page=0&size=9999&sortBy=roomNumber&direction=asc`;
+      } else {
+        url = `/api/rooms?page=0&size=9999&sortBy=${sortBy}&direction=${direction}`;
+      }
 
       const res = await api.get(url);
       const allRooms: Room[] = res.data?.content ?? [];
@@ -102,17 +118,21 @@ export default function RoomsPage() {
         return;
       }
 
-      const headers = t?.rooms?.txtHeaders;
+      const headers = t?.rooms?.txtHeaders as Record<string, string> | undefined;
       const txtData = allRooms.map((r) => ({
-        [headers?.roomNumber || "Số Phòng"]: r.roomNumber,
-        [headers?.floorNumber || "Số Tầng"]: r.floorNumber,
-        [headers?.roomType || "Loại Phòng"]: r.roomType?.roomType ?? "N/A",
-        [headers?.status || "Trạng Thái"]: r.status ?? "N/A",
-        [headers?.price || "Giá Gốc"]: `${r.roomType?.price?.toLocaleString("vi-VN")}đ`
+        [headers?.roomNumber ?? "Số Phòng"]: r.roomNumber,
+        [headers?.floorNumber ?? "Số Tầng"]: r.floorNumber,
+        [headers?.roomType ?? "Loại Phòng"]: r.roomType?.roomType ?? "N/A",
+        [headers?.status ?? "Trạng Thái"]: r.status ?? "N/A",
+        [headers?.price ?? "Giá Gốc"]: `${r.roomType?.price?.toLocaleString("vi-VN")}đ`,
       }));
 
       const filterLabel = floor ? `tang-${floor}` : status.toLowerCase();
-      exportToTxt(txtData, `Danh sách phòng resort (${filterLabel})`, `danh-sach-phong-${filterLabel}`);
+      exportToTxt(
+          txtData,
+          `Danh sách phòng resort (${filterLabel})`,
+          `danh-sach-phong-${filterLabel}`
+      );
     } catch (err) {
       console.error("Lỗi xuất file TXT:", err);
       alert(t?.rooms?.alertError || "Có lỗi xảy ra khi tải dữ liệu phòng!");
@@ -121,15 +141,20 @@ export default function RoomsPage() {
     }
   };
 
-  // HÀM XỬ LÝ XUẤT FILE EXCEL
+  // Xuất Excel
   const handleExportExcel = async () => {
     setExporting(true);
     try {
-      const url = floor
-        ? `/api/rooms/floor/${floor}?page=0&size=9999&sortBy=roomNumber&direction=asc`
-        : status === "ALL"
-          ? `/api/rooms?page=0&size=9999&sortBy=${sortBy}&direction=${direction}`
-          : `/api/rooms/status/${status}?page=0&size=9999&sortBy=roomNumber&direction=asc`;
+      let url = "";
+      if (floor !== null && status !== "ALL") {
+        url = `/api/rooms/floor/${floor}?page=0&size=9999&sortBy=roomNumber&direction=asc&status=${status}`;
+      } else if (floor !== null) {
+        url = `/api/rooms/floor/${floor}?page=0&size=9999&sortBy=roomNumber&direction=asc`;
+      } else if (status !== "ALL") {
+        url = `/api/rooms/status/${status}?page=0&size=9999&sortBy=roomNumber&direction=asc`;
+      } else {
+        url = `/api/rooms?page=0&size=9999&sortBy=${sortBy}&direction=${direction}`;
+      }
 
       const res = await api.get(url);
       const allRooms: Room[] = res.data?.content ?? [];
@@ -139,19 +164,23 @@ export default function RoomsPage() {
         return;
       }
 
-      const headers = t?.rooms?.excelHeaders;
+      const headers = t?.rooms?.excelHeaders as Record<string, string> | undefined;
       const excelData = allRooms.map((r, index) => ({
-        [headers?.stt || "STT"]: index + 1,
-        [headers?.roomNumber || "Số Phòng"]: r.roomNumber,
-        [headers?.floorNumber || "Tầng số"]: r.floorNumber,
-        [headers?.roomType || "Tên Loại Phòng"]: r.roomType?.roomType ?? "N/A",
-        [headers?.price || "Giá Phòng / Đêm (VND)"]: r.roomType?.price ?? 0,
-        [headers?.capacity || "Sức Chứa (Người)"]: r.roomType?.capacity ?? 0,
-        [headers?.status || "Trạng Thái Hiện Tại"]: r.status ?? "N/A",
+        [headers?.stt ?? "STT"]: index + 1,
+        [headers?.roomNumber ?? "Số Phòng"]: r.roomNumber,
+        [headers?.floorNumber ?? "Tầng số"]: r.floorNumber,
+        [headers?.roomType ?? "Tên Loại Phòng"]: r.roomType?.roomType ?? "N/A",
+        [headers?.price ?? "Giá Phòng / Đêm (VND)"]: r.roomType?.price ?? 0,
+        [headers?.capacity ?? "Sức Chứa (Người)"]: r.roomType?.capacity ?? 0,
+        [headers?.status ?? "Trạng Thái Hiện Tại"]: r.status ?? "N/A",
       }));
 
       const filterLabel = floor ? `tang-${floor}` : status.toLowerCase();
-      exportToExcel(excelData, "Danh Sách Phòng", `danh-sach-phong-${filterLabel}-excel`);
+      exportToExcel(
+          excelData,
+          "Danh Sách Phòng",
+          `danh-sach-phong-${filterLabel}-excel`
+      );
     } catch (err) {
       console.error("Lỗi xuất file Excel:", err);
       alert(t?.rooms?.alertError || "Có lỗi xảy ra khi tải dữ liệu phòng!");
@@ -170,7 +199,11 @@ export default function RoomsPage() {
       setForm(DEFAULT_FORM);
       setRefresh((r) => r + 1);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : (t?.rooms?.errorDefault || "Có lỗi xảy ra"));
+      setError(
+          err instanceof Error
+              ? err.message
+              : t?.rooms?.errorDefault || "Có lỗi xảy ra"
+      );
     } finally {
       setSaving(false);
     }
@@ -186,7 +219,11 @@ export default function RoomsPage() {
       setForm(DEFAULT_FORM);
       setRefresh((r) => r + 1);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : (t?.rooms?.errorDefault || "Có lỗi xảy ra"));
+      setError(
+          err instanceof Error
+              ? err.message
+              : t?.rooms?.errorDefault || "Có lỗi xảy ra"
+      );
     } finally {
       setSaving(false);
     }
@@ -214,143 +251,148 @@ export default function RoomsPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-10">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold text-zinc-900">
-            {t?.rooms?.title || "Quản lý Phòng"}
-          </h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            {t?.rooms?.totalPrefix || "Tổng:"} {data?.totalElements ?? "..."} {t?.rooms?.totalSuffix || "phòng"}
-          </p>
-        </div>
-
-        {/* Khối nút chức năng góc phải */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleExportTxt}
-            disabled={loading || exporting}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
-          >
-            {exporting ? (t?.rooms?.statusExporting || "Đang xuất...") : (t?.rooms?.btnExportTxt || "Xuất TXT")}
-          </button>
-          <button
-            onClick={handleExportExcel}
-            disabled={loading || exporting}
-            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-          >
-            {exporting ? (t?.rooms?.statusExporting || "Đang xuất...") : (t?.rooms?.btnExportExcel || "Xuất Excel")}
-          </button>
-          <button
-            onClick={() => {
-              setShowModal(true);
-              setForm(DEFAULT_FORM);
-            }}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
-          >
-            {t?.rooms?.btnCreate || "+ Thêm phòng"}
-          </button>
-        </div>
-      </div>
-
-      {/* Modal Thêm */}
-      {showModal && (
-        <RoomModal
-          mode="create"
-          form={form}
-          roomTypes={roomTypes}
-          saving={saving}
-          onChange={setForm}
-          onSubmit={handleCreate}
-          errorMessage={error}
-          onClose={() => {
-            setShowModal(false);
-            setError("");
-          }}
-        />
-      )}
-
-      {/* Modal Sửa */}
-      {editRoom && (
-        <RoomModal
-          mode="edit"
-          form={form}
-          roomTypes={roomTypes}
-          saving={saving}
-          editRoomNumber={editRoom.roomNumber}
-          onChange={setForm}
-          onSubmit={handleUpdate}
-          errorMessage={error}
-          onClose={() => {
-            setEditRoom(null);
-            setError("");
-          }}
-        />
-      )}
-
-      {/* Confirm Xóa */}
-      {deleteRoomId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-zinc-900">
-              {t?.rooms?.deleteTitle || "Xác nhận xóa"}
-            </h3>
-            <p className="mt-2 text-sm text-zinc-500">
-              {t?.rooms?.deleteDesc || "Bạn có chắc muốn xóa phòng này không? Hành động này không thể hoàn tác."}
+      <main className="mx-auto w-full max-w-6xl px-6 py-10">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-zinc-900">
+              {t?.rooms?.title || "Quản lý Phòng"}
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              {t?.rooms?.totalPrefix || "Tổng:"}{" "}
+              {data?.totalElements ?? "..."}{" "}
+              {t?.rooms?.totalSuffix || "phòng"}
             </p>
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                onClick={() => setDeleteRoomId(null)}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50"
-              >
-                {t?.rooms?.deleteCancel || "Hủy"}
-              </button>
-              <button
-                onClick={handleDelete}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"
-              >
-                {t?.rooms?.deleteConfirm || "Xóa"}
-              </button>
-            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+                onClick={handleExportTxt}
+                disabled={loading || exporting}
+                className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+            >
+              {exporting
+                  ? t?.rooms?.statusExporting || "Đang xuất..."
+                  : t?.rooms?.btnExportTxt || "Xuất TXT"}
+            </button>
+            <button
+                onClick={handleExportExcel}
+                disabled={loading || exporting}
+                className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+            >
+              {exporting
+                  ? t?.rooms?.statusExporting || "Đang xuất..."
+                  : t?.rooms?.btnExportExcel || "Xuất Excel"}
+            </button>
+            <button
+                onClick={() => {
+                  setShowModal(true);
+                  setForm(DEFAULT_FORM);
+                }}
+                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
+            >
+              {t?.rooms?.btnCreate || "+ Thêm phòng"}
+            </button>
           </div>
         </div>
-      )}
 
-      {/* Filter */}
-      <RoomFilter
-        status={status}
-        floor={floor}
-        floors={floors}
-        onStatusChange={(s) => {
-          setStatus(s);
-          setFloor(null);
-          setPage(0);
-        }}
-        onFloorChange={(f) => {
-          setFloor(f);
-          setPage(0);
-        }}
-      />
+        {/* Modal Thêm */}
+        {showModal && (
+            <RoomModal
+                mode="create"
+                form={form}
+                roomTypes={roomTypes}
+                saving={saving}
+                onChange={setForm}
+                onSubmit={handleCreate}
+                errorMessage={error}
+                onClose={() => {
+                  setShowModal(false);
+                  setError("");
+                }}
+            />
+        )}
 
-      {/* Bảng */}
-      <RoomTable
-        rooms={data?.content ?? []}
-        loading={loading}
-        onEdit={handleEditClick}
-        onDelete={(id) => setDeleteRoomId(id)}
-      />
+        {/* Modal Sửa */}
+        {editRoom && (
+            <RoomModal
+                mode="edit"
+                form={form}
+                roomTypes={roomTypes}
+                saving={saving}
+                editRoomNumber={editRoom.roomNumber}
+                onChange={setForm}
+                onSubmit={handleUpdate}
+                errorMessage={error}
+                onClose={() => {
+                  setEditRoom(null);
+                  setError("");
+                }}
+            />
+        )}
 
-      {/* Pagination */}
-      {data && (
-        <RoomPagination
-          page={data.page}
-          totalPages={data.totalPages}
-          last={data.last}
-          onPrev={() => setPage((p) => p - 1)}
-          onNext={() => setPage((p) => p + 1)}
+        {/* Confirm Xóa */}
+        {deleteRoomId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                <h3 className="text-lg font-semibold text-zinc-900">
+                  {t?.rooms?.deleteTitle || "Xác nhận xóa"}
+                </h3>
+                <p className="mt-2 text-sm text-zinc-500">
+                  {t?.rooms?.deleteDesc ||
+                      "Bạn có chắc muốn xóa phòng này không? Hành động này không thể hoàn tác."}
+                </p>
+                <div className="mt-6 flex justify-end gap-2">
+                  <button
+                      onClick={() => setDeleteRoomId(null)}
+                      className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50"
+                  >
+                    {t?.rooms?.deleteCancel || "Hủy"}
+                  </button>
+                  <button
+                      onClick={handleDelete}
+                      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"
+                  >
+                    {t?.rooms?.deleteConfirm || "Xóa"}
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
+
+        {/* Filter — 2 filter hoạt động độc lập, kết hợp với nhau */}
+        <RoomFilter
+            status={status}
+            floor={floor}
+            floors={floors}
+            onStatusChange={(s) => {
+              setStatus(s);
+              setPage(0); // chỉ reset page, giữ nguyên floor
+            }}
+            onFloorChange={(f) => {
+              setFloor(f);
+              setPage(0); // chỉ reset page, giữ nguyên status
+            }}
         />
-      )}
-    </main>
+
+        {/* Bảng */}
+        <RoomTable
+            rooms={data?.content ?? []}
+            loading={loading}
+            onEdit={handleEditClick}
+            onDelete={(id) => setDeleteRoomId(id)}
+        />
+
+        {/* Pagination */}
+        {data && (
+            <RoomPagination
+                page={data.page}
+                totalPages={data.totalPages}
+                last={data.last}
+                onPrev={() => setPage((p) => p - 1)}
+                onNext={() => setPage((p) => p + 1)}
+            />
+        )}
+      </main>
   );
 }
