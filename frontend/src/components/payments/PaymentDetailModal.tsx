@@ -162,21 +162,30 @@ export default function PaymentDetailModal({ payment, onClose }: Props) {
               </p>
               <div className="rounded-xl border border-zinc-100 divide-y divide-zinc-50">
                 {booking.services.map((svc) => (
-                  <div
-                    key={svc.serviceId}
-                    className="flex items-center justify-between px-4 py-2.5"
-                  >
-                    <span className="text-sm text-zinc-600">
-                      {m?.labelService
-                        ?.replace("{name}", svc.serviceName || "")
-                        ?.replace("{qty}", String(svc.quantity)) ||
-                        `${svc.serviceName} × ${svc.quantity}`}
-                    </span>
-                    <span className="text-sm font-medium text-zinc-900">
-                      {lang === "en"
-                        ? `${svc.subtotal?.toLocaleString("en-US")} VND`
-                        : `${svc.subtotal?.toLocaleString("vi-VN")}đ`}
-                    </span>
+                  <div key={svc.serviceId} className="px-4 py-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-zinc-600">
+                        {`${svc.serviceName} × ${svc.quantity}`}
+                      </span>
+                      {svc.priceOverride === 0 ? (
+                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                          Miễn phí VIP
+                        </span>
+                      ) : (
+                        <span className="text-sm font-medium text-zinc-900">
+                          {lang === "en"
+                            ? `${svc.subtotal?.toLocaleString("en-US")} VND`
+                            : `${svc.subtotal?.toLocaleString("vi-VN")}đ`}
+                        </span>
+                      )}
+                    </div>
+                    {svc.bookedAt && (
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        {new Date(svc.bookedAt).toLocaleString(
+                          lang === "en" ? "en-US" : "vi-VN",
+                        )}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

@@ -31,8 +31,8 @@ import resort_management.common.PageResponse;
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final BookingRepository bookingRepository;   // ← thêm mới
-    private final RoomRepository roomRepository;         // ← thêm mới
+    private final BookingRepository bookingRepository; // ← thêm mới
+    private final RoomRepository roomRepository; // ← thêm mới
 
     @Override
     @Transactional(readOnly = true)
@@ -59,9 +59,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw new BusinessException("period chỉ nhận: day, month, year");
 
         List<Object[]> results = switch (normalized) {
-            case "day"  -> paymentRepository.getRevenueByDay();
+            case "day" -> paymentRepository.getRevenueByDay();
             case "year" -> paymentRepository.getRevenueByYear();
-            default     -> paymentRepository.getRevenueByMonth();
+            default -> paymentRepository.getRevenueByMonth();
         };
 
         return results.stream()
@@ -81,6 +81,12 @@ public class PaymentServiceImpl implements PaymentService {
             if (PaymentStatus.PAID == p.getPaymentStatus())
                 throw new BusinessException("Hóa đơn này đã được thanh toán rồi!");
 
+            Booking bookingCheck = p.getBooking();
+            if (bookingCheck != null && bookingCheck.getStatus() != BookingStatus.CHECKED_OUT) {
+                throw new BusinessException(
+                        "Khách hàng chưa checkout! Vui lòng checkout trước khi thanh toán.");
+            }
+
             // Mark PAID
             p.setPaymentStatus(PaymentStatus.PAID);
             p.setPaymentDate(java.time.LocalDateTime.now());
@@ -92,7 +98,7 @@ public class PaymentServiceImpl implements PaymentService {
                 LocalDate today = LocalDate.now();
 
                 // Nếu trả phòng sớm hơn ngày dự kiến → cập nhật checkOutDate về hôm nay
-// Chỉ set nếu today > checkInDate để tránh vi phạm constraint DB
+                // Chỉ set nếu today > checkInDate để tránh vi phạm constraint DB
                 if (booking.getStatus() == BookingStatus.CHECKED_OUT
                         && booking.getCheckOutDate().isAfter(today)
                         && today.isAfter(booking.getCheckInDate())) {

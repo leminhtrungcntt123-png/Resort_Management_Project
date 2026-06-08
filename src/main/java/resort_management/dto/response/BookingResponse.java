@@ -65,7 +65,9 @@ public class BookingResponse {
                         bs.getService() != null ? bs.getService().getServiceName() : null,
                         unitPrice,
                         bs.getQuantity(),
-                        subtotal);
+                        subtotal,
+                        bs.getPriceOverride(), // ← thêm
+                        bs.getCreatedAt());
             }).collect(Collectors.toList()));
         } else {
             dto.setServices(Collections.emptyList());
@@ -100,7 +102,7 @@ public class BookingResponse {
         private String roomNumber;
         private Integer floorNumber;
         private String roomTypeName;
-        private BigDecimal priceSnapshot; 
+        private BigDecimal priceSnapshot;
     }
 
     @Data
@@ -108,16 +110,18 @@ public class BookingResponse {
     public static class BookingServiceInfo {
         private Long serviceId;
         private String serviceName;
-        private BigDecimal unitPrice; 
+        private BigDecimal unitPrice;
         private Integer quantity;
-        private BigDecimal subtotal; 
+        private BigDecimal subtotal;
+        private BigDecimal priceOverride; // ← thêm
+        private LocalDateTime bookedAt;
     }
 
     @Data
     @AllArgsConstructor
     public static class PaymentInfo {
         private Long id;
-        private BigDecimal amount; 
+        private BigDecimal amount;
         private String paymentMethod;
         private String paymentStatus;
         private LocalDateTime paymentDate;

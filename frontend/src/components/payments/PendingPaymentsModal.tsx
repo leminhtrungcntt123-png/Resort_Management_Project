@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/apiClient";
 import { Payment } from "@/types/payment";
 import { useLang } from "@/contexts/LangContext";
+import PaymentDetailModal from "./PaymentDetailModal";
+import PaymentEditModal from "./PaymentEditModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   onClose: () => void;
@@ -20,6 +23,9 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState("");
+  const { isAdmin } = useAuth();
+  const [detailPayment, setDetailPayment] = useState<Payment | null>(null);
+  const [editPayment, setEditPayment] = useState<Payment | null>(null);
 
   // Fetch danh sách pending
   useEffect(() => {
@@ -53,9 +59,7 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
     const allSelected = allIds.every((id) => selected.has(id));
     setSelected((prev) => {
       const next = new Set(prev);
-      allIds.forEach((id) =>
-        allSelected ? next.delete(id) : next.add(id)
-      );
+      allIds.forEach((id) => (allSelected ? next.delete(id) : next.add(id)));
       return next;
     });
   }
@@ -67,12 +71,17 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
     setError("");
     try {
       await Promise.all(
-        [...selected].map((id) => api.patch(`/api/payments/${id}/pay`))
+        [...selected].map((id) => api.patch(`/api/payments/${id}/pay`)),
       );
       onConfirmed();
-    } catch (err) {
-      setError(lang === "en" ? "An error occurred, please try again." : "Có lỗi xảy ra, vui lòng thử lại.");
-      console.error(err);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message;
+      setError(
+        msg ||
+          (lang === "en"
+            ? "An error occurred, please try again."
+            : "Có lỗi xảy ra, vui lòng thử lại."),
+      );
     } finally {
       setConfirming(false);
     }
@@ -95,7 +104,9 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
               {lang === "en" ? "Pending Payments" : "Thanh toán chờ xử lý"}
             </h3>
             <p className="mt-0.5 text-sm text-zinc-500">
-              {lang === "en" ? `Selected: ${selected.size} invoices` : `Đã chọn: ${selected.size} hóa đơn`}
+              {lang === "en"
+                ? `Selected: ${selected.size} invoices`
+                : `Đã chọn: ${selected.size} hóa đơn`}
             </p>
           </div>
           <button
@@ -126,11 +137,21 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
                     className="cursor-pointer"
                   />
                 </th>
-                <th className="px-4 py-3">{t?.payments?.tableHeaders?.booking || "Booking ID"}</th>
-                <th className="px-4 py-3">{t?.payments?.tableHeaders?.amount || "Số tiền"}</th>
-                <th className="px-4 py-3">{t?.payments?.tableHeaders?.method || "Phương thức"}</th>
-                <th className="px-4 py-3">{lang === "en" ? "Created Date" : "Ngày tạo"}</th>
-                <th className="px-4 py-3">{t?.payments?.tableHeaders?.actions || "Thao tác"}</th>
+                <th className="px-4 py-3">
+                  {t?.payments?.tableHeaders?.booking || "Booking ID"}
+                </th>
+                <th className="px-4 py-3">
+                  {t?.payments?.tableHeaders?.amount || "Số tiền"}
+                </th>
+                <th className="px-4 py-3">
+                  {t?.payments?.tableHeaders?.method || "Phương thức"}
+                </th>
+                <th className="px-4 py-3">
+                  {lang === "en" ? "Created Date" : "Ngày tạo"}
+                </th>
+                <th className="px-4 py-3">
+                  {t?.payments?.tableHeaders?.actions || "Thao tác"}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -143,7 +164,9 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
               ) : payments.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-10 text-center text-zinc-400">
-                    {lang === "en" ? "🎉 No pending invoices found!" : "🎉 Không có hóa đơn nào chờ xử lý!"}
+                    {lang === "en"
+                      ? "🎉 No pending invoices found!"
+                      : "🎉 Không có hóa đơn nào chờ xử lý!"}
                   </td>
                 </tr>
               ) : (
@@ -170,28 +193,72 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
                     </td>
                     <td className="px-4 py-3">{p.paymentMethod}</td>
                     <td className="px-4 py-3 text-zinc-400">
-                      {new Date(p.createdAt).toLocaleDateString(lang === "en" ? "en-US" : "vi-VN")}
+                      {new Date(p.createdAt).toLocaleDateString(
+                        lang === "en" ? "en-US" : "vi-VN",
+                      )}
                     </td>
                     {/* Xác nhận từng cái */}
                     <td className="px-4 py-3">
-                      <button
-                        onClick={async () => {
-                          try {
-                            await api.patch(`/api/payments/${p.id}/pay`);
-                            onConfirmed();
-                          } catch {
-                            setError(
-                              lang === "en"
-                                ? `Cannot confirm invoice #${p.bookingId}`
-                                : `Không thể xác nhận hóa đơn #${p.bookingId}`
-                            );
-                          }
-                        }}
-                        className="rounded-lg bg-green-100 px-3 py-1 text-xs
-                                   font-medium text-green-700 hover:bg-green-200 transition"
-                      >
-                        {t?.payments?.actionButtons?.confirm || "Xác nhận"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={async () => {
+                            try {
+                              await api.patch(`/api/payments/${p.id}/pay`);
+                              onConfirmed();
+                            } catch (err: any) {
+                              const msg = err?.response?.data?.message;
+                              setError(
+                                msg ||
+                                  (lang === "en"
+                                    ? `Cannot confirm invoice #${p.bookingId}`
+                                    : `Không thể xác nhận hóa đơn #${p.bookingId}`),
+                              );
+                            }
+                          }}
+                          className="rounded-lg border border-green-200 px-3 py-1 text-xs text-green-700 hover:bg-green-50 transition"
+                        >
+                          {t?.payments?.actionButtons?.confirm || "Xác nhận"}
+                        </button>
+                        <button
+                          onClick={() => setDetailPayment(p)}
+                          className="rounded-lg border border-blue-200 px-3 py-1 text-xs text-blue-700 hover:bg-blue-50 transition"
+                        >
+                          {t?.payments?.actionButtons?.detail || "Chi tiết"}
+                        </button>
+                        <button
+                          onClick={() => setEditPayment(p)}
+                          className="rounded-lg border border-zinc-200 px-3 py-1 text-xs text-zinc-700 hover:bg-zinc-50 transition"
+                        >
+                          {t?.payments?.actionButtons?.edit || "Sửa"}
+                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={async () => {
+                              const confirmMsg =
+                                t?.payments?.alerts?.confirmDelete?.replace(
+                                  "{id}",
+                                  String(p.id),
+                                ) || `Xóa hóa đơn #${p.id}?`;
+                              if (!confirm(confirmMsg)) return;
+                              try {
+                                await api.delete(`/api/payments/${p.id}`);
+                                onConfirmed();
+                              } catch (err: any) {
+                                const msg = err?.response?.data?.message;
+                                setError(
+                                  msg ||
+                                    (lang === "en"
+                                      ? "Cannot delete invoice!"
+                                      : "Không thể xóa hóa đơn!"),
+                                );
+                              }
+                            }}
+                            className="rounded-lg border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50 transition"
+                          >
+                            {t?.payments?.actionButtons?.delete || "Xóa"}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -239,13 +306,31 @@ export default function PendingPaymentsModal({ onClose, onConfirmed }: Props) {
                        text-white hover:bg-yellow-600 disabled:opacity-40 transition"
           >
             {confirming
-              ? (lang === "en" ? "Processing..." : "Đang xử lý...")
+              ? lang === "en"
+                ? "Processing..."
+                : "Đang xử lý..."
               : lang === "en"
                 ? `Confirm ${selected.size} invoices`
                 : `Xác nhận ${selected.size} hóa đơn`}
           </button>
         </div>
       </div>
+      {detailPayment && (
+        <PaymentDetailModal
+          payment={detailPayment}
+          onClose={() => setDetailPayment(null)}
+        />
+      )}
+      {editPayment && (
+        <PaymentEditModal
+          payment={editPayment}
+          onClose={() => setEditPayment(null)}
+          onUpdated={() => {
+            setEditPayment(null);
+            onConfirmed();
+          }}
+        />
+      )}
     </div>
   );
 }
