@@ -27,17 +27,19 @@ interface MonthlyStat {
     bookings: number;
 }
 
-// 🎯 ĐỊNH NGHĨA THEO ĐÚNG CHUẨN CẤU TRÚC FILE SQL CỦA BẠN
 interface RoomData {
     id: number;
-    room_number: string; // Khớp chuẩn cột room_number trong SQL
-    status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE" | string; // Khớp Enum trong SQL
-    floor_number?: number; // Cột floor_number
-    roomType?: {           // Liên kết sang bảng room_types
-        type_name: string; // Cột type_name
-        price_per_night?: number; // Cột price_per_night
+    roomNumber?: string;
+    room_number?: string;
+    status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE" | string;
+    floorNumber?: number;
+    floor_number?: number;
+    roomType?: {
+        typeName?: string;
+        type_name?: string;
+        pricePerNight?: number;
+        price_per_night?: number;
     };
-    // Dữ liệu giả lập nối thêm từ bảng bookings/persons nếu có khách ở
     currentBooking?: {
         customerName: string;
         checkIn: string;
@@ -46,7 +48,7 @@ interface RoomData {
 }
 
 const chartConfig = {
-  bookings: { label: "Lượt đặt" }
+    bookings: { label: "Lượt đặt" }
 };
 
 export default function Home() {
@@ -59,6 +61,8 @@ export default function Home() {
 
     const [roomsList, setRoomsList] = useState<RoomData[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<RoomData | null>(null);
+    const [guestInfo, setGuestInfo] = useState<{ customerName: string; checkIn: string; checkOut: string; bookingId: number } | null>(null);
+    const [guestLoading, setGuestLoading] = useState(false);
 
     const totalBookingsCount = roomTypeData.reduce((acc, curr) => acc + curr.bookings, 0);
 
@@ -66,13 +70,12 @@ export default function Home() {
         async function fetchStats() {
             try {
                 const [roomsRes, bookingsRes, customersRes, revenueRes] = await Promise.all([
-                    api.get("/api/rooms"),
-                    api.get("/api/bookings"),
+                    api.get("/api/rooms?page=0&size=9999"),
+                    api.get("/api/bookings?page=0&size=9999"),
                     api.get("/api/customers"),
                     api.get("/api/payments/revenue?period=month"),
                 ]);
 
-                // Hỗ trợ bóc tách nếu backend bọc dữ liệu trong mảng 'content' của Pageable Spring Boot
                 const allRooms = roomsRes.data?.content || roomsRes.data || [];
                 const allBookings = bookingsRes.data?.content || bookingsRes.data || [];
 
@@ -93,10 +96,14 @@ export default function Home() {
                     "oklch(0.75 0.14 45)",  "oklch(0.78 0.12 80)",  "oklch(0.48 0.13 110)", "oklch(0.40 0.15 280)"
                 ];
 
-                // THUẬT TOÁN LOẠI PHÒNG (Ăn theo đúng trường type_name trong SQL)
+                // Biểu đồ tròn — đọc đúng field từ BookingResponse
                 const typeCounter: Record<string, number> = {};
                 allBookings.forEach((booking: any) => {
-                    const typeName = booking.room?.roomType?.type_name || booking.roomType || "Standard City View";
+                    const typeName =
+                        booking.rooms?.[0]?.roomTypeName ||
+                        booking.room?.roomType?.typeName ||
+                        booking.room?.roomType?.type_name ||
+                        "Không xác định";
                     typeCounter[typeName] = (typeCounter[typeName] || 0) + 1;
                 });
 
@@ -107,10 +114,10 @@ export default function Home() {
                 }));
                 setRoomTypeData(computedRoomTypes);
 
-                // THUẬT TOÁN THEO THÁNG
+                // Biểu đồ cột — theo tháng
                 const monthCounter: Record<string, number> = {};
                 allBookings.forEach((booking: any) => {
-                    const dateStr = booking.createdAt || booking.bookingDate || booking.checkInDate || booking.check_in_date;
+                    const dateStr = booking.createdAt || booking.checkInDate || booking.check_in_date;
                     if (dateStr) {
                         const date = new Date(dateStr);
                         if (!isNaN(date.getTime())) {
@@ -120,15 +127,22 @@ export default function Home() {
                     }
                 });
 
-                const sortedMonths = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+                const sortedMonths = ["1","2","3","4","5","6","7","8","9","10","11","12"];
                 const computedMonthlyData = sortedMonths
-                    .filter(m => monthCounter[m] !== undefined || Object.keys(monthCounter).length === 0)
+                    .filter(m => monthCounter[m] !== undefined)
                     .map(m => ({
                         month: `${t.charts?.monthPrefix || (lang === "vi" ? "Tháng" : "Month")} ${m}`,
                         bookings: monthCounter[m] || 0
                     }));
 
-                setMonthlyBookingData(computedMonthlyData.length > 0 ? computedMonthlyData : sortedMonths.slice(0, 6).map(m => ({ month: `${t.charts?.monthPrefix || (lang === "vi" ? "Tháng" : "Month")} ${m}`, bookings: 0 })));
+                setMonthlyBookingData(
+                    computedMonthlyData.length > 0
+                        ? computedMonthlyData
+                        : sortedMonths.slice(0, 6).map(m => ({
+                            month: `${t.charts?.monthPrefix || (lang === "vi" ? "Tháng" : "Month")} ${m}`,
+                            bookings: 0
+                        }))
+                );
 
             } catch (err) {
                 console.error("Lỗi đồng bộ dữ liệu tổng quan:", err);
@@ -139,25 +153,56 @@ export default function Home() {
         fetchStats();
     }, [lang]);
 
+    // Fetch thông tin khách khi click vào phòng OCCUPIED
+    async function handleRoomClick(room: RoomData) {
+        setSelectedRoom(room);
+        setGuestInfo(null);
+
+        const status = room.status?.toUpperCase();
+        if (status !== "OCCUPIED") return;
+
+        setGuestLoading(true);
+        try {
+            const res = await api.get(`/api/bookings/status/CHECKED_IN?page=0&size=9999`);
+            const bookings = res.data?.content ?? [];
+            const roomId = room.id;
+            const matched = bookings.find((b: any) =>
+                b.rooms?.some((br: any) => br.roomId === roomId)
+            );
+            if (matched) {
+                setGuestInfo({
+                    bookingId:    matched.id,
+                    customerName: matched.customer?.fullName ?? "N/A",
+                    checkIn:      matched.checkInDate ?? "N/A",
+                    checkOut:     matched.checkOutDate ?? "N/A",
+                });
+            }
+        } catch (err) {
+            console.error("Lỗi fetch guest info:", err);
+        } finally {
+            setGuestLoading(false);
+        }
+    }
+
     const cards = [
-        { label: t.dashboard.rooms, value: stats?.totalRooms, icon: Bed, color: "text-blue-600 bg-blue-50 border-blue-100" },
-        { label: t.dashboard.bookings, value: stats?.totalBookings, icon: CalendarDays, color: "text-amber-600 bg-amber-50 border-amber-100" },
-        { label: t.dashboard.customers, value: stats?.totalCustomers, icon: Users, color: "text-purple-600 bg-purple-50 border-purple-100" },
-        { label: t.dashboard.revenue, value: stats?.monthlyRevenue ? `${stats.monthlyRevenue.toLocaleString("vi-VN")}đ` : undefined, icon: DollarSign, color: "text-emerald-600 bg-emerald-50 border-emerald-100" },
+        { label: t.dashboard.rooms,     value: stats?.totalRooms,     icon: Bed,         color: "text-blue-600 bg-blue-50 border-blue-100" },
+        { label: t.dashboard.bookings,  value: stats?.totalBookings,  icon: CalendarDays, color: "text-amber-600 bg-amber-50 border-amber-100" },
+        { label: t.dashboard.customers, value: stats?.totalCustomers, icon: Users,        color: "text-purple-600 bg-purple-50 border-purple-100" },
+        { label: t.dashboard.revenue,   value: stats?.monthlyRevenue ? `${stats.monthlyRevenue.toLocaleString("vi-VN")}đ` : undefined, icon: DollarSign, color: "text-emerald-600 bg-emerald-50 border-emerald-100" },
     ];
 
     const getStatusStyles = (status: string) => {
         switch (status?.toUpperCase()) {
-            case "AVAILABLE":
-                return "border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50 text-emerald-700 shadow-emerald-100/20";
-            case "OCCUPIED":
-                return "border-rose-200 bg-rose-50/40 hover:bg-rose-50 text-rose-700 shadow-rose-100/20";
-            case "MAINTENANCE":
-                return "border-amber-200 bg-amber-50/40 hover:bg-amber-50 text-amber-700 shadow-amber-100/20";
-            default:
-                return "border-zinc-200 bg-zinc-50/40 hover:bg-zinc-50 text-zinc-700";
+            case "AVAILABLE":   return "border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50 text-emerald-700 shadow-emerald-100/20";
+            case "OCCUPIED":    return "border-rose-200 bg-rose-50/40 hover:bg-rose-50 text-rose-700 shadow-rose-100/20";
+            case "MAINTENANCE": return "border-amber-200 bg-amber-50/40 hover:bg-amber-50 text-amber-700 shadow-amber-100/20";
+            default:            return "border-zinc-200 bg-zinc-50/40 hover:bg-zinc-50 text-zinc-700";
         }
     };
+
+    const getRoomNumber = (room: RoomData) => room.roomNumber || room.room_number || `P.${room.id}`;
+    const getRoomType   = (room: RoomData) => room.roomType?.typeName || room.roomType?.type_name || (lang === "vi" ? "Chưa phân loại" : "Standard");
+    const getRoomPrice  = (room: RoomData) => room.roomType?.pricePerNight || room.roomType?.price_per_night;
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -191,7 +236,7 @@ export default function Home() {
                 })}
             </div>
 
-            {/* SƠ ĐỒ TRẠNG THÁI PHÒNG (ROOM GRID) */}
+            {/* SƠ ĐỒ TRẠNG THÁI PHÒNG */}
             <Card className="rounded-2xl shadow-sm border-zinc-200 overflow-hidden">
                 <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 pb-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -224,24 +269,22 @@ export default function Home() {
                         </div>
                     ) : roomsList.length === 0 ? (
                         <div className="text-center py-10 text-zinc-400 text-sm border border-dashed rounded-xl">
-                            {lang === "vi" ? "Không tìm thấy danh sách phòng nào trong SQL Server." : "No room layouts discovered in SQL Server."}
+                            {lang === "vi" ? "Không tìm thấy danh sách phòng." : "No rooms found."}
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
                             {roomsList.map((room) => (
                                 <button
                                     key={room.id}
-                                    onClick={() => setSelectedRoom(room)}
+                                    onClick={() => handleRoomClick(room)}
                                     className={`group relative flex flex-col justify-between p-3.5 rounded-xl border-2 text-left transition-all duration-200 shadow-sm ${getStatusStyles(room.status)}`}
                                 >
                                     <div className="flex items-start justify-between w-full">
-                                        {/* 🛠️ SỬA ĐỔI 1: room.room_number gọi chuẩn xác theo cột trong SQL */}
-                                        <span className="text-lg font-extrabold tracking-tight">{room.room_number || `P.${room.id}`}</span>
+                                        <span className="text-lg font-extrabold tracking-tight">{getRoomNumber(room)}</span>
                                         <Info className="h-3.5 w-3.5 opacity-0 group-hover:opacity-60 transition-opacity" />
                                     </div>
                                     <div className="mt-3 text-[10px] uppercase font-bold tracking-wider opacity-80 truncate">
-                                        {/* 🛠️ SỬA ĐỔI 2: room.roomType.type_name gọi chuẩn xác theo bảng room_types */}
-                                        {room.roomType?.type_name || (lang === "vi" ? "Chưa phân loại" : "Standard")}
+                                        {getRoomType(room)}
                                     </div>
                                 </button>
                             ))}
@@ -252,7 +295,7 @@ export default function Home() {
 
             {/* KHU VỰC BIỂU ĐỒ */}
             <div className="grid gap-6 lg:grid-cols-3">
-                {/* 1. BIỂU ĐỒ TRÒN */}
+                {/* BIỂU ĐỒ TRÒN */}
                 <Card className="lg:col-span-2 rounded-2xl shadow-sm border-zinc-200 flex flex-col justify-between">
                     <CardHeader className="pb-2">
                         <div className="flex items-center gap-2">
@@ -276,7 +319,6 @@ export default function Home() {
                                                 <Cell key={`cell-${index}`} fill={entry.fill} />
                                             ))}
                                             <Label
-                                                value={totalBookingsCount}
                                                 position="center"
                                                 content={({ viewBox }) => {
                                                     if (viewBox && "cx" in viewBox && "cy" in viewBox) {
@@ -314,7 +356,7 @@ export default function Home() {
                     </CardContent>
                 </Card>
 
-                {/* 2. BIỂU ĐỒ CỘT */}
+                {/* BIỂU ĐỒ CỘT */}
                 <Card className="rounded-2xl shadow-sm border-zinc-200 flex flex-col justify-between">
                     <CardHeader className="pb-2">
                         <div className="flex items-center gap-2">
@@ -342,19 +384,19 @@ export default function Home() {
             </div>
 
             {/* POPUP CHI TIẾT PHÒNG */}
-            <Dialog open={!!selectedRoom} onOpenChange={(open) => !open && setSelectedRoom(null)}>
+            <Dialog open={!!selectedRoom} onOpenChange={(open) => { if (!open) { setSelectedRoom(null); setGuestInfo(null); } }}>
                 <DialogContent className="sm:max-w-[440px] rounded-2xl border-zinc-200 bg-white p-6 shadow-xl">
                     <DialogHeader className="pb-4 border-b border-zinc-100">
                         <div className="flex items-center gap-2.5">
                             <div className="rounded-xl bg-zinc-100 p-2 text-zinc-800 font-black text-lg">
-                                {selectedRoom?.room_number}
+                                {selectedRoom && getRoomNumber(selectedRoom)}
                             </div>
                             <div>
                                 <DialogTitle className="text-xl font-bold text-zinc-950">
-                                    {lang === "vi" ? `Thông tin chi tiết phòng` : `Room Diagnostics`}
+                                    {lang === "vi" ? "Thông tin chi tiết phòng" : "Room Details"}
                                 </DialogTitle>
                                 <DialogDescription className="text-xs font-medium text-zinc-400 mt-0.5">
-                                    {selectedRoom?.roomType?.type_name || "Standard Suite"}
+                                    {selectedRoom && getRoomType(selectedRoom)}
                                 </DialogDescription>
                             </div>
                         </div>
@@ -362,41 +404,64 @@ export default function Home() {
 
                     <div className="py-6 space-y-4 text-sm">
                         <div className="flex items-center justify-between border-b border-zinc-50 pb-2">
-                            <span className="text-zinc-400 font-medium flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-zinc-400" /> Trạng thái</span>
+                            <span className="text-zinc-400 font-medium flex items-center gap-1.5">
+                                <ShieldCheck className="h-4 w-4 text-zinc-400" /> Trạng thái
+                            </span>
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                                selectedRoom?.status?.toUpperCase() === "AVAILABLE" ? "bg-emerald-100 text-emerald-800" :
-                                selectedRoom?.status?.toUpperCase() === "OCCUPIED" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-800"
+                                selectedRoom?.status?.toUpperCase() === "AVAILABLE"   ? "bg-emerald-100 text-emerald-800" :
+                                    selectedRoom?.status?.toUpperCase() === "OCCUPIED"    ? "bg-rose-100 text-rose-800" :
+                                        "bg-amber-100 text-amber-800"
                             }`}>
-                                {selectedRoom?.status?.toUpperCase() === "AVAILABLE" ? (lang === "vi" ? "Sẵn sàng đón khách" : "Available") :
-                                 selectedRoom?.status?.toUpperCase() === "OCCUPIED" ? (lang === "vi" ? "Đang có khách" : "Occupied") : (lang === "vi" ? "Đang sửa chữa" : "Under Maintenance")}
+                                {selectedRoom?.status?.toUpperCase() === "AVAILABLE"   ? (lang === "vi" ? "Sẵn sàng đón khách" : "Available") :
+                                    selectedRoom?.status?.toUpperCase() === "OCCUPIED"    ? (lang === "vi" ? "Đang có khách" : "Occupied") :
+                                        (lang === "vi" ? "Đang sửa chữa" : "Under Maintenance")}
                             </span>
                         </div>
 
                         <div className="flex items-center justify-between border-b border-zinc-50 pb-2">
-                            <span className="text-zinc-400 font-medium flex items-center gap-1.5"><DollarSign className="h-4 w-4 text-zinc-400" /> Giá niêm yết</span>
+                            <span className="text-zinc-400 font-medium flex items-center gap-1.5">
+                                <DollarSign className="h-4 w-4 text-zinc-400" /> Giá niêm yết
+                            </span>
                             <span className="text-zinc-900 font-bold">
-                                {/* 🛠️ SỬA ĐỔI 3: Đổi roomType.price thành roomType.price_per_night khớp chuẩn bảng room_types */}
-                                {selectedRoom?.roomType?.price_per_night ? `${selectedRoom.roomType.price_per_night.toLocaleString("vi-VN")}đ / đêm` : "600.000đ / đêm"}
+                                {selectedRoom && getRoomPrice(selectedRoom)
+                                    ? `${getRoomPrice(selectedRoom)!.toLocaleString("vi-VN")}đ / đêm`
+                                    : "—"}
                             </span>
                         </div>
 
                         {selectedRoom?.status?.toUpperCase() === "OCCUPIED" && (
                             <div className="mt-4 p-4 rounded-xl bg-zinc-50/50 border border-zinc-100 space-y-2.5">
                                 <div className="text-xs font-bold uppercase text-zinc-400 tracking-wider flex items-center gap-1">
-                                    <User className="h-3 w-3" /> {lang === "vi" ? "Khách lưu trú hiện tại" : "Current Guest Record"}
+                                    <User className="h-3 w-3" /> {lang === "vi" ? "Khách lưu trú hiện tại" : "Current Guest"}
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-zinc-500 font-medium">{lang === "vi" ? "Tên khách" : "Guest Name"}</span>
-                                    <span className="text-zinc-950 font-semibold">{selectedRoom.currentBooking?.customerName || "Nguyễn Văn Một"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-zinc-500 font-medium">{lang === "vi" ? "Ngày Check-in" : "Check-in Date"}</span>
-                                    <span className="text-zinc-600 font-medium">{selectedRoom.currentBooking?.checkIn || "2026-05-11"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-zinc-500 font-medium">{lang === "vi" ? "Ngày Check-out" : "Check-out Date"}</span>
-                                    <span className="text-zinc-600 font-medium">{selectedRoom.currentBooking?.checkOut || "2026-05-15"}</span>
-                                </div>
+                                {guestLoading ? (
+                                    <div className="text-xs text-zinc-400 animate-pulse py-2">Đang tải thông tin khách...</div>
+                                ) : guestInfo ? (
+                                    <>
+                                        <div className="flex justify-between">
+                                            <span className="text-zinc-500 font-medium">Booking ID</span>
+                                            <span className="text-zinc-950 font-semibold">#{guestInfo.bookingId}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-zinc-500 font-medium">{lang === "vi" ? "Tên khách" : "Guest Name"}</span>
+                                            <span className="text-zinc-950 font-semibold">{guestInfo.customerName}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-zinc-500 font-medium">{lang === "vi" ? "Check-in" : "Check-in"}</span>
+                                            <span className="text-zinc-600 font-medium">
+                                                {new Date(guestInfo.checkIn).toLocaleDateString(lang === "vi" ? "vi-VN" : "en-US")}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-zinc-500 font-medium">{lang === "vi" ? "Check-out" : "Check-out"}</span>
+                                            <span className="text-zinc-600 font-medium">
+                                                {new Date(guestInfo.checkOut).toLocaleDateString(lang === "vi" ? "vi-VN" : "en-US")}
+                                            </span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-xs text-zinc-400 py-2">Không tìm thấy thông tin booking.</div>
+                                )}
                             </div>
                         )}
                     </div>

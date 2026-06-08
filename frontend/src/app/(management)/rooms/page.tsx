@@ -37,6 +37,40 @@ export default function RoomsPage() {
   const [sortBy, setSortBy] = useState("roomNumber");
   const [direction, setDirection] = useState("asc");
 
+  // Guest modal
+  const [guestModal, setGuestModal] = useState<{
+    room: Room;
+    booking: { id: number; customerName: string; checkOutDate: string } | null;
+    loading: boolean;
+  } | null>(null);
+
+  async function handleViewGuest(room: Room) {
+    setGuestModal({ room, booking: null, loading: true });
+    try {
+      const res = await api.get(`/api/bookings/status/CHECKED_IN?page=0&size=9999`);
+      const bookings = res.data?.content ?? [];
+      console.log("=== DEBUG bookings ===", JSON.stringify(bookings, null, 2)); // ← thêm dòng này
+      const matched = bookings.find((b: any) =>
+          b.rooms?.some((br: any) => br.roomId === room.id)
+      );
+      if (matched) {
+        setGuestModal({
+          room,
+          booking: {
+            id: matched.id,
+            customerName: matched.customer?.fullName ?? "N/A",
+            checkOutDate: matched.checkOutDate ?? "N/A",
+          },
+          loading: false,
+        });
+      } else {
+        setGuestModal({ room, booking: null, loading: false });
+      }
+    } catch (err) {
+      console.error("Lỗi fetch booking:", err);
+      setGuestModal({ room, booking: null, loading: false });
+    }
+  }
   // Fetch rooms
   useEffect(() => {
     async function fetchRooms() {
@@ -360,6 +394,59 @@ export default function RoomsPage() {
             </div>
         )}
 
+        {/* Modal Xem Khách */}
+        {guestModal && (
+            <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                onClick={(e) => e.target === e.currentTarget && setGuestModal(null)}
+            >
+              <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-zinc-900">
+                    Khách phòng {guestModal.room.roomNumber}
+                  </h3>
+                  <button
+                      onClick={() => setGuestModal(null)}
+                      className="text-zinc-400 hover:text-zinc-600 text-xl font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {guestModal.loading ? (
+                    <p className="text-sm text-zinc-400 text-center py-4">Đang tải...</p>
+                ) : guestModal.booking ? (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center py-2 border-b border-zinc-100">
+                        <span className="text-sm text-zinc-500">Booking ID</span>
+                        <span className="text-sm font-medium text-zinc-900">#{guestModal.booking.id}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-zinc-100">
+                        <span className="text-sm text-zinc-500">Khách hàng</span>
+                        <span className="text-sm font-medium text-zinc-900">{guestModal.booking.customerName}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-sm text-zinc-500">Ngày checkout</span>
+                        <span className="text-sm font-medium text-zinc-900">
+                      {new Date(guestModal.booking.checkOutDate).toLocaleDateString("vi-VN")}
+                    </span>
+                      </div>
+                    </div>
+                ) : (
+                    <p className="text-sm text-zinc-400 text-center py-4">
+                      Không tìm thấy thông tin booking.
+                    </p>
+                )}
+
+                <button
+                    onClick={() => setGuestModal(null)}
+                    className="mt-5 w-full rounded-xl border border-zinc-200 py-2 text-sm text-zinc-600 hover:bg-zinc-50 transition"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+        )}
         {/* Filter — 2 filter hoạt động độc lập, kết hợp với nhau */}
         <RoomFilter
             status={status}
@@ -381,6 +468,7 @@ export default function RoomsPage() {
             loading={loading}
             onEdit={handleEditClick}
             onDelete={(id) => setDeleteRoomId(id)}
+            onViewGuest={handleViewGuest}
         />
 
         {/* Pagination */}
