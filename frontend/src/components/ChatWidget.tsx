@@ -66,7 +66,7 @@ export default function ChatWidget() {
     setIsLoading(true);
 
     try {
-      const CHAT_BASE_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'http://localhost:8081';
+      const CHAT_BASE_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'https://leminhtrung-resortchatbotapi.hf.space';
       const token = localStorage.getItem('token');
 
       const res = await fetch(`${CHAT_BASE_URL}/api/chat`, {
