@@ -382,6 +382,7 @@ const en = {
       sectionServices: "Services Used",
       sectionStay: "Stay Period",
       labelAmount: "Amount",
+      labelDiscount: "VIP Discount",
       labelMethod: "Method",
       labelStatus: "Status",
       labelDate: "Payment Date",

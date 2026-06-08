@@ -3,7 +3,8 @@ export interface Customer {
     fullName: string;
     phone: string;
     email: string;
-    loyaltyPoints: number;
+    totalSpent: number;
+    vipTier: 'VIP_0' | 'VIP_1' | 'VIP_2' | 'VIP_3' | 'VIP_4' | 'VIP_5';
     createdAt: string;
 }
 

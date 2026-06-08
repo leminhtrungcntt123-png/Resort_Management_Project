@@ -275,6 +275,10 @@ const vi = {
       btnSave: "Lưu",
       btnUpdate: "Cập nhật",
     },
+    actionButtons: {
+      edit: "Sửa",
+      delete: "Xóa",
+    },
   },
   services: {
     title: "Quản lý Dịch vụ",
@@ -376,6 +380,7 @@ const vi = {
       sectionServices: "Dịch vụ đã sử dụng",
       sectionStay: "Thời gian lưu trú",
       labelAmount: "Số tiền",
+      labelDiscount: "Giảm giá VIP",
       labelMethod: "Phương thức",
       labelStatus: "Trạng thái",
       labelDate: "Ngày thanh toán",
@@ -456,7 +461,7 @@ const vi = {
       price: "Đơn giá",
       unit: "Đơn vị tính",
       status: "Trạng thái",
-      actions: "Thao tác"
+      actions: "Thao tác",
     },
     modal: {
       createTitle: "Thêm dịch vụ mới",
@@ -470,15 +475,15 @@ const vi = {
       statusOptions: {
         AVAILABLE: "Sẵn sàng cung cấp",
         OUT_OF_STOCK: "Tạm hết hàng",
-        DISABLED: "Ngừng kinh doanh"
-      }
+        DISABLED: "Ngừng kinh doanh",
+      },
     },
     tableHeaders: {
       id: "ID",
       name: "Tên dịch vụ",
       price: "Giá",
       createdAt: "Ngày tạo", // Thêm cột này
-      actions: "Thao tác"
+      actions: "Thao tác",
     },
     modal: {
       // ... Các từ khóa modal cũ
@@ -497,8 +502,8 @@ const vi = {
       errorPrice: "Giá phải là số dương!",
       confirmDelete: 'Xóa dịch vụ "{name}"?',
       deleteError: "Không thể xóa dịch vụ!",
-      errorDefault: "Có lỗi xảy ra"
-    }
+      errorDefault: "Có lỗi xảy ra",
+    },
   },
   users: {
     title: "Quản lý Tài khoản",
@@ -513,16 +518,16 @@ const vi = {
       role: "Role",
       employee: "Nhân viên",
       status: "Trạng thái",
-      actions: "Thao tác"
+      actions: "Thao tác",
     },
     statusOptions: {
       active: "Hoạt động",
-      locked: "Đã khóa"
+      locked: "Đã khóa",
     },
     actionButtons: {
       lock: "Khóa",
       unlock: "Mở khóa",
-      delete: "Xóa"
+      delete: "Xóa",
     },
     modal: {
       createTitle: "Tạo tài khoản mới",
@@ -534,15 +539,15 @@ const vi = {
       roleOptions: {
         ADMIN: "ADMIN",
         MANAGER: "MANAGER",
-        RECEPTIONIST: "RECEPTIONIST"
+        RECEPTIONIST: "RECEPTIONIST",
       },
       btnCancel: "Hủy",
       btnCreate: "Tạo tài khoản",
       btnCreating: "Đang tạo...",
       errorRequired: "Vui lòng điền đầy đủ thông tin!",
       errorDefault: "Có lỗi xảy ra",
-      confirmDelete: 'Xóa tài khoản "{username}"?'
-    }
+      confirmDelete: 'Xóa tài khoản "{username}"?',
+    },
   },
 };
 
