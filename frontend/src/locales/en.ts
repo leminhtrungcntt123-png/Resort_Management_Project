@@ -284,10 +284,12 @@ const en = {
   },
   services: {
     title: "Service Management",
-    total: "services",
-    btnAdd: "+ Add Service",
+    totalPrefix: "Total:",
+    totalSuffix: "services",
+    btnCreate: "+ Add Service",
+    searchPlaceholder: "Search services...",
     loading: "Loading...",
-    empty: "No services found",
+    empty: "No services found.",
     tableHeaders: {
       id: "ID",
       name: "Service Name",
@@ -298,23 +300,20 @@ const en = {
     modal: {
       createTitle: "Add New Service",
       editTitle: "Edit Service",
-      labelName: "Service Name",
+      name: "Service Name",
       placeholderName: "E.g: Relaxing Massage",
-      labelPrice: "Price (VND)",
+      price: "Price (VND)",
       placeholderPrice: "E.g: 500000",
       btnCancel: "Cancel",
-      btnSave: "Add New",
+      btnCreate: "Add New",
       btnUpdate: "Update",
-      saving: "Saving...",
+      btnSaving: "Saving...",
       errorRequired: "Please fill in all fields!",
       errorPrice: "Price must be a positive number!",
+      confirmDelete: 'Delete service "{name}"?',
+      deleteError: "Cannot delete service!",
+      errorDefault: "An error occurred",
     },
-    actionButtons: {
-      edit: "Edit",
-      delete: "Delete",
-    },
-    confirmDelete: 'Delete service "{name}"?',
-    deleteError: "Cannot delete service!",
   },
   payments: {
     title: "Payment Management",
@@ -382,6 +381,7 @@ const en = {
       sectionServices: "Services Used",
       sectionStay: "Stay Period",
       labelAmount: "Amount",
+      labelDiscount: "VIP Discount",
       labelMethod: "Method",
       labelStatus: "Status",
       labelDate: "Payment Date",
@@ -402,6 +402,11 @@ const en = {
       btnSave: "Save Changes",
       saving: "Saving...",
       errorDefault: "An error occurred",
+    },
+    methods: {
+      CASH: "Cash",
+      CARD: "Bank Card",
+      QR: "QR Code",
     },
   },
   pagination: {
@@ -450,62 +455,6 @@ const en = {
       errorDefault: "An error occurred",
     },
   },
-  services: {
-    title: "Service Management",
-    totalPrefix: "Total:",
-    totalSuffix: "services",
-    btnCreate: "+ Add Service",
-    loading: "Loading services...",
-    empty: "No services found.",
-    tableHeaders: {
-      name: "Service Name",
-      price: "Price",
-      unit: "Unit",
-      status: "Status",
-      actions: "Actions"
-    },
-    modal: {
-      createTitle: "Add New Service",
-      editTitle: "Edit Service",
-      name: "Service Name",
-      placeholderName: "E.g., Laundry, Mineral Water...",
-      price: "Price (VND)",
-      unit: "Unit",
-      placeholderUnit: "E.g., Time, Bottle, Plate...",
-      status: "Operational Status",
-      statusOptions: {
-        AVAILABLE: "Available",
-        OUT_OF_STOCK: "Out of Stock",
-        DISABLED: "Disabled"
-      }
-    },
-    tableHeaders: {
-      id: "ID",
-      name: "Service Name",
-      price: "Price",
-      createdAt: "Created At", // Thêm cột này
-      actions: "Actions"
-    },
-    modal: {
-      // ... Các từ khóa modal cũ
-      createTitle: "Add New Service",
-      editTitle: "Edit Service",
-      name: "Service Name",
-      placeholderName: "E.g., Relaxing Massage", // Cập nhật tương ứng
-      price: "Price (VND)",
-      placeholderPrice: "E.g., 500000",
-      btnCancel: "Cancel",
-      btnCreate: "Add New",
-      btnUpdate: "Update",
-      btnSaving: "Saving...",
-      // Thêm mớ alerts/errors này:
-      errorRequired: "Please fill in all information!",
-      errorPrice: "Price must be a positive number!",
-      confirmDelete: 'Delete service "{name}"?',
-      deleteError: "Could not delete service!",
-      errorDefault: "An error occurred"
-    }
-  },
   users: {
     title: "Account Management",
     totalPrefix: "Total:",
@@ -519,16 +468,16 @@ const en = {
       role: "Role",
       employee: "Employee",
       status: "Status",
-      actions: "Actions"
+      actions: "Actions",
     },
     statusOptions: {
       active: "Active",
-      locked: "Locked"
+      locked: "Locked",
     },
     actionButtons: {
       lock: "Lock",
       unlock: "Unlock",
-      delete: "Delete"
+      delete: "Delete",
     },
     modal: {
       createTitle: "Create New Account",
@@ -540,15 +489,15 @@ const en = {
       roleOptions: {
         ADMIN: "ADMIN",
         MANAGER: "MANAGER",
-        RECEPTIONIST: "RECEPTIONIST"
+        RECEPTIONIST: "RECEPTIONIST",
       },
       btnCancel: "Cancel",
       btnCreate: "Create Account",
       btnCreating: "Creating...",
       errorRequired: "Please fill in all information!",
       errorDefault: "An error occurred",
-      confirmDelete: 'Delete account "{username}"?'
-    }
+      confirmDelete: 'Delete account "{username}"?',
+    },
   },
 };
 

@@ -18,6 +18,7 @@ public class PaymentResponse {
     private String paymentStatus;
     private LocalDateTime paymentDate;
     private LocalDateTime createdAt;
+    private BigDecimal discountAmount; 
 
     // --- Thêm mới: thông tin booking đính kèm ---
     private BookingResponse bookingDetail;
@@ -27,6 +28,7 @@ public class PaymentResponse {
         dto.setId(payment.getId());
         dto.setBookingId(payment.getBooking() != null ? payment.getBooking().getId() : null);
         dto.setAmount(payment.getAmount());
+        dto.setDiscountAmount(payment.getDiscountAmount());
         dto.setPaymentStatus(payment.getPaymentStatus() != null ? payment.getPaymentStatus().name() : null);
         dto.setPaymentMethod(payment.getPaymentMethod() != null ? payment.getPaymentMethod().name() : null);
         dto.setPaymentDate(payment.getPaymentDate());

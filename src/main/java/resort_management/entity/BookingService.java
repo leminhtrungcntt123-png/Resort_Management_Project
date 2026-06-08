@@ -3,6 +3,9 @@ package resort_management.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -25,4 +28,7 @@ public class BookingService extends BaseEntity { // FIX: kế thừa BaseEntity
     @Positive(message = "Số lượng phải lớn hơn 0")
     @Column(nullable = false)
     private Integer quantity = 1;
+
+    @Column(name = "price_override", precision = 18, scale = 2)
+    private BigDecimal priceOverride;
 }

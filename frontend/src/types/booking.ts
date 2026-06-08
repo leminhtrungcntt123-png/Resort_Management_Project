@@ -19,6 +19,8 @@ export interface BookingService {
   unitPrice: number;
   quantity: number;
   subtotal: number;
+  priceOverride: number | null; // ← thêm
+  bookedAt: string | null;
 }
 
 export interface BookingPayment {
@@ -75,6 +77,8 @@ export interface BookingDetail {
     unitPrice: number;
     quantity: number;
     subtotal: number;
+    priceOverride: number | null; // ← thêm
+    bookedAt: string | null;
   }[];
   payment: {
     id: number;

@@ -27,6 +27,9 @@ public class Payment extends BaseEntity { // FIX: thêm kế thừa BaseEntity
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;
 
+    @Column(name = "discount_amount", precision = 18, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", length = 10, nullable = false)
     private PaymentMethod paymentMethod = PaymentMethod.CASH;
