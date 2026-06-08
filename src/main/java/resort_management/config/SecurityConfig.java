@@ -61,7 +61,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // Public — ai cũng vào được
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**")
+                        .permitAll()
 
                         // Rooms — xóa chỉ ADMIN
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("ADMIN")
@@ -82,7 +87,7 @@ public class SecurityConfig {
 
                         // Thêm dịch vụ vào booking — ADMIN + MANAGER + RECEPTIONIST
                         .requestMatchers(HttpMethod.POST, "/api/bookings/*/services").authenticated()
-                        
+
                         // Khách hàng — xóa chỉ ADMIN
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasRole("ADMIN")
 

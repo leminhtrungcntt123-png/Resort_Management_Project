@@ -4,11 +4,12 @@ export interface Payment {
   id: number;
   bookingId: number;
   amount: number;
+  discountAmount: number; // ← thêm vào đây
   paymentMethod: string;
   paymentStatus: string;
   paymentDate: string | null;
   createdAt: string;
-  bookingDetail?: BookingDetail; // thêm mới
+  bookingDetail?: BookingDetail;
 }
 
 export interface PaymentPageData {

@@ -10,6 +10,7 @@ import resort_management.enums.BookingStatus;
 import resort_management.enums.PaymentMethod;
 import resort_management.enums.PaymentStatus;
 import resort_management.enums.RoomStatus;
+import resort_management.enums.VipTier;
 import resort_management.repository.*;
 
 import java.math.BigDecimal;
@@ -25,6 +26,8 @@ public class BookingManagementService {
     private final RoomRepository roomRepository;
     private final ServiceRepository serviceRepository;
     private final PaymentRepository paymentRepository;
+    private final VipTierBenefitRepository vipTierBenefitRepository;
+    private final CustomerRepository customerRepository;
 
     @Transactional
     public Booking createBooking(Booking bookingRequest, String paymentMethod) throws Exception {
@@ -142,7 +145,14 @@ public class BookingManagementService {
             throw new RuntimeException("Đơn này đã kết thúc, không thể trả phòng lại!");
         }
 
+        // Tính lại tiền trước khi checkout
         recalculatePayment(booking);
+
+        // Áp dụng giảm giá VIP ← thêm vào đây
+        applyVipDiscount(booking);
+
+        // Cập nhật totalSpent và vipTier
+        updateCustomerVipTier(booking);
         booking.setStatus(BookingStatus.CHECKED_OUT);
 
         if (booking.getBookingRooms() != null) {
@@ -213,6 +223,13 @@ public class BookingManagementService {
             bs.setBooking(booking);
             bs.setService(service);
             bs.setQuantity(quantity);
+
+            // Check VIP tier → miễn phí không?
+            VipTier customerTier = booking.getCustomer().getVipTier();
+            boolean isFree = vipTierBenefitRepository
+                    .existsByVipTierAndServiceId(customerTier, serviceId);
+            bs.setPriceOverride(isFree ? BigDecimal.ZERO : null);
+
             if (booking.getBookingServices() == null)
                 booking.setBookingServices(new java.util.ArrayList<>());
             booking.getBookingServices().add(bs);
@@ -235,11 +252,14 @@ public class BookingManagementService {
             }
         }
 
+        // Tiền dịch vụ
         if (booking.getBookingServices() != null) {
             for (BookingService bs : booking.getBookingServices()) {
+                BigDecimal unitPrice = bs.getPriceOverride() != null
+                        ? bs.getPriceOverride() // VIP override (0 = miễn phí)
+                        : bs.getService().getPrice(); // Giá gốc
                 total = total.add(
-                        bs.getService().getPrice()
-                                .multiply(BigDecimal.valueOf(bs.getQuantity())));
+                        unitPrice.multiply(BigDecimal.valueOf(bs.getQuantity())));
             }
         }
 
@@ -247,5 +267,49 @@ public class BookingManagementService {
             booking.getPayment().setAmount(total);
             paymentRepository.save(booking.getPayment());
         }
+    }
+
+    private void updateCustomerVipTier(Booking booking) {
+        Payment payment = booking.getPayment();
+        if (payment == null || payment.getPaymentStatus() != PaymentStatus.PAID)
+            return;
+
+        Customer customer = booking.getCustomer();
+        if (customer == null)
+            return;
+
+        // Cộng tiền vào tổng chi tiêu
+        BigDecimal newTotalSpent = customer.getTotalSpent().add(payment.getAmount());
+        customer.setTotalSpent(newTotalSpent);
+
+        // Tính lại VIP tier — duyệt từ cao xuống thấp, lấy tier phù hợp nhất
+        VipTier newTier = VipTier.VIP_0;
+        for (VipTier tier : VipTier.values()) {
+            if (newTotalSpent.compareTo(tier.getMinSpent()) >= 0) {
+                newTier = tier;
+            }
+        }
+        customer.setVipTier(newTier);
+        customerRepository.save(customer);
+    }
+
+    private void applyVipDiscount(Booking booking) {
+        Payment payment = booking.getPayment();
+        if (payment == null)
+            return;
+
+        VipTier tier = booking.getCustomer().getVipTier();
+        int discountPercent = tier.getDiscountPercent();
+        if (discountPercent == 0)
+            return;
+
+        // Tính số tiền giảm
+        BigDecimal discountAmount = payment.getAmount()
+                .multiply(BigDecimal.valueOf(discountPercent))
+                .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+
+        payment.setDiscountAmount(discountAmount);
+        payment.setAmount(payment.getAmount().subtract(discountAmount));
+        paymentRepository.save(payment);
     }
 }

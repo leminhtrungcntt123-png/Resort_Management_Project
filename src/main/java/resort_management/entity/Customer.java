@@ -2,7 +2,11 @@ package resort_management.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import resort_management.enums.VipTier;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -11,19 +15,21 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Customer extends Person { // Đã kế thừa Person (Person lại kế thừa BaseEntity)
+public class Customer extends Person {
 
-    // Các trường id, fullName, phone, email, createdAt đã được lớp cha lo hết!
+    @Column(name = "total_spent", precision = 18, scale = 2)
+    private BigDecimal totalSpent = BigDecimal.ZERO;
 
-    private Integer loyaltyPoints = 0; // Thêm điểm thưởng để thể hiện sự khác biệt với Employee
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vip_tier", length = 10)
+    private VipTier vipTier = VipTier.VIP_0;
 
-    // Giữ nguyên quan hệ Booking cực kỳ quan trọng của bạn
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Booking> bookings;
 
     @Override
     public String getRoleDescription() {
-        return "Khách hàng thân thiết - Điểm tích lũy: " + loyaltyPoints;
+        return "Khách hàng " + vipTier + " - Tổng chi tiêu: " + totalSpent;
     }
 }
