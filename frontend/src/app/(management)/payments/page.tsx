@@ -84,7 +84,7 @@ export default function PaymentsPage() {
 
       const txtData = allPayments.map((p) => ({
         [fields?.billId || "Mã Hóa Đơn"]: p.id,
-        [fields?.bookingId || "Mã Đặt Phòng"]: p.bookingId || p.booking?.id || "N/A",
+        [fields?.bookingId || "Mã Đặt Phòng"]: p.bookingId || "N/A",
         [fields?.amount || "Số Tiền"]: lang === "en"
           ? `${p.amount?.toLocaleString("en-US")} VND`
           : `${p.amount?.toLocaleString("vi-VN")}đ`,
@@ -126,8 +126,8 @@ export default function PaymentsPage() {
       const excelData = allPayments.map((p, index) => ({
         [fields?.stt || "STT"]: index + 1,
         [fields?.billId || "Mã Hóa Đơn"]: p.id,
-        [fields?.bookingId || "Mã Đặt Phòng"]: p.bookingId || p.booking?.id || "N/A",
-        [fields?.customer || "Khách Hàng"]: p.booking?.customer?.fullName || "N/A",
+        [fields?.bookingId || "Mã Đặt Phòng"]: p.bookingId || "N/A",
+        [fields?.customer || "Khách Hàng"]: p.bookingDetail?.customer?.fullName || "N/A",
         [fields?.amountVnd || "Số Tiền (VND)"]: p.amount ?? 0,
         [fields?.methodExcel || "Phương Thức TT"]: p.paymentMethod ?? "N/A",
         [fields?.statusExcel || "Trạng Thái TT"]: p.paymentStatus ?? "PENDING",

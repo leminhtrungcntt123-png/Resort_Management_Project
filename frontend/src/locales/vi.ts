@@ -413,11 +413,15 @@ const vi = {
     next: "Sau",
   },
   chart: {
-    title: "Thống kê doanh thu",
-    periodMonth: "Theo tháng",
-    periodYear: "Theo năm",
-    periodWeek: "Theo tuần",
-    revenue: "Doanh thu",
+      title: "Thống kê doanh thu",
+      periodMonth: "Theo tháng",
+      periodYear: "Theo năm",
+      periodWeek: "Theo tuần",
+      revenue: "Doanh thu",
+      day: "Ngày",      // ← thêm
+      month: "Tháng",   // ← thêm
+      year: "Năm",      // ← thêm
+      empty: "Chưa có dữ liệu",
   },
   employees: {
     title: "Quản lý Nhân viên",

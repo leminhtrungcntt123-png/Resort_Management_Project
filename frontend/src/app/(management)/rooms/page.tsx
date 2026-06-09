@@ -156,9 +156,10 @@ export default function RoomsPage() {
       const txtData = allRooms.map((r) => ({
         [headers?.roomNumber ?? "Số Phòng"]: r.roomNumber,
         [headers?.floorNumber ?? "Số Tầng"]: r.floorNumber,
-        [headers?.roomType ?? "Loại Phòng"]: r.roomType?.roomType ?? "N/A",
+        [headers?.roomType ?? "Loại Phòng"]: r.roomType?.typeName ?? "N/A",
+
         [headers?.status ?? "Trạng Thái"]: r.status ?? "N/A",
-        [headers?.price ?? "Giá Gốc"]: `${r.roomType?.price?.toLocaleString("vi-VN")}đ`,
+        [headers?.price ?? "Giá Gốc"]: `${r.roomType?.pricePerNight?.toLocaleString("vi-VN")}đ`,
       }));
 
       const filterLabel = floor ? `tang-${floor}` : status.toLowerCase();
@@ -203,8 +204,8 @@ export default function RoomsPage() {
         [headers?.stt ?? "STT"]: index + 1,
         [headers?.roomNumber ?? "Số Phòng"]: r.roomNumber,
         [headers?.floorNumber ?? "Tầng số"]: r.floorNumber,
-        [headers?.roomType ?? "Tên Loại Phòng"]: r.roomType?.roomType ?? "N/A",
-        [headers?.price ?? "Giá Phòng / Đêm (VND)"]: r.roomType?.price ?? 0,
+        [headers?.roomType ?? "Tên Loại Phòng"]: r.roomType?.typeName ?? "N/A",
+        [headers?.price ?? "Giá Phòng / Đêm (VND)"]: r.roomType?.pricePerNight ?? 0,
         [headers?.capacity ?? "Sức Chứa (Người)"]: r.roomType?.capacity ?? 0,
         [headers?.status ?? "Trạng Thái Hiện Tại"]: r.status ?? "N/A",
       }));
