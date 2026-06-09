@@ -52,11 +52,11 @@ export default function RoomTable({ rooms, loading, onEdit, onDelete, onViewGues
                   <tr key={room.id} className="hover:bg-zinc-50">
                     <td className="px-4 py-3 font-medium">{room.roomNumber}</td>
                     <td className="px-4 py-3">{room.floorNumber}</td>
-                    <td className="px-4 py-3">{room.roomType?.typeName || room.roomType?.roomType}</td>
+                    <td className="px-4 py-3">{room.roomType?.typeName}</td>
                     <td className="px-4 py-3">
                       {room.roomType?.pricePerNight
                           ? room.roomType.pricePerNight.toLocaleString("vi-VN") + "đ"
-                          : room.roomType?.price?.toLocaleString("vi-VN") + "đ" || "0đ"}
+                          : room.roomType?.pricePerNight?.toLocaleString("vi-VN") + "đ" || "0đ"}
                     </td>
                     <td className="px-4 py-3">
                   <span

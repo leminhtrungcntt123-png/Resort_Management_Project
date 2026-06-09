@@ -420,6 +420,10 @@ const en = {
     periodYear: "Yearly",
     periodWeek: "Weekly",
     revenue: "Revenue",
+    day: "Day",
+    month: "Month",
+    year: "Year",
+    empty: "No data available",
   },
   employees: {
     title: "Employee Management",
