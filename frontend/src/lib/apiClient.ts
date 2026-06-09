@@ -1,4 +1,4 @@
-const BASE_URL = '';
+const BASE_URL = 'https://resortmanagementproject-production.up.railway.app';
 
 async function apiClient(url: string, options: RequestInit = {}) {
     const token = localStorage.getItem('token');
