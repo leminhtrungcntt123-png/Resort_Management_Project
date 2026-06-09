@@ -7,6 +7,7 @@ import resort_management.dto.request.PaymentRequest;
 import resort_management.dto.response.PaymentResponse;
 import resort_management.entity.Booking;
 import resort_management.entity.BookingRoom;
+import resort_management.entity.BookingService;
 import resort_management.entity.Room;
 import resort_management.enums.BookingStatus;
 import resort_management.enums.PaymentMethod;
@@ -17,6 +18,7 @@ import resort_management.exception.ResourceNotFoundException;
 import resort_management.repository.BookingRepository;
 import resort_management.repository.PaymentRepository;
 import resort_management.repository.RoomRepository;
+import resort_management.service.BookingManagementService;
 import resort_management.service.PaymentService;
 
 import java.time.LocalDate;
@@ -33,6 +35,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository; // ← thêm mới
     private final RoomRepository roomRepository; // ← thêm mới
+    private final BookingManagementService bookingManagementService;
 
     @Override
     @Transactional(readOnly = true)
@@ -118,6 +121,7 @@ public class PaymentServiceImpl implements PaymentService {
                 }
 
                 bookingRepository.save(booking);
+                bookingManagementService.updateCustomerVipTier(booking);
             }
 
             return PaymentResponse.from(p);

@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+// Vừa là nhãn để phân loại service, vừa để class được gia nhập vào hệ thống quản lý tự động của Spring Boot
 @Service
 @RequiredArgsConstructor
 public class BookingManagementService {
@@ -151,8 +152,7 @@ public class BookingManagementService {
         // Áp dụng giảm giá VIP ← thêm vào đây
         applyVipDiscount(booking);
 
-        // Cập nhật totalSpent và vipTier
-        updateCustomerVipTier(booking);
+        // Cập nhật totalSpent
         booking.setStatus(BookingStatus.CHECKED_OUT);
 
         if (booking.getBookingRooms() != null) {
@@ -195,18 +195,22 @@ public class BookingManagementService {
 
     @Transactional
     public BookingResponse addServiceToBooking(Long bookingId, Long serviceId, Integer quantity) {
+        // check xem booking có tồn tại k, nếu k thì ném exception
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException(
                         "Không tìm thấy booking ID: " + bookingId));
-
+        // check trạng thái phải là checkin mới đc booking, nếu k thì ném exception
         if (booking.getStatus() != BookingStatus.CHECKED_IN)
             throw new RuntimeException(
                     "Chỉ có thể thêm dịch vụ cho booking đang CHECKED_IN!");
-
+        // phải viết như này vì k thể import resort_management.entity.Service do trùng tên với import Service của Spring mà tk import kia buộc phải có do mình dùng @Service
+        // check xem service có tồn tại k, nếu k thì ném exception
         resort_management.entity.Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException(
                         "Không tìm thấy dịch vụ ID: " + serviceId));
-
+        // check xem booking đã có dịch vụ này chưa, nếu có rồi thì cộng dồn số lượng, nếu chưa thì tạo mới
+        // Vòng for duyệt danh sách các dịch vụ mà phòng này đã đặt
+        // Nếu tìm thấy dịch vụ cùng ID thì cộng dồn số lượng (bs.getQuantity() + quantity) và đánh dấu đã tồn tại (existed = true) rồi break vòng for
         boolean existed = false;
         if (booking.getBookingServices() != null) {
             for (BookingService bs : booking.getBookingServices()) {
@@ -217,7 +221,7 @@ public class BookingManagementService {
                 }
             }
         }
-
+        // Nếu sau khi duyệt xong mà không tìm thấy thì tạo mới 1 BookingService rồi add vào booking
         if (!existed) {
             BookingService bs = new BookingService();
             bs.setBooking(booking);
@@ -240,11 +244,13 @@ public class BookingManagementService {
     }
 
     private void recalculatePayment(Booking booking) {
+        // Đây là một công cụ cực mạnh của Java 8 giúp tính toán khoảng cách giữa hai mốc thời gian theo đơn vị là Ngày
+        // Nó lấy ngày Check-out trừ ngày Check-in để ra tổng số đêm khách ở lại khách sạn (totalDays).
         long totalDays = ChronoUnit.DAYS.between(
                 booking.getCheckInDate(), booking.getCheckOutDate());
 
         BigDecimal total = BigDecimal.ZERO;
-
+        // Tiền phòng
         if (booking.getBookingRooms() != null) {
             for (BookingRoom br : booking.getBookingRooms()) {
                 total = total.add(
@@ -269,7 +275,7 @@ public class BookingManagementService {
         }
     }
 
-    private void updateCustomerVipTier(Booking booking) {
+    public void updateCustomerVipTier(Booking booking) {
         Payment payment = booking.getPayment();
         if (payment == null || payment.getPaymentStatus() != PaymentStatus.PAID)
             return;
