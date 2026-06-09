@@ -114,7 +114,7 @@ export default function PaymentTable({
                                                 if (!confirm(confirmMsg)) return;
                                                 try {
                                                     await fetch(
-                                                        `http://localhost:8080/api/payments/${payment.id}`,
+                                                        `/api/payments/${payment.id}`,
                                                         {
                                                             method: "DELETE",
                                                             headers: {
