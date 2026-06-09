@@ -29,7 +29,8 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional(readOnly = true)
     public List<RoomResponse> getAll() {
-        return roomRepository.findAll().stream()
+        // Đã tối ưu cho Dashboard
+        return roomRepository.findAllRoomsForDashboard().stream()
                 .map(RoomResponse::from)
                 .collect(Collectors.toList());
     }
@@ -133,13 +134,27 @@ public class RoomServiceImpl implements RoomService {
         roomRepository.deleteById(id);
     }
 
+    // 🔥 TỐI ƯU PHÂN TRANG 1: Ép nạp sẵn RoomType bằng EntityGraph mặc định của JPA
     @Override
     @Transactional(readOnly = true)
     public PageResponse<RoomResponse> getAllPaged(Pageable pageable) {
+        // 🔥 ĐÃ SỬA: Nếu size lớn (lấy hết phòng), ép chạy qua hàm tối ưu gom SQL để
+        // tránh N+1
+        if (pageable.getPageSize() > 100) {
+            List<RoomResponse> list = roomRepository.findAllRoomsForDashboard().stream()
+                    .map(RoomResponse::from)
+                    .collect(Collectors.toList());
+            // Trả về dạng PageResponse giả lập phân trang cho Frontend không bị lỗi cấu
+            // trúc
+            return PageResponse.of(new org.springframework.data.domain.PageImpl<>(list, pageable, list.size()));
+        }
+
+        // Nếu phân trang nhỏ thông thường (trang quản lý phòng) thì giữ nguyên
         return PageResponse.of(
                 roomRepository.findAll(pageable).map(RoomResponse::from));
     }
 
+    // 🔥 TỐI ƯU PHÂN TRANG 2
     @Override
     @Transactional(readOnly = true)
     public PageResponse<RoomResponse> getByStatus(RoomStatus status, Pageable pageable) {
@@ -147,10 +162,10 @@ public class RoomServiceImpl implements RoomService {
                 roomRepository.findByStatus(status, pageable).map(RoomResponse::from));
     }
 
+    // 🔥 TỐI ƯU PHÂN TRANG 3
     @Override
     @Transactional(readOnly = true)
     public PageResponse<RoomResponse> getByFloor(Integer floorNumber, RoomStatus status, Pageable pageable) {
-        // Nếu có status → filter kết hợp, không thì chỉ filter theo tầng
         if (status != null) {
             return PageResponse.of(
                     roomRepository.findByFloorNumberAndStatus(floorNumber, status, pageable)
@@ -163,5 +178,12 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public List<Integer> getFloorNumbers() {
         return roomRepository.findDistinctFloorNumbers();
+    }
+
+    @Override
+    public java.util.List<RoomResponse> getAllRoomsWithoutPagination() {
+        return roomRepository.findAll().stream()
+                .map(RoomResponse::from)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

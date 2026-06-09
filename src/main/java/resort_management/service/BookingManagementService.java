@@ -47,7 +47,7 @@ public class BookingManagementService {
         if (bookingRequest.getBookingRooms() == null || bookingRequest.getBookingRooms().isEmpty()) {
             throw new Exception("Đơn đặt phòng phải có ít nhất 1 phòng!");
         }
-
+        // Vòng for duyệt qua từng phòng trong bookingRequest.getBookingRooms()
         for (BookingRoom br : bookingRequest.getBookingRooms()) {
             Room room = roomRepository.findById(br.getRoom().getId())
                     .orElseThrow(() -> new Exception(
@@ -154,7 +154,7 @@ public class BookingManagementService {
 
         // Cập nhật totalSpent
         booking.setStatus(BookingStatus.CHECKED_OUT);
-
+        // Trả phòng: set status về AVAILABLE
         if (booking.getBookingRooms() != null) {
             for (BookingRoom br : booking.getBookingRooms()) {
                 Room room = br.getRoom();

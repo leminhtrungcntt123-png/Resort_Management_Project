@@ -28,11 +28,13 @@ public class Room extends BaseEntity { // FIX: thêm kế thừa
     @Column(length = 20, nullable = false)
     private RoomStatus status = RoomStatus.AVAILABLE;
 
-    @ManyToOne
+// 1. Thêm fetch = FetchType.LAZY
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_type_id", nullable = false)
     private RoomType roomType;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
+    // 2. Thêm fetch = FetchType.LAZY
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<BookingRoom> bookingRooms;
 }

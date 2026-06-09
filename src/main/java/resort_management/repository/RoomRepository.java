@@ -27,4 +27,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("SELECT DISTINCT r.floorNumber FROM Room r ORDER BY r.floorNumber")
     List<Integer> findDistinctFloorNumbers();
+    // Thêm hàm này vào cuối file để gom toàn bộ dữ liệu vào 1 câu lệnh SELECT
+    @Query("SELECT DISTINCT r FROM Room r " +
+           "LEFT JOIN FETCH r.roomType " +
+           "LEFT JOIN FETCH r.bookingRooms br ")
+    List<Room> findAllRoomsForDashboard();
 }

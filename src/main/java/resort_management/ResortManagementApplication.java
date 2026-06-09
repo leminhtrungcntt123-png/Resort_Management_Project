@@ -9,3 +9,4 @@ public class ResortManagementApplication {
         SpringApplication.run(ResortManagementApplication.class, args);
     }
 }
+

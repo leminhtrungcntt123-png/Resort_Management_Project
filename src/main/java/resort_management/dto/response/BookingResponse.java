@@ -85,7 +85,25 @@ public class BookingResponse {
 
         return dto;
     }
+    // 🔥 ĐỂ CHỐNG N+1: Hàm map siêu nhẹ dùng cho Dashboard
+    public static BookingResponse fromSummary(Booking booking) {
+        BookingResponse dto = new BookingResponse();
+        dto.setId(booking.getId());
+        dto.setCheckInDate(booking.getCheckInDate());
+        dto.setCheckOutDate(booking.getCheckOutDate());
+        dto.setStatus(booking.getStatus() != null ? booking.getStatus().name() : null);
+        dto.setCreatedAt(booking.getCreatedAt());
 
+        if (booking.getCustomer() != null) {
+            Customer c = booking.getCustomer();
+            dto.setCustomer(new CustomerInfo(c.getId(), c.getFullName(), c.getPhone(), c.getEmail()));
+        }
+
+        // Ép trả về List rỗng để KHÔNG kích hoạt việc truy vấn sâu xuống bảng Room và Service
+        dto.setRooms(Collections.emptyList());
+        dto.setServices(Collections.emptyList());
+        return dto;
+    }
     @Data
     @AllArgsConstructor
     public static class CustomerInfo {
@@ -126,4 +144,5 @@ public class BookingResponse {
         private String paymentStatus;
         private LocalDateTime paymentDate;
     }
+    
 }

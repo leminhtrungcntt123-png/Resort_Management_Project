@@ -24,6 +24,8 @@ public class RoomController {
 
     private final RoomService roomService;
 
+    // ✅ GIỮ NGUYÊN: Dùng cho các bảng danh sách có phân trang thực sự (ví dụ: Trang
+    // quản lý phòng có nút Next/Prev)
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<RoomResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
@@ -37,6 +39,14 @@ public class RoomController {
 
         return ResponseEntity.ok(ApiResponse.success(
                 roomService.getAllPaged(PageRequest.of(page, size, sort))));
+    }
+
+    // 🔥 THÊM MỚI: API chuyên dụng cho giao diện "Sơ đồ phòng" trên Dashboard
+    // Chạy siêu tốc vì KHÔNG PHẢI CHẠY COUNT(*), trả về List gọn nhẹ thay vì Page
+    // 🔥 SỬA LẠI: Thay "List<RoomResponse>>>" thành "List<RoomResponse>>" chuẩn chỉ
+    @GetMapping("/map")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getAllRoomsForMap() {
+        return ResponseEntity.ok(ApiResponse.success(roomService.getAllRoomsWithoutPagination()));
     }
 
     @GetMapping("/{id}")
@@ -97,6 +107,9 @@ public class RoomController {
                 roomService.getByFloor(floorNumber, status, PageRequest.of(page, size, sort))));
     }
 
+    // ⚡ TỐI ƯU CACHE: Bác nên mở hàm getFloorNumbers() ở tầng RoomServiceImpl ra
+    // và cắm thêm Annotation `@Cacheable(value = "floors")` lên đầu hàm đó.
+    // Giúp chặn đứng việc truy vấn Database liên tục cho danh sách tầng!
     @GetMapping("/floors")
     public ResponseEntity<ApiResponse<List<Integer>>> getFloorNumbers() {
         return ResponseEntity.ok(ApiResponse.success(roomService.getFloorNumbers()));

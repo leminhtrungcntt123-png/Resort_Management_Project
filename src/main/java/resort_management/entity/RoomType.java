@@ -10,10 +10,10 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "room_types")
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"rooms"})
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomType extends BaseEntity { // FIX: kế thừa BaseEntity
+public class RoomType extends BaseEntity {
 
     @NotBlank(message = "Tên hạng phòng không được để trống")
     @Column(name = "type_name", nullable = false, length = 100)
@@ -34,5 +34,6 @@ public class RoomType extends BaseEntity { // FIX: kế thừa BaseEntity
 
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     @JsonIgnore
+    @ToString.Exclude // Chặn log danh sách phòng ngược lại gây chậm máy
     private List<Room> rooms;
 }

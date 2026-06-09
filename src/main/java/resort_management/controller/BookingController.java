@@ -94,6 +94,7 @@ public class BookingController {
     }
 
     @PostMapping
+    @Transactional
     public ResponseEntity<ApiResponse<BookingResponse>> create(
             @Valid @RequestBody BookingRequest request) {
         try {

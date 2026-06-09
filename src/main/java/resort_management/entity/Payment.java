@@ -5,7 +5,6 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import resort_management.enums.PaymentMethod;
 import resort_management.enums.PaymentStatus;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -13,14 +12,15 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "payments")
 @Data
-@EqualsAndHashCode(callSuper = true) // FIX: kế thừa BaseEntity
+@EqualsAndHashCode(callSuper = true, exclude = {"booking"})
 @NoArgsConstructor
 @AllArgsConstructor
-public class Payment extends BaseEntity { // FIX: thêm kế thừa BaseEntity
+public class Payment extends BaseEntity {
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY) // ĐÃ SỬA: Chuyển sang LAZY
     @JoinColumn(name = "booking_id", nullable = false, unique = true)
     @JsonIgnore
+    @ToString.Exclude
     private Booking booking;
 
     @PositiveOrZero(message = "Số tiền không được âm")
